@@ -24,18 +24,36 @@
 
 package com.cloudogu.scm.mirror;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import org.jboss.resteasy.mock.MockHttpRequest;
+import org.jboss.resteasy.mock.MockHttpResponse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import sonia.scm.web.RestDispatcher;
 
-@Path("v2/sample")
-class SampleResource {
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-  @GET
-  @Produces(MediaType.TEXT_PLAIN)
-  public String sample() {
-    return "Sample";
+import static com.google.inject.util.Providers.of;
+
+class MirrorRootResourceTest {
+
+  private final RestDispatcher dispatcher = new RestDispatcher();
+
+  private final URI baseUri = URI.create("/");
+
+  @BeforeEach
+  void initResource() {
+    dispatcher.addSingletonResource(new MirrorRootResource(of(new MirrorResource())));
   }
 
+  @Test
+  void x() throws URISyntaxException, UnsupportedEncodingException {
+    MockHttpRequest request = MockHttpRequest.get("/v2/sample");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+//    Assertions.assertThat(response.getContentAsString()).isEqualTo("Sample");
+  }
 }
