@@ -24,31 +24,10 @@
 
 package com.cloudogu.scm.mirror;
 
-import lombok.Getter;
-import lombok.Setter;
+import org.mapstruct.Mapper;
+import sonia.scm.repository.Repository;
 
-import javax.validation.constraints.NotBlank;
-
-@Getter
-@Setter
-public class MirrorConfigurationDto {
-
-  @NotBlank
-  private String url;
-
-  private UsernamePasswordCredentialDto usernamePasswordCredential;
-  private CertificateCredentialDto certificationCredential;
-
-  static class UsernamePasswordCredentialDto {
-    @NotBlank
-    private String username;
-    @NotBlank
-    private String password;
-  }
-
-  static class CertificateCredentialDto {
-    @NotBlank
-    private String certificate;
-    private String password;
-  }
+@Mapper
+public interface MirrorRequestDtoToRepositoryMapper {
+  Repository map(MirrorRequestDto requestDto);
 }

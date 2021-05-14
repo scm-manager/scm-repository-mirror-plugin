@@ -24,7 +24,6 @@
 
 package com.cloudogu.scm.mirror;
 
-import de.otto.edison.hal.Link;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;

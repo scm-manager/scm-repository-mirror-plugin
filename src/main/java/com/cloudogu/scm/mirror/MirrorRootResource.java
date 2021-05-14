@@ -24,27 +24,45 @@
 
 package com.cloudogu.scm.mirror;
 
+import org.mapstruct.factory.Mappers;
+import sonia.scm.api.v2.resources.RepositoryLinkProvider;
+import sonia.scm.repository.Repository;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.validation.Valid;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 
 @Path("v2/mirror/")
 public class MirrorRootResource {
 
   private final Provider<MirrorResource> mirrorResource;
+  private final RepositoryLinkProvider repositoryLinkProvider;
+  private final MirrorService mirrorService;
+
+  private final MirrorRequestDtoToRepositoryMapper requestDtoToRepositoryMapper = Mappers.getMapper(MirrorRequestDtoToRepositoryMapper.class);
+  private final MirrorRequestDtoToRequestMapper requestDtoToRequestMapper = Mappers.getMapper(MirrorRequestDtoToRequestMapper.class);
 
   @Inject
-  public MirrorRootResource(Provider<MirrorResource> mirrorResource) {
+  public MirrorRootResource(Provider<MirrorResource> mirrorResource, RepositoryLinkProvider repositoryLinkProvider, MirrorService mirrorService) {
     this.mirrorResource = mirrorResource;
+    this.repositoryLinkProvider = repositoryLinkProvider;
+    this.mirrorService = mirrorService;
   }
 
   @POST
   @Path("/repositories")
-  public void createMirrorRepository(@Valid MirrorRequestDto request) {
-
+  @Consumes("application/json")
+  public Response createMirrorRepository(@Valid MirrorRequestDto requestDto) {
+    Repository repository = requestDtoToRepositoryMapper.map(requestDto);
+    MirrorRequest request = requestDtoToRequestMapper.map(requestDto);
+    Repository mirror = mirrorService.createMirror(request, repository);
+    return Response.created(URI.create(repositoryLinkProvider.get(mirror.getNamespaceAndName()))).build();
   }
 
   @Path("/repositories/{namespace}/{name}")

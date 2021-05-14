@@ -25,15 +25,29 @@
 package com.cloudogu.scm.mirror;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Collection;
 
 @Getter
+@Setter
 public class MirrorRequest {
 
-  String sourceUrl;
+  private String url;
 
-  Collection<Credential> credentials;
+  private Collection<Credential> credentials;
 
-  static class Credential {}
+  interface Credential {}
+
+  @Getter
+  static class UsernamePasswordCredential implements Credential {
+    private String username;
+    private String password;
+  }
+
+  @Getter
+  static class CertificateCredential implements Credential {
+    private byte[] certificate;
+    private String password;
+  }
 }

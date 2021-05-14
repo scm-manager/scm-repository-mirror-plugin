@@ -42,6 +42,6 @@ public class MirrorConfiguration {
   private String url;
 
   public static MirrorConfiguration from(MirrorRequest request) {
-    return new MirrorConfiguration(request.sourceUrl);
+    return new MirrorConfiguration(request.getUrl());
   }
 }
