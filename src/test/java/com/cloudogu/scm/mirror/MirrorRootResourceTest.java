@@ -62,8 +62,6 @@ class MirrorRootResourceTest {
   @Mock
   private MirrorService mirrorService;
 
-  private final URI baseUri = URI.create("/");
-
   @BeforeEach
   void initResource() {
     dispatcher.addSingletonResource(new MirrorRootResource(of(new MirrorResource()), repositoryLinkProvider, mirrorService));
@@ -104,19 +102,21 @@ class MirrorRootResourceTest {
   }
 
   @Test
-  void shouldConfigureBasicAuth() throws URISyntaxException {
+  void shouldConfigureBasicAuth() throws URISyntaxException, UnsupportedEncodingException {
 
     JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-      .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'url':'http://hog/git', 'usernamePasswordCredential':{'username':'trillian','password':'hog'}}");
+      .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'type':'git', 'url':'http://hog/git', 'usernamePasswordCredential':{'username':'trillian','password':'hog'}}");
     MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
 
+    System.out.println(response.getContentAsString());
     verify(mirrorService).createMirror(
       argThat(mirrorRequest -> {
-        assertThat(mirrorRequest.getCredentials()).hasSize(1);
-        assertThat(mirrorRequest.getCredentials()).extracting("username").containsExactly("trillian");
-        assertThat(mirrorRequest.getCredentials()).extracting("password").containsExactly("hog");
+        assertThat(mirrorRequest.getUsernamePasswordCredential()).isNotNull();
+        assertThat(mirrorRequest.getCertificateCredential()).isNull();
+        assertThat(mirrorRequest.getUsernamePasswordCredential().getUsername()).isEqualTo("trillian");
+        assertThat(mirrorRequest.getUsernamePasswordCredential().getPassword()).isEqualTo("hog");
         return true;
       }),
       any()
@@ -127,7 +127,7 @@ class MirrorRootResourceTest {
   void shouldConfigureCertificateAuth() throws URISyntaxException, UnsupportedEncodingException {
 
     JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-      .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'url':'http://hog/git', 'certificationCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'}}");
+      .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'type':'git', 'url':'http://hog/git', 'certificateCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'}}");
     MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
@@ -135,12 +135,10 @@ class MirrorRootResourceTest {
     System.out.println(response.getContentAsString());
     verify(mirrorService).createMirror(
       argThat(mirrorRequest -> {
-        assertThat(mirrorRequest.getCredentials()).hasSize(1);
-        MirrorRequest.Credential credential = mirrorRequest.getCredentials().iterator().next();
-        assertThat(credential).isInstanceOf(MirrorRequest.CertificateCredential.class);
-        MirrorRequest.CertificateCredential certificateCredential = (MirrorRequest.CertificateCredential) credential;
-        assertThat(certificateCredential.getCertificate()).contains(CERTIFICATE);
-        assertThat(certificateCredential.getPassword()).isEqualTo("hog");
+        assertThat(mirrorRequest.getUsernamePasswordCredential()).isNull();
+        assertThat(mirrorRequest.getCertificateCredential()).isNotNull();
+        assertThat(mirrorRequest.getCertificateCredential().getCertificate()).contains(CERTIFICATE);
+        assertThat(mirrorRequest.getCertificateCredential().getPassword()).isEqualTo("hog");
         return true;
       }),
       any()

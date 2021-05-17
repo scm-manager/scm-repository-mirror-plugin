@@ -27,12 +27,14 @@ package com.cloudogu.scm.mirror;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @XmlRootElement(name = "mirror-configuration")
@@ -41,7 +43,30 @@ public class MirrorConfiguration {
 
   private String url;
 
-  public static MirrorConfiguration from(MirrorRequest request) {
-    return new MirrorConfiguration(request.getUrl());
+  private UsernamePasswordCredential usernamePasswordCredential;
+  private CertificateCredential certificateCredential;
+
+  @Getter
+  @Setter
+  static class UsernamePasswordCredential implements sonia.scm.repository.api.UsernamePasswordCredential {
+    private String username;
+    private String password;
+
+    @Override
+    public String username() {
+      return username;
+    }
+
+    @Override
+    public char[] password() {
+      return password.toCharArray();
+    }
+  }
+
+  @Getter
+  @Setter
+  static class CertificateCredential {
+    private byte[] certificate;
+    private String password;
   }
 }

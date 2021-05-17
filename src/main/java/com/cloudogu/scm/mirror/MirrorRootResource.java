@@ -61,8 +61,8 @@ public class MirrorRootResource {
   @Consumes("application/json")
   public Response createMirrorRepository(@Valid MirrorRequestDto requestDto) {
     Repository repository = requestDtoToRepositoryMapper.map(requestDto);
-    MirrorRequest request = requestDtoToRequestMapper.map(requestDto);
-    Repository mirror = mirrorService.createMirror(request, repository);
+    MirrorConfiguration configuration = requestDtoToRequestMapper.map(requestDto);
+    Repository mirror = mirrorService.createMirror(configuration, repository);
     return Response.created(URI.create(repositoryLinkProvider.get(mirror.getNamespaceAndName()))).build();
   }
 

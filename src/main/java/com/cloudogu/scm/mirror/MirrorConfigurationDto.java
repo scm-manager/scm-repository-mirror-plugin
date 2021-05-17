@@ -37,7 +37,7 @@ public class MirrorConfigurationDto {
   private String url;
 
   private UsernamePasswordCredentialDto usernamePasswordCredential;
-  private CertificateCredentialDto certificationCredential;
+  private CertificateCredentialDto certificateCredential;
 
   @Getter
   static class UsernamePasswordCredentialDto {

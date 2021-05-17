@@ -51,7 +51,6 @@ import java.util.function.Consumer;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -78,9 +77,9 @@ class MirrorServiceTest {
 
   @Test
   void shouldFailWithoutPermission() {
-    MirrorRequest request = createRequest();
+    MirrorConfiguration configuration = createConfiguration();
 
-    assertThrows(AuthorizationException.class, () -> service.createMirror(request, repository));
+    assertThrows(AuthorizationException.class, () -> service.createMirror(configuration, repository));
   }
 
   @Nested
@@ -101,9 +100,9 @@ class MirrorServiceTest {
 
     @Test
     void shouldFailForUnsupportedType() {
-      MirrorRequest request = createRequest();
+      MirrorConfiguration configuration = createConfiguration();
 
-      assertThrows(ScmConstraintViolationException.class, () -> service.createMirror(request, repository));
+      assertThrows(ScmConstraintViolationException.class, () -> service.createMirror(configuration, repository));
     }
 
     @Nested
@@ -131,9 +130,9 @@ class MirrorServiceTest {
 
       @Test
       void shouldSetOwnerPermissionForCurrentUser() {
-        MirrorRequest request = createRequest();
+        MirrorConfiguration configuration = createConfiguration();
 
-        Repository createdRepository = service.createMirror(request, repository);
+        Repository createdRepository = service.createMirror(configuration, repository);
 
         Collection<RepositoryPermission> permissions = createdRepository.getPermissions();
         assertThat(permissions)
@@ -147,9 +146,9 @@ class MirrorServiceTest {
 
       @Test
       void shouldCallMirrorCommand() {
-        MirrorRequest request = createRequest();
+        MirrorConfiguration configuration = createConfiguration();
 
-        service.createMirror(request, repository);
+        service.createMirror(configuration, repository);
 
         verify(mirrorCommand).mirror(argThat(mirrorCommandRequest -> {
           assertThat(mirrorCommandRequest.getSourceUrl()).isEqualTo("http://hog/");
@@ -159,13 +158,13 @@ class MirrorServiceTest {
 
       @Test
       void shouldSetCredentialsForMirrorCall() {
-        MirrorRequest request = createRequest();
-        MirrorRequest.UsernamePasswordCredential usernamePasswordCredential = new MirrorRequest.UsernamePasswordCredential();
+        MirrorConfiguration configuration = createConfiguration();
+        MirrorConfiguration.UsernamePasswordCredential usernamePasswordCredential = new MirrorConfiguration.UsernamePasswordCredential();
         usernamePasswordCredential.setUsername("dent");
         usernamePasswordCredential.setPassword("hg2g");
-        request.setCredentials(singletonList(usernamePasswordCredential));
+        configuration.setUsernamePasswordCredential(usernamePasswordCredential);
 
-        service.createMirror(request, repository);
+        service.createMirror(configuration, repository);
 
         verify(mirrorCommand).mirror(argThat(mirrorCommandRequest -> {
           assertThat(mirrorCommandRequest.getCredentials()).hasSize(1);
@@ -177,8 +176,8 @@ class MirrorServiceTest {
     }
   }
 
-  private MirrorRequest createRequest() {
-    MirrorRequest request = new MirrorRequest();
+  private MirrorConfiguration createConfiguration() {
+    MirrorConfiguration request = new MirrorConfiguration();
     request.setUrl("http://hog/");
     return request;
   }

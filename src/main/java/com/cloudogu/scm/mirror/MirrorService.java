@@ -32,16 +32,19 @@ import sonia.scm.repository.RepositoryPermission;
 import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.repository.RepositoryType;
 import sonia.scm.repository.api.Command;
+import sonia.scm.repository.api.Credential;
 import sonia.scm.repository.api.MirrorCommandBuilder;
+import sonia.scm.repository.api.Pkcs12ClientCertificateCredential;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 class MirrorService {
@@ -57,7 +60,7 @@ class MirrorService {
     this.configurationService = configurationService;
   }
 
-  Repository createMirror(MirrorRequest request, Repository repository) {
+  Repository createMirror(MirrorConfiguration configuration, Repository repository) {
     RepositoryPermissions.create().check();
     checkMirrorSupport(repository);
 
@@ -69,27 +72,35 @@ class MirrorService {
 
     return manager.create(
       repository,
-      createMirrorCallback(request)
+      createMirrorCallback(configuration)
     );
   }
 
   void updateMirror(Repository repository) {
-
+    MirrorConfiguration configuration = configurationService.getConfiguration(repository);
+    withMirrorCommandDo(repository, configuration, MirrorCommandBuilder::update);
   }
 
-  private Consumer<Repository> createMirrorCallback(MirrorRequest request) {
+  private Consumer<Repository> createMirrorCallback(MirrorConfiguration configuration) {
     return repository -> {
-      try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
-        MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(request.getUrl());
-        mirrorCommand.setCredentials(
-          request.getCredentials()
-            .stream()
-            .map(MirrorRequest.Credential::toCommandCredential)
-            .collect(toList()));
-        mirrorCommand.initialCall();
-        configurationService.setConfiguration(repository, MirrorConfiguration.from(request));
-      }
+      withMirrorCommandDo(repository, configuration, MirrorCommandBuilder::initialCall);
+      configurationService.setConfiguration(repository, configuration);
     };
+  }
+
+  private void withMirrorCommandDo(Repository repository, MirrorConfiguration configuration, Consumer<MirrorCommandBuilder> consumer) {
+    try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+      MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
+      Collection<Credential> credentials = new ArrayList<>();
+      if (configuration.getUsernamePasswordCredential() != null) {
+        credentials.add(configuration.getUsernamePasswordCredential());
+      }
+      if (configuration.getCertificateCredential() != null) {
+        credentials.add(new Pkcs12ClientCertificateCredential(configuration.getCertificateCredential().getCertificate(), configuration.getCertificateCredential().getPassword().toCharArray()));
+      }
+      mirrorCommand.setCredentials(credentials);
+      consumer.accept(mirrorCommand);
+    }
   }
 
   private void checkMirrorSupport(Repository repository) {
