@@ -40,12 +40,14 @@ public class MirrorRequest {
   interface Credential {}
 
   @Getter
+  @Setter
   static class UsernamePasswordCredential implements Credential {
     private String username;
     private String password;
   }
 
   @Getter
+  @Setter
   static class CertificateCredential implements Credential {
     private byte[] certificate;
     private String password;

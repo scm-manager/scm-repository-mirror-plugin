@@ -24,13 +24,37 @@
 
 package com.cloudogu.scm.mirror;
 
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
+
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
 
 @Mapper
-public interface MirrorRequestDtoToRequestMapper {
+abstract class MirrorRequestDtoToRequestMapper {
 
-  MirrorRequest map(MirrorConfigurationDto requestDto);
+  abstract MirrorRequest map(MirrorConfigurationDto requestDto);
 
-  MirrorRequest.UsernamePasswordCredential map(MirrorConfigurationDto.UsernamePasswordCredentialDto credentialDto);
-  MirrorRequest.CertificateCredential map(MirrorConfigurationDto.CertificateCredentialDto credentialDto);
+  abstract MirrorRequest.UsernamePasswordCredential map(MirrorConfigurationDto.UsernamePasswordCredentialDto credentialDto);
+  abstract MirrorRequest.CertificateCredential map(MirrorConfigurationDto.CertificateCredentialDto credentialDto);
+
+  byte[] mapBase64(String base64encoded) {
+    return Base64.getDecoder().decode(base64encoded.replace("\n", ""));
+  }
+
+  @AfterMapping
+  void mapCredentials(@MappingTarget MirrorRequest request, MirrorConfigurationDto requestDto) {
+    Collection<MirrorRequest.Credential> credentials = new ArrayList<>();
+    addIfNotNull(credentials, map(requestDto.getUsernamePasswordCredential()));
+    addIfNotNull(credentials, map(requestDto.getCertificationCredential()));
+    request.setCredentials(credentials);
+  }
+
+  void addIfNotNull(Collection<MirrorRequest.Credential> credentials, MirrorRequest.Credential credential) {
+    if (credential != null) {
+      credentials.add(credential);
+    }
+  }
 }

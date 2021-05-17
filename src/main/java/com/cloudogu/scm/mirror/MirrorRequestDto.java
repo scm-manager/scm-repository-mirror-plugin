@@ -37,6 +37,8 @@ public class MirrorRequestDto extends MirrorConfigurationDto {
   private String namespace;
   @NotBlank
   private String name;
+  @NotBlank
+  private String type;
   @Email
   private String contact;
   private String description;

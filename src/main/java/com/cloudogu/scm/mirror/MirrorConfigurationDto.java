@@ -39,6 +39,7 @@ public class MirrorConfigurationDto {
   private UsernamePasswordCredentialDto usernamePasswordCredential;
   private CertificateCredentialDto certificationCredential;
 
+  @Getter
   static class UsernamePasswordCredentialDto {
     @NotBlank
     private String username;
@@ -46,6 +47,7 @@ public class MirrorConfigurationDto {
     private String password;
   }
 
+  @Getter
   static class CertificateCredentialDto {
     @NotBlank
     private String certificate;
