@@ -1,11 +1,20 @@
 import { extensionPoints } from "@scm-manager/ui-extensions";
 import React, { useState } from "react";
-import { RepositoryCreation, RepositoryType, RepositoryTypeCollection } from "@scm-manager/ui-types";
-import { apiClient, ErrorNotification, Level, SubmitButton, Select, InputField } from "@scm-manager/ui-components";
+import { RepositoryCreation, RepositoryType, RepositoryTypeCollection, Link, Repository } from "@scm-manager/ui-types";
+import {
+  ErrorNotification,
+  InputField,
+  Level,
+  Select,
+  SubmitButton,
+  Textarea,
+  apiClient
+} from "@scm-manager/ui-components";
 import { useForm } from "react-hook-form";
-import { MirrorConfigurationDto } from "./types";
+import { MirrorConfigurationDto, MirrorRequestDto } from "./types";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
+import { useHistory } from "react-router-dom";
 
 const SelectWrapper = styled.div`
   flex: 1;
@@ -26,7 +35,6 @@ const MirrorRepositoryCreator: extensionPoints.RepositoryCreatorExtension["compo
   index,
   namespaceStrategies
 }) => {
-  const [repositoryType, setRepositoryType] = useState<RepositoryType | undefined>();
   const { register, handleSubmit } = useForm<MirrorConfigurationDto>();
   const [repository, setRepository] = useState<RepositoryCreation>({
     type: "",
@@ -37,17 +45,93 @@ const MirrorRepositoryCreator: extensionPoints.RepositoryCreatorExtension["compo
     contextEntries: {}
   });
   const [valid, setValid] = useState({ namespaceAndName: false, contact: true, importUrl: false });
+  const [repositoryType, setRepositoryType] = useState<RepositoryType | undefined>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | undefined>();
   const [t] = useTranslation("plugins");
+  const history = useHistory();
 
   const isValid = () => Object.values(valid).every(v => v);
-  const onSubmit = () => {};
+  const onSubmit = (configFormValue: MirrorConfigurationDto) => {
+    const request: MirrorRequestDto = {
+      ...configFormValue,
+      ...repository
+    };
+    const endpoint = (repositoryType?._links.mirror as Link).href;
+    console.log(endpoint, request);
+    setLoading(true);
+    const currentPath = history.location.pathname;
+    apiClient
+      .post(endpoint, request)
+      .then(response => {
+        const location = response.headers.get("Location");
+        return apiClient.get(location!);
+      })
+      .then(response => response.json())
+      .then((repo: Repository) => {
+        if (history.location.pathname === currentPath) {
+          history.push(`/repo/${repo.namespace}/${repo.name}/code/sources`);
+        }
+      })
+      .catch(error => setError(error))
+      .finally(() => setLoading(false));
+  };
+
+  const changeRepositoryType = (repositoryTypeName: string) => {
+    const repositoryTypeValue = repositoryTypes._embedded.repositoryTypes.find(it => it.name === repositoryTypeName);
+    if (repositoryTypeValue) {
+      setRepositoryType(repositoryTypeValue);
+      setRepository({ ...repository, type: repositoryTypeName });
+    }
+  };
+
+  const credentialsForm =
+    repository.type === "git" ? (
+      <>
+        <Column className="column is-half">
+          <InputField
+            label={t("import.username")}
+            helpText={t("help.usernameHelpText")}
+            disabled={loading}
+            {...register("usernamePasswordCredential.username")}
+          />
+        </Column>
+        <Column className="column is-half">
+          <InputField
+            label={t("import.password")}
+            type="password"
+            helpText={t("help.passwordHelpText")}
+            disabled={loading}
+            {...register("usernamePasswordCredential.password")}
+          />
+        </Column>
+      </>
+    ) : repository.type === "svn" ? (
+      <>
+        <Column className="column is-half">
+          <Textarea
+            label={t("import.username")}
+            helpText={t("help.usernameHelpText")}
+            disabled={loading}
+            {...register("certificationCredential.certificate")}
+          />
+        </Column>
+        <Column className="column is-half">
+          <InputField
+            label={t("import.password")}
+            type="password"
+            helpText={t("help.passwordHelpText")}
+            disabled={loading}
+            {...register("certificationCredential.password")}
+          />
+        </Column>
+      </>
+    ) : null;
 
   const createSelectOptions = (repositoryTypes?: RepositoryTypeCollection) => {
     if (repositoryTypes) {
       return repositoryTypes._embedded.repositoryTypes
-        .filter(repositoryType => true || "mirror" in repositoryType._links)
+        .filter(repositoryType => "mirror" in repositoryType._links)
         .map(repositoryType => {
           return {
             label: repositoryType.displayName,
@@ -61,11 +145,10 @@ const MirrorRepositoryCreator: extensionPoints.RepositoryCreatorExtension["compo
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <ErrorNotification error={error} />
-
       <SelectWrapper>
         <Select
           label={t("repository.type")}
-          onChange={type => setRepository({ ...repository, type })}
+          onChange={changeRepositoryType}
           value={repository ? repository.type : ""}
           options={createSelectOptions(repositoryTypes)}
           helpText={t("help.typeHelpText")}
@@ -84,23 +167,7 @@ const MirrorRepositoryCreator: extensionPoints.RepositoryCreatorExtension["compo
                 {...register("url")}
               />
             </Column>
-            <Column className="column is-half">
-              <InputField
-                label={t("import.username")}
-                helpText={t("help.usernameHelpText")}
-                disabled={loading}
-                {...register("usernamePasswordCredential.username")}
-              />
-            </Column>
-            <Column className="column is-half">
-              <InputField
-                label={t("import.password")}
-                type="password"
-                helpText={t("help.passwordHelpText")}
-                disabled={loading}
-                {...register("usernamePasswordCredential.password")}
-              />
-            </Column>
+            {credentialsForm}
           </Columns>
           <NameForm
             repository={repository}
