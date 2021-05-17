@@ -29,21 +29,40 @@ import lombok.Setter;
 
 import java.util.Collection;
 
+import static java.util.Collections.emptyList;
+
 @Getter
 @Setter
 public class MirrorRequest {
 
   private String url;
 
-  private Collection<Credential> credentials;
+  private Collection<Credential> credentials = emptyList();
 
-  interface Credential {}
+  interface Credential {
+     sonia.scm.repository.api.Credential toCommandCredential();
+  }
 
   @Getter
   @Setter
-  static class UsernamePasswordCredential implements Credential {
+  static class UsernamePasswordCredential implements Credential, sonia.scm.repository.api.UsernamePasswordCredential {
     private String username;
     private String password;
+
+    @Override
+    public sonia.scm.repository.api.Credential toCommandCredential() {
+      return this;
+    }
+
+    @Override
+    public String username() {
+      return username;
+    }
+
+    @Override
+    public char[] password() {
+      return password.toCharArray();
+    }
   }
 
   @Getter
@@ -51,5 +70,10 @@ public class MirrorRequest {
   static class CertificateCredential implements Credential {
     private byte[] certificate;
     private String password;
+
+    @Override
+    public sonia.scm.repository.api.Credential toCommandCredential() {
+      return null;
+    }
   }
 }

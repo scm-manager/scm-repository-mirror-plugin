@@ -32,6 +32,7 @@ import sonia.scm.repository.RepositoryPermission;
 import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.repository.RepositoryType;
 import sonia.scm.repository.api.Command;
+import sonia.scm.repository.api.MirrorCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
@@ -40,6 +41,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 class MirrorService {
@@ -57,8 +59,7 @@ class MirrorService {
 
   Repository createMirror(MirrorRequest request, Repository repository) {
     RepositoryPermissions.create().check();
-    RepositoryType t = type(manager, repository.getType());
-    checkSupport(t, Command.PULL);
+    checkMirrorSupport(repository);
 
     RepositoryPermission ownerPermission = new RepositoryPermission(
       SecurityUtils.getSubject().getPrincipal().toString(),
@@ -66,36 +67,40 @@ class MirrorService {
       false);
     repository.setPermissions(singletonList(ownerPermission));
 
-    Repository createdRepository;
-    createdRepository = manager.create(
+    return manager.create(
       repository,
       createMirrorCallback(request)
     );
-
-    return createdRepository;
   }
 
   void updateMirror(Repository repository) {
 
   }
 
-  Consumer<Repository> createMirrorCallback(MirrorRequest request) {
+  private Consumer<Repository> createMirrorCallback(MirrorRequest request) {
     return repository -> {
       try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
-        repositoryService.getMirrorCommand().setSourceUrl(request.getUrl());
+        MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(request.getUrl());
+        mirrorCommand.setCredentials(
+          request.getCredentials()
+            .stream()
+            .map(MirrorRequest.Credential::toCommandCredential)
+            .collect(toList()));
+        mirrorCommand.initialCall();
         configurationService.setConfiguration(repository, MirrorConfiguration.from(request));
       }
     };
   }
 
-  private void checkSupport(RepositoryType type, Command cmd) {
-    Set<Command> cmds = ((RepositoryType) type).getSupportedCommands();
+  private void checkMirrorSupport(Repository repository) {
+    RepositoryType type = type(repository.getType());
+    Set<Command> supportedCommands = type.getSupportedCommands();
     doThrow()
       .violation("type does not support command", "repository.type")
-      .when(!cmds.contains(cmd));
+      .when(!supportedCommands.contains(Command.MIRROR));
   }
 
-  private RepositoryType type(RepositoryManager manager, String type) {
+  private RepositoryType type(String type) {
     RepositoryHandler handler = manager.getHandler(type);
     doThrow()
       .violation("unknown repository type", "repository.type")
