@@ -22,6 +22,13 @@
  * SOFTWARE.
  */
 
-import { binder } from "@scm-manager/ui-extensions";
+import { binder, extensionPoints } from "@scm-manager/ui-extensions";
+import MirrorRepositoryCreator from "./MirrorRepositoryCreator";
 
-binder.bind("", "");
+binder.bind<extensionPoints.RepositoryCreator>("repos.creator", {
+  subtitle: "scm-repository-mirror-plugin.create.subtitle",
+  path: "mirror",
+  icon: "sync",
+  label: "scm-repository-mirror-plugin.repositoryForm.createButton",
+  component: MirrorRepositoryCreator
+});

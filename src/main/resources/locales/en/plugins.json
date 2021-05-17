@@ -1,5 +1,10 @@
 {
   "scm-repository-mirror-plugin": {
-
+    "create": {
+      "subtitle": "Mirror existing repository"
+    },
+    "repositoryForm": {
+      "createButton": "Mirror Repository"
+    }
   }
 }
