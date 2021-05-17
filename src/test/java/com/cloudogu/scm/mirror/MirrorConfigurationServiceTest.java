@@ -27,22 +27,31 @@ package com.cloudogu.scm.mirror;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.InMemoryConfigurationStoreFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(MockitoExtension.class)
 class MirrorConfigurationServiceTest {
 
   public static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
+
+  @Mock
+  private RepositoryManager repositoryManager;
+
   private MirrorConfigurationService service;
   private InMemoryConfigurationStoreFactory storeFactory;
 
   @BeforeEach
   void createService() {
     storeFactory = new InMemoryConfigurationStoreFactory();
-    service = new MirrorConfigurationService(storeFactory);
+    service = new MirrorConfigurationService(repositoryManager, storeFactory);
   }
 
   @Test

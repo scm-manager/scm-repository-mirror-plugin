@@ -24,9 +24,12 @@
 
 package com.cloudogu.scm.mirror;
 
+import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
+import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -34,6 +37,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.api.v2.resources.RepositoryLinkProvider;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.web.JsonMockHttpRequest;
+import sonia.scm.web.JsonMockHttpResponse;
 import sonia.scm.web.RestDispatcher;
 
 import java.io.IOException;
@@ -61,88 +65,129 @@ class MirrorRootResourceTest {
   private RepositoryLinkProvider repositoryLinkProvider;
   @Mock
   private MirrorService mirrorService;
+  @Mock
+  private MirrorConfigurationService configurationService;
 
   @BeforeEach
   void initResource() {
-    dispatcher.addSingletonResource(new MirrorRootResource(of(new MirrorResource()), repositoryLinkProvider, mirrorService));
+    dispatcher.addSingletonResource(new MirrorRootResource(of(new MirrorResource(configurationService, mirrorService)), repositoryLinkProvider, mirrorService));
   }
 
-  @BeforeEach
-  void initMocks() {
-    when(mirrorService.createMirror(any(), any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(1));
-    when(repositoryLinkProvider.get(any())).thenAnswer(invocationOnMock -> {
-      NamespaceAndName namespaceAndName = invocationOnMock.getArgument(0, NamespaceAndName.class);
-      return format("/repository/%s/%s", namespaceAndName.getNamespace(), namespaceAndName.getName());
-    });
+  @Nested
+  class ForNewMirror {
+    @BeforeEach
+    void initMocks() {
+      when(mirrorService.createMirror(any(), any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(1));
+      when(repositoryLinkProvider.get(any())).thenAnswer(invocationOnMock -> {
+        NamespaceAndName namespaceAndName = invocationOnMock.getArgument(0, NamespaceAndName.class);
+        return format("/repository/%s/%s", namespaceAndName.getNamespace(), namespaceAndName.getName());
+      });
+    }
+
+    @Test
+    void shouldExecuteBasicRequest() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
+        .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'type':'git', 'url':'http://hog/git'}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(201);
+      assertThat(response.getOutputHeaders())
+        .containsEntry("Location", singletonList(URI.create("/repository/hitchhiker/heart-of-gold")));
+      verify(mirrorService).createMirror(
+        argThat(mirrorRequest -> {
+          assertThat(mirrorRequest.getUrl()).isEqualTo("http://hog/git");
+          return true;
+        }),
+        argThat(repository -> {
+          assertThat(repository.getName()).isEqualTo("heart-of-gold");
+          assertThat(repository.getNamespace()).isEqualTo("hitchhiker");
+          return true;
+        })
+      );
+    }
+
+    @Test
+    void shouldConfigureBasicAuth() throws URISyntaxException, UnsupportedEncodingException {
+
+      JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
+        .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'type':'git', 'url':'http://hog/git', 'usernamePasswordCredential':{'username':'trillian','password':'hog'}}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      verify(mirrorService).createMirror(
+        argThat(mirrorRequest -> {
+          assertThat(mirrorRequest.getUsernamePasswordCredential()).isNotNull();
+          assertThat(mirrorRequest.getCertificateCredential()).isNull();
+          assertThat(mirrorRequest.getUsernamePasswordCredential().getUsername()).isEqualTo("trillian");
+          assertThat(mirrorRequest.getUsernamePasswordCredential().getPassword()).isEqualTo("hog");
+          return true;
+        }),
+        any()
+      );
+    }
+
+    @Test
+    void shouldConfigureCertificateAuth() throws URISyntaxException, UnsupportedEncodingException {
+
+      JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
+        .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'type':'git', 'url':'http://hog/git', 'certificateCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'}}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      verify(mirrorService).createMirror(
+        argThat(mirrorRequest -> {
+          assertThat(mirrorRequest.getUsernamePasswordCredential()).isNull();
+          assertThat(mirrorRequest.getCertificateCredential()).isNotNull();
+          assertThat(mirrorRequest.getCertificateCredential().getCertificate()).contains(CERTIFICATE);
+          assertThat(mirrorRequest.getCertificateCredential().getPassword()).isEqualTo("hog");
+          return true;
+        }),
+        any()
+      );
+    }
   }
 
-  @Test
-  void shouldExecuteBasicRequest() throws URISyntaxException {
+  @Nested
+  class ForSingleRepository {
 
-    JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-      .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'type':'git', 'url':'http://hog/git'}");
-    MockHttpResponse response = new MockHttpResponse();
+    @Test
+    void shouldExecuteUpdateRequest() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories/hitchhiker/heart-of-gold/sync");
+      MockHttpResponse response = new MockHttpResponse();
 
-    dispatcher.invoke(request, response);
+      dispatcher.invoke(request, response);
 
-    assertThat(response.getStatus()).isEqualTo(201);
-    assertThat(response.getOutputHeaders())
-      .containsEntry("Location", singletonList(URI.create("/repository/hitchhiker/heart-of-gold")));
-    verify(mirrorService).createMirror(
-      argThat(mirrorRequest -> {
-        assertThat(mirrorRequest.getUrl()).isEqualTo("http://hog/git");
-        return true;
-      }),
-      argThat(repository -> {
-        assertThat(repository.getName()).isEqualTo("heart-of-gold");
-        assertThat(repository.getNamespace()).isEqualTo("hitchhiker");
-        return true;
-      })
-    );
-  }
+      assertThat(response.getStatus()).isEqualTo(204);
+      verify(mirrorService).updateMirror("hitchhiker", "heart-of-gold");
+    }
 
-  @Test
-  void shouldConfigureBasicAuth() throws URISyntaxException, UnsupportedEncodingException {
+    @Test
+    void shouldGetConfiguration() throws URISyntaxException {
+      MirrorConfiguration existingConfiguration =
+        new MirrorConfiguration(
+          "http://hog/",
+          new UsernamePasswordCredential("dent", "hog"),
+          new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"));
+      when(configurationService.getConfiguration("hitchhiker", "heart-of-gold"))
+        .thenReturn(existingConfiguration);
 
-    JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-      .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'type':'git', 'url':'http://hog/git', 'usernamePasswordCredential':{'username':'trillian','password':'hog'}}");
-    MockHttpResponse response = new MockHttpResponse();
+      MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/heart-of-gold/configuration");
+      JsonMockHttpResponse response = new JsonMockHttpResponse();
 
-    dispatcher.invoke(request, response);
+      dispatcher.invoke(request, response);
 
-    System.out.println(response.getContentAsString());
-    verify(mirrorService).createMirror(
-      argThat(mirrorRequest -> {
-        assertThat(mirrorRequest.getUsernamePasswordCredential()).isNotNull();
-        assertThat(mirrorRequest.getCertificateCredential()).isNull();
-        assertThat(mirrorRequest.getUsernamePasswordCredential().getUsername()).isEqualTo("trillian");
-        assertThat(mirrorRequest.getUsernamePasswordCredential().getPassword()).isEqualTo("hog");
-        return true;
-      }),
-      any()
-    );
-  }
-
-  @Test
-  void shouldConfigureCertificateAuth() throws URISyntaxException, UnsupportedEncodingException {
-
-    JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-      .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'type':'git', 'url':'http://hog/git', 'certificateCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'}}");
-    MockHttpResponse response = new MockHttpResponse();
-
-    dispatcher.invoke(request, response);
-
-    System.out.println(response.getContentAsString());
-    verify(mirrorService).createMirror(
-      argThat(mirrorRequest -> {
-        assertThat(mirrorRequest.getUsernamePasswordCredential()).isNull();
-        assertThat(mirrorRequest.getCertificateCredential()).isNotNull();
-        assertThat(mirrorRequest.getCertificateCredential().getCertificate()).contains(CERTIFICATE);
-        assertThat(mirrorRequest.getCertificateCredential().getPassword()).isEqualTo("hog");
-        return true;
-      }),
-      any()
-    );
+      assertThat(response.getStatus()).isEqualTo(200);
+      MirrorConfigurationDto configurationDto = response.getContentAs(MirrorConfigurationDto.class);
+      assertThat(configurationDto.getUrl()).isEqualTo("http://hog/");
+      assertThat(configurationDto.getUsernamePasswordCredential().getUsername()).isEqualTo("dent");
+      assertThat(configurationDto.getUsernamePasswordCredential().getPassword()).isEqualTo("hog");
+      assertThat(configurationDto.getCertificateCredential().getCertificate()).isEqualTo(BASE64_ENCODED_CERTIFICATE.replace("\\n", ""));
+      assertThat(configurationDto.getCertificateCredential().getPassword()).isEqualTo("hg2g");
+    }
   }
 
   @BeforeAll

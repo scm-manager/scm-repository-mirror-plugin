@@ -24,53 +24,19 @@
 
 package com.cloudogu.scm.mirror;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.mapstruct.Mapper;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Base64;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@XmlRootElement(name = "mirror-configuration")
-@XmlAccessorType(XmlAccessType.FIELD)
-public class MirrorConfiguration {
+@Mapper
+abstract class MirrorConfigurationToConfigurationDtoMapper {
 
-  private String url;
+  abstract MirrorConfigurationDto map(MirrorConfiguration configuration);
 
-  private UsernamePasswordCredential usernamePasswordCredential;
-  private CertificateCredential certificateCredential;
+  abstract MirrorConfigurationDto.UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
+  abstract MirrorConfigurationDto.CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
 
-  @Getter
-  @Setter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  static class UsernamePasswordCredential implements sonia.scm.repository.api.UsernamePasswordCredential {
-    private String username;
-    private String password;
-
-    @Override
-    public String username() {
-      return username;
-    }
-
-    @Override
-    public char[] password() {
-      return password.toCharArray();
-    }
-  }
-
-  @Getter
-  @Setter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  static class CertificateCredential {
-    private byte[] certificate;
-    private String password;
+  String mapBase64(byte[] bytes) {
+    return Base64.getEncoder().encodeToString(bytes);
   }
 }

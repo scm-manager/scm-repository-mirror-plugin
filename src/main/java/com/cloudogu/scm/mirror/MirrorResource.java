@@ -24,13 +24,43 @@
 
 package com.cloudogu.scm.mirror;
 
+import org.mapstruct.factory.Mappers;
+
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 
 public class MirrorResource {
+
+  private final MirrorConfigurationService configurationService;
+  private final MirrorService mirrorService;
+  private final MirrorConfigurationDtoToConfigurationMapper fromDtoMapper = Mappers.getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
+  private final MirrorConfigurationToConfigurationDtoMapper toDtoMapper = Mappers.getMapper(MirrorConfigurationToConfigurationDtoMapper.class);
+
+  public MirrorResource(MirrorConfigurationService configurationService, MirrorService mirrorService) {
+    this.configurationService = configurationService;
+    this.mirrorService = mirrorService;
+  }
+
   @GET
-  @Path("/")
-  public MirrorConfigurationDto getMirrorConfiguration(String namespace, String name) {
-    return null;
+  @Path("/configuration")
+  @Produces("application/json")
+  public MirrorConfigurationDto getMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name) {
+    return toDtoMapper.map(configurationService.getConfiguration(namespace, name));
+  }
+
+  @POST
+  @Path("/configuration")
+  @Consumes("application/json")
+  public void setMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, MirrorConfigurationDto configurationDto) {
+  }
+
+  @POST
+  @Path("/sync")
+  public void syncMirror(@PathParam("namespace") String namespace, @PathParam("name") String name) {
+    mirrorService.updateMirror(namespace, name);
   }
 }

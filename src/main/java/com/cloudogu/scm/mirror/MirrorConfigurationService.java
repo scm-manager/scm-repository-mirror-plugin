@@ -25,7 +25,10 @@
 package com.cloudogu.scm.mirror;
 
 import sonia.scm.BadRequestException;
+import sonia.scm.NotFoundException;
+import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryManager;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
@@ -37,21 +40,32 @@ class MirrorConfigurationService {
 
   private static final String STORE_NAME = "mirror";
 
+  private final RepositoryManager repositoryManager;
   private final ConfigurationStoreFactory storeFactory;
 
   @Inject
-  MirrorConfigurationService(ConfigurationStoreFactory storeFactory) {
+  MirrorConfigurationService(RepositoryManager repositoryManager, ConfigurationStoreFactory storeFactory) {
+    this.repositoryManager = repositoryManager;
     this.storeFactory = storeFactory;
   }
 
-  void setConfiguration(Repository repository, MirrorConfiguration configuration) {
-    createConfigurationStore(repository).set(configuration);
+  MirrorConfiguration getConfiguration(String namespace, String name) {
+    NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
+    Repository repository = repositoryManager.get(namespaceAndName);
+    if (repository == null) {
+      throw new NotFoundException(Repository.class, namespaceAndName.toString());
+    }
+    return getConfiguration(repository);
   }
 
   MirrorConfiguration getConfiguration(Repository repository) {
     return createConfigurationStore(repository)
       .getOptional()
       .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
+  }
+
+  void setConfiguration(Repository repository, MirrorConfiguration configuration) {
+    createConfigurationStore(repository).set(configuration);
   }
 
   boolean hasConfiguration(Repository repository) {

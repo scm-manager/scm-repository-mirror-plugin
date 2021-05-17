@@ -29,9 +29,9 @@ import org.mapstruct.Mapper;
 import java.util.Base64;
 
 @Mapper
-abstract class MirrorRequestDtoToRequestMapper {
+abstract class MirrorConfigurationDtoToConfigurationMapper {
 
-  abstract MirrorConfiguration map(MirrorConfigurationDto requestDto);
+  abstract MirrorConfiguration map(MirrorConfigurationDto configurationDto);
 
   abstract MirrorConfiguration.UsernamePasswordCredential map(MirrorConfigurationDto.UsernamePasswordCredentialDto credentialDto);
   abstract MirrorConfiguration.CertificateCredential map(MirrorConfigurationDto.CertificateCredentialDto credentialDto);

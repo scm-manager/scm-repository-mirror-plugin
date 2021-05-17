@@ -47,7 +47,7 @@ public class MirrorRootResource {
 
   // TODO check whether we should use the repository mapper from the core here
   private final MirrorRequestDtoToRepositoryMapper requestDtoToRepositoryMapper = Mappers.getMapper(MirrorRequestDtoToRepositoryMapper.class);
-  private final MirrorRequestDtoToRequestMapper requestDtoToRequestMapper = Mappers.getMapper(MirrorRequestDtoToRequestMapper.class);
+  private final MirrorConfigurationDtoToConfigurationMapper requestDtoToRequestMapper = Mappers.getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
 
   @Inject
   public MirrorRootResource(Provider<MirrorResource> mirrorResource, RepositoryLinkProvider repositoryLinkProvider, MirrorService mirrorService) {

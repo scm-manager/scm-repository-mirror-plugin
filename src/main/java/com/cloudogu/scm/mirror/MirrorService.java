@@ -25,6 +25,9 @@
 package com.cloudogu.scm.mirror;
 
 import org.apache.shiro.SecurityUtils;
+import sonia.scm.ContextEntry;
+import sonia.scm.NotFoundException;
+import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHandler;
 import sonia.scm.repository.RepositoryManager;
@@ -45,6 +48,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static java.util.Collections.singletonList;
+import static sonia.scm.ContextEntry.ContextBuilder.entity;
+import static sonia.scm.NotFoundException.notFound;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 class MirrorService {
@@ -76,7 +81,12 @@ class MirrorService {
     );
   }
 
-  void updateMirror(Repository repository) {
+  void updateMirror(String namespace, String name) {
+    NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
+    Repository repository = manager.get(namespaceAndName);
+    if (repository == null) {
+      throw notFound(entity(namespaceAndName));
+    }
     MirrorConfiguration configuration = configurationService.getConfiguration(repository);
     withMirrorCommandDo(repository, configuration, MirrorCommandBuilder::update);
   }

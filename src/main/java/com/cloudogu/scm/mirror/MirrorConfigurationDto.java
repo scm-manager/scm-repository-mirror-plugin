@@ -24,14 +24,18 @@
 
 package com.cloudogu.scm.mirror;
 
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
-public class MirrorConfigurationDto {
+@NoArgsConstructor
+public class MirrorConfigurationDto extends HalRepresentation {
 
   @NotBlank
   private String url;
@@ -39,7 +43,12 @@ public class MirrorConfigurationDto {
   private UsernamePasswordCredentialDto usernamePasswordCredential;
   private CertificateCredentialDto certificateCredential;
 
+  MirrorConfigurationDto(Links links) {
+    super(links);
+  }
+
   @Getter
+  @Setter
   static class UsernamePasswordCredentialDto {
     @NotBlank
     private String username;
@@ -48,6 +57,7 @@ public class MirrorConfigurationDto {
   }
 
   @Getter
+  @Setter
   static class CertificateCredentialDto {
     @NotBlank
     private String certificate;
