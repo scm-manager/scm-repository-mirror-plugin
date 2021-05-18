@@ -25,6 +25,7 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfigurationService;
+import de.otto.edison.hal.HalRepresentation;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +43,11 @@ import sonia.scm.web.MockScmPathInfoStore;
 
 import javax.inject.Provider;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.BOOLEAN;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -56,6 +61,10 @@ import static org.mockito.Mockito.when;
 class RepositoryEnricherTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
+
+  static {
+    REPOSITORY.setId("42");
+  }
 
   private final Provider<ScmPathInfoStore> scmPathInfoStore = MockScmPathInfoStore.forUri("/");
 
@@ -73,13 +82,38 @@ class RepositoryEnricherTest {
 
   @Test
   void shouldNotAppendLinkForRepositoryWithoutPermission() {
-    REPOSITORY.setId("42");
     HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
     lenient().when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(true);
 
     enricher.enrich(context, appender);
 
     verify(appender, never()).appendLink(any(), any());
+  }
+
+  @Test
+  void shouldAppendStatusAsEmbeddedForMirrorRepository() {
+    HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
+    lenient().when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(true);
+
+    enricher.enrich(context, appender);
+
+    verify(appender).appendEmbedded(
+      eq("mirrorStatus"),
+      (HalRepresentation) argThat(status -> {
+        assertThat(status).extracting("successful").asInstanceOf(BOOLEAN).isTrue();
+        return true;
+      })
+    );
+  }
+
+  @Test
+  void shouldNotAppendStatusForNormalRepository() {
+    HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
+    lenient().when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(false);
+
+    enricher.enrich(context, appender);
+
+    verify(appender, never()).appendEmbedded(any(), (HalRepresentation) any());
   }
 
   @Nested
@@ -101,7 +135,6 @@ class RepositoryEnricherTest {
 
     @Test
     void shouldAppendLinkForRepositoryThatIsAMirror() {
-      REPOSITORY.setId("42");
       HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
       when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(true);
 

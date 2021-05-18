@@ -54,10 +54,16 @@ public class RepositoryEnricher implements HalEnricher {
   @Override
   public void enrich(HalEnricherContext context, HalAppender appender) {
     Repository repository = context.oneRequireByType(Repository.class);
-    if (MirrorPermissions.hasMirrorPermission(repository)
-      && configurationService.hasConfiguration(repository)) {
-      appendConfigurationLink(appender, repository);
+    if (configurationService.hasConfiguration(repository)) {
+      appendStatusEmbedded(appender);
+      if (MirrorPermissions.hasMirrorPermission(repository)) {
+        appendConfigurationLink(appender, repository);
+      }
     }
+  }
+
+  private void appendStatusEmbedded(HalAppender appender) {
+    appender.appendEmbedded("mirrorStatus", new MirrorStatusDto(true));
   }
 
   private void appendConfigurationLink(HalAppender appender, Repository repository) {
