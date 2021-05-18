@@ -1,5 +1,5 @@
 import { InputField, Level, SubmitButton, Textarea } from "@scm-manager/ui-components";
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { MirrorConfigurationDto, MirrorRequestDto } from "./types";
 import { useForm } from "react-hook-form";
 import { RepositoryCreation } from "@scm-manager/ui-types";
@@ -9,6 +9,7 @@ import { extensionPoints } from "@scm-manager/ui-extensions";
 
 const Column = styled.div`
   padding: 0 0.75rem;
+  margin-bottom: 0.5rem;
 `;
 
 const Columns = styled.div`
@@ -25,9 +26,11 @@ type Props = {
 
 const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, NameForm, InformationForm }) => {
   const [t] = useTranslation("plugins");
-  const { register, handleSubmit, formState } = useForm<MirrorConfigurationDto>();
+  const { register, handleSubmit, formState, watch } = useForm<MirrorConfigurationDto>({
+    mode: "onChange"
+  });
   const [repository, setRepository] = useState<RepositoryCreation>({
-    type: repositoryType,
+    type: "",
     contact: "",
     description: "",
     name: "",
@@ -35,34 +38,46 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     contextEntries: {}
   });
   const [valid, setValid] = useState({ namespaceAndName: false, contact: true });
+  const watchUrl = watch("url", "");
+
+  useEffect(() => {
+    if (!repository.name) {
+      // If the repository name is not fill we set a name suggestion
+      const match = watchUrl.match(/([^\/]+?)(?:.git)?$/);
+      if (match && match[1]) {
+        setRepository({ ...repository, name: match[1] });
+      }
+    }
+  }, [watchUrl]);
 
   const isValid = () => Object.values(valid).every(v => v) && formState.isValid;
   const innerOnSubmit = (configFormValue: MirrorConfigurationDto) => {
     const request: MirrorRequestDto = {
       ...configFormValue,
-      ...repository
+      ...repository,
+      type: repositoryType
     };
     onSubmit(request);
   };
 
   let credentialsForm = null;
-  switch (repository.type) {
+  switch (repositoryType) {
     case "git":
       credentialsForm = (
         <>
           <Column className="column is-half">
             <InputField
-              label={t("import.username")}
-              helpText={t("help.usernameHelpText")}
+              label={t("scm-repository-mirror-plugin.form.username.label")}
+              helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
               disabled={disabled}
               {...register("usernamePasswordCredential.username")}
             />
           </Column>
           <Column className="column is-half">
             <InputField
-              label={t("import.password")}
+              label={t("scm-repository-mirror-plugin.form.password.label")}
               type="password"
-              helpText={t("help.passwordHelpText")}
+              helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
               disabled={disabled}
               {...register("usernamePasswordCredential.password")}
             />
@@ -73,19 +88,19 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     case "svn":
       credentialsForm = (
         <>
-          <Column className="column is-half">
+          <Column className="column is-full">
             <Textarea
-              label={t("import.username")}
-              helpText={t("help.usernameHelpText")}
+              label={t("scm-repository-mirror-plugin.form.certificate.label")}
+              helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
               disabled={disabled}
               {...register("certificationCredential.certificate")}
             />
           </Column>
-          <Column className="column is-half">
+          <Column className="column is-full">
             <InputField
-              label={t("import.password")}
+              label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
               type="password"
-              helpText={t("help.passwordHelpText")}
+              helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
               disabled={disabled}
               {...register("certificationCredential.password")}
             />
@@ -100,11 +115,21 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
       <Columns className="columns is-multiline">
         <Column className="column is-full">
           <InputField
-            label={t("import.importUrl")}
-            helpText={t("help.importUrlHelpText")}
-            errorMessage={t("validation.url-invalid")}
+            label={t("scm-repository-mirror-plugin.form.url.label")}
+            helpText={t("scm-repository-mirror-plugin.form.url.helpText")}
+            errorMessage={formState.errors.url?.message}
+            validationError={!!formState.errors.url}
             disabled={disabled}
-            {...register("url")}
+            {...register("url", {
+              required: {
+                value: true,
+                message: t("scm-repository-mirror-plugin.form.url.errors.required")
+              },
+              pattern: {
+                value: /^[A-Za-z0-9]+:\/\/[^\s$.?#].[^\s]*$/,
+                message: t("scm-repository-mirror-plugin.form.url.errors.invalid")
+              }
+            })}
           />
         </Column>
         {credentialsForm}
@@ -122,7 +147,13 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
         setValid={(contact: boolean) => setValid({ ...valid, contact })}
       />
       <Level
-        right={<SubmitButton disabled={!isValid()} loading={disabled} label={t("repositoryForm.submitImport")} />}
+        right={
+          <SubmitButton
+            disabled={!isValid()}
+            loading={disabled}
+            label={t("scm-repository-mirror-plugin.repositoryForm.createButton")}
+          />
+        }
       />
     </form>
   );

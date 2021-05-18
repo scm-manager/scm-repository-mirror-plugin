@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "react-query";
 import { Repository } from "@scm-manager/ui-types";
 import { MirrorRequestDto } from "./types";
-import { apiClient } from "@scm-manager/ui-api";
+import { apiClient } from "@scm-manager/ui-components";
 
 type UseCreateRepositoryRequest = {
   link: string;
@@ -10,7 +10,7 @@ type UseCreateRepositoryRequest = {
 
 const mirrorRepository = ({ link, payload }: UseCreateRepositoryRequest) => {
   return apiClient
-    .post(link, payload, "application/vnd.scmm-repository+json;v=2")
+    .post(link, payload, "application/json")
     .then(response => {
       const location = response.headers.get("Location");
       if (!location) {

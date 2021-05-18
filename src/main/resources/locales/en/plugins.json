@@ -5,6 +5,32 @@
     },
     "repositoryForm": {
       "createButton": "Mirror Repository"
+    },
+    "form": {
+      "url": {
+        "label": "Url",
+        "helpText": "The url of the repository that should be mirrored.",
+        "errors": {
+          "required": "The URL is required",
+          "invalid": "The URL is invalid"
+        }
+      },
+      "username": {
+        "label": "Username",
+        "helpText": "The user to authenticate with."
+      },
+      "password": {
+        "label": "Password",
+        "helpText": "The password for the provided user."
+      },
+      "certificate": {
+        "label": "Key",
+        "helpText": "A PKCS12 keystore for securing the connection.",
+        "password": {
+          "label": "Password",
+          "helpText": "If present, the password for the keystore."
+        }
+      }
     }
   }
 }

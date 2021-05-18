@@ -11,7 +11,7 @@ type Props = {
 };
 
 const MirrorRepositoryTypeSelect: FC<Props> = ({ value, disabled, repositoryTypes, onChange }) => {
-  const [t] = useTranslation("plugins");
+  const [t] = useTranslation("repos");
 
   const createSelectOptions = (repositoryTypeCollection?: RepositoryTypeCollection) => {
     if (repositoryTypeCollection) {

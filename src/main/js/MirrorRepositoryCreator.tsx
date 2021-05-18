@@ -10,6 +10,7 @@ import MirrorRepositoryTypeSelect from "./MirrorRepositoryTypeSelect";
 
 const SelectWrapper = styled.div`
   flex: 1;
+  margin-bottom: 1rem;
 `;
 
 const MirrorRepositoryCreator: extensionPoints.RepositoryCreatorExtension["component"] = ({
@@ -20,7 +21,7 @@ const MirrorRepositoryCreator: extensionPoints.RepositoryCreatorExtension["compo
   const { repository: createdRepository, mirror, error, isLoading: loading } = useMirrorRepository();
   const [repositoryType, setRepositoryType] = useState<RepositoryType | undefined>();
   const history = useHistory();
-  const mirrorLink = (repositoryType?._links.mirror as Link).href;
+  const mirrorLink = (repositoryType?._links.mirror as Link)?.href;
 
   useEffect(() => {
     if (createdRepository) {
