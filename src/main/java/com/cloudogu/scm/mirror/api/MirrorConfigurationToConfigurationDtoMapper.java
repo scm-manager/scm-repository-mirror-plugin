@@ -22,12 +22,22 @@
  * SOFTWARE.
  */
 
-package com.cloudogu.scm.mirror;
+package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.MirrorConfiguration;
 import org.mapstruct.Mapper;
-import sonia.scm.repository.Repository;
+
+import java.util.Base64;
 
 @Mapper
-public interface MirrorRequestDtoToRepositoryMapper {
-  Repository map(MirrorRequestDto requestDto);
+abstract class MirrorConfigurationToConfigurationDtoMapper {
+
+  abstract MirrorConfigurationDto map(MirrorConfiguration configuration);
+
+  abstract MirrorConfigurationDto.UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
+  abstract MirrorConfigurationDto.CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
+
+  String mapBase64(byte[] bytes) {
+    return Base64.getEncoder().encodeToString(bytes);
+  }
 }

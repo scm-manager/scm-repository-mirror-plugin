@@ -37,7 +37,7 @@ import javax.inject.Inject;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
-class MirrorConfigurationService {
+public class MirrorConfigurationService {
 
   private static final String STORE_NAME = "mirror";
 
@@ -50,7 +50,7 @@ class MirrorConfigurationService {
     this.storeFactory = storeFactory;
   }
 
-  MirrorConfiguration getConfiguration(String namespace, String name) {
+  public MirrorConfiguration getConfiguration(String namespace, String name) {
     Repository repository = loadRepository(namespace, name);
     RepositoryPermissions.custom("configureMirror", repository).check();
     return getConfiguration(repository);
@@ -62,7 +62,7 @@ class MirrorConfigurationService {
       .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
   }
 
-  void setConfiguration(String namespace, String name, MirrorConfiguration configuration) {
+  public void setConfiguration(String namespace, String name, MirrorConfiguration configuration) {
     Repository repository = loadRepository(namespace, name);
     RepositoryPermissions.custom("configureMirror", repository).check();
     setConfiguration(repository, configuration);
@@ -72,7 +72,7 @@ class MirrorConfigurationService {
     createConfigurationStore(repository).set(configuration);
   }
 
-  boolean hasConfiguration(Repository repository) {
+  public boolean hasConfiguration(Repository repository) {
     return createConfigurationStore(repository)
       .getOptional()
       .isPresent();

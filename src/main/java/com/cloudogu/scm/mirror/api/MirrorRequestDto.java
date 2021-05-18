@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.cloudogu.scm.mirror;
+package com.cloudogu.scm.mirror.api;
 
 import lombok.Getter;
 import lombok.Setter;

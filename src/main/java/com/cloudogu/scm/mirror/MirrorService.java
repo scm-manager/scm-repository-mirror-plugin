@@ -52,7 +52,7 @@ import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
-class MirrorService {
+public class MirrorService {
 
   private final RepositoryManager manager;
   private final RepositoryServiceFactory repositoryServiceFactory;
@@ -65,7 +65,7 @@ class MirrorService {
     this.configurationService = configurationService;
   }
 
-  Repository createMirror(MirrorConfiguration configuration, Repository repository) {
+  public Repository createMirror(MirrorConfiguration configuration, Repository repository) {
     RepositoryPermissions.create().check();
     checkMirrorSupport(repository);
 
@@ -81,7 +81,7 @@ class MirrorService {
     );
   }
 
-  void updateMirror(String namespace, String name) {
+  public void updateMirror(String namespace, String name) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
     Repository repository = manager.get(namespaceAndName);
     if (repository == null) {

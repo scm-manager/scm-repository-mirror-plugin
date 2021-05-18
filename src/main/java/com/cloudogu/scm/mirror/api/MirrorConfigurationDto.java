@@ -22,21 +22,45 @@
  * SOFTWARE.
  */
 
-package com.cloudogu.scm.mirror;
+package com.cloudogu.scm.mirror.api;
 
-import org.mapstruct.Mapper;
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.Base64;
+import javax.validation.constraints.NotBlank;
 
-@Mapper
-abstract class MirrorConfigurationDtoToConfigurationMapper {
+@Getter
+@Setter
+@NoArgsConstructor
+public class MirrorConfigurationDto extends HalRepresentation {
 
-  abstract MirrorConfiguration map(MirrorConfigurationDto configurationDto);
+  @NotBlank
+  private String url;
 
-  abstract MirrorConfiguration.UsernamePasswordCredential map(MirrorConfigurationDto.UsernamePasswordCredentialDto credentialDto);
-  abstract MirrorConfiguration.CertificateCredential map(MirrorConfigurationDto.CertificateCredentialDto credentialDto);
+  private UsernamePasswordCredentialDto usernamePasswordCredential;
+  private CertificateCredentialDto certificateCredential;
 
-  byte[] mapBase64(String base64encoded) {
-    return Base64.getDecoder().decode(base64encoded.replace("\n", ""));
+  MirrorConfigurationDto(Links links) {
+    super(links);
+  }
+
+  @Getter
+  @Setter
+  static class UsernamePasswordCredentialDto {
+    @NotBlank
+    private String username;
+    @NotBlank
+    private String password;
+  }
+
+  @Getter
+  @Setter
+  static class CertificateCredentialDto {
+    @NotBlank
+    private String certificate;
+    private String password;
   }
 }

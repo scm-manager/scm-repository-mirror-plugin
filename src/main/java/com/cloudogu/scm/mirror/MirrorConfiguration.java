@@ -50,7 +50,7 @@ public class MirrorConfiguration {
   @Setter
   @AllArgsConstructor
   @NoArgsConstructor
-  static class UsernamePasswordCredential implements sonia.scm.repository.api.UsernamePasswordCredential {
+  public static class UsernamePasswordCredential implements sonia.scm.repository.api.UsernamePasswordCredential {
     private String username;
     private String password;
 
@@ -69,7 +69,7 @@ public class MirrorConfiguration {
   @Setter
   @AllArgsConstructor
   @NoArgsConstructor
-  static class CertificateCredential {
+  public static class CertificateCredential {
     private byte[] certificate;
     private String password;
   }

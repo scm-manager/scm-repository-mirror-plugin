@@ -22,9 +22,12 @@
  * SOFTWARE.
  */
 
-package com.cloudogu.scm.mirror;
+package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
+import com.cloudogu.scm.mirror.MirrorConfigurationService;
+import com.cloudogu.scm.mirror.MirrorService;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,7 +44,6 @@ import sonia.scm.web.JsonMockHttpResponse;
 import sonia.scm.web.RestDispatcher;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -111,7 +113,7 @@ class MirrorRootResourceTest {
     }
 
     @Test
-    void shouldConfigureBasicAuth() throws URISyntaxException, UnsupportedEncodingException {
+    void shouldConfigureBasicAuth() throws URISyntaxException {
 
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
         .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'type':'git', 'url':'http://hog/git', 'usernamePasswordCredential':{'username':'trillian','password':'hog'}}");
@@ -132,7 +134,7 @@ class MirrorRootResourceTest {
     }
 
     @Test
-    void shouldConfigureCertificateAuth() throws URISyntaxException, UnsupportedEncodingException {
+    void shouldConfigureCertificateAuth() throws URISyntaxException {
 
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
         .json("{'namespace':'hitchhiker', 'name':'heart-of-gold', 'type':'git', 'url':'http://hog/git', 'certificateCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'}}");
@@ -259,6 +261,7 @@ class MirrorRootResourceTest {
   }
 
   @BeforeAll
+  @SuppressWarnings("UnstableApiUsage")
   static void readCertificate() throws IOException {
     CERTIFICATE = toByteArray(getResource("com/cloudogu/scm/mirror/client.pfx"));
   }

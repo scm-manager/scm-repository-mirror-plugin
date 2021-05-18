@@ -22,21 +22,22 @@
  * SOFTWARE.
  */
 
-package com.cloudogu.scm.mirror;
+package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.MirrorConfiguration;
 import org.mapstruct.Mapper;
 
 import java.util.Base64;
 
 @Mapper
-abstract class MirrorConfigurationToConfigurationDtoMapper {
+abstract class MirrorConfigurationDtoToConfigurationMapper {
 
-  abstract MirrorConfigurationDto map(MirrorConfiguration configuration);
+  abstract MirrorConfiguration map(MirrorConfigurationDto configurationDto);
 
-  abstract MirrorConfigurationDto.UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
-  abstract MirrorConfigurationDto.CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
+  abstract MirrorConfiguration.UsernamePasswordCredential map(MirrorConfigurationDto.UsernamePasswordCredentialDto credentialDto);
+  abstract MirrorConfiguration.CertificateCredential map(MirrorConfigurationDto.CertificateCredentialDto credentialDto);
 
-  String mapBase64(byte[] bytes) {
-    return Base64.getEncoder().encodeToString(bytes);
+  byte[] mapBase64(String base64encoded) {
+    return Base64.getDecoder().decode(base64encoded.replace("\n", ""));
   }
 }

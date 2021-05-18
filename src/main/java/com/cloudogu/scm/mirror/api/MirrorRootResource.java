@@ -22,8 +22,10 @@
  * SOFTWARE.
  */
 
-package com.cloudogu.scm.mirror;
+package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.MirrorConfiguration;
+import com.cloudogu.scm.mirror.MirrorService;
 import org.mapstruct.factory.Mappers;
 import sonia.scm.api.v2.resources.RepositoryLinkProvider;
 import sonia.scm.repository.Repository;
