@@ -68,7 +68,7 @@ class MirrorServiceTest {
   @Mock
   private RepositoryServiceFactory repositoryServiceFactory;
   @Mock
-  private MirrorConfigurationService configurationService;
+  private MirrorConfigurationStore configurationService;
 
   @InjectMocks
   private MirrorService service;

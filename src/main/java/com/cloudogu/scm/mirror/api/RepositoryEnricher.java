@@ -24,7 +24,7 @@
 
 package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.MirrorConfigurationService;
+import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorPermissions;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
@@ -43,10 +43,10 @@ import javax.inject.Provider;
 public class RepositoryEnricher implements HalEnricher {
 
   private final Provider<ScmPathInfoStore> scmPathInfoStore;
-  private final MirrorConfigurationService configurationService;
+  private final MirrorConfigurationStore configurationService;
 
   @Inject
-  public RepositoryEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, MirrorConfigurationService configurationService) {
+  public RepositoryEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, MirrorConfigurationStore configurationService) {
     this.scmPathInfoStore = scmPathInfoStore;
     this.configurationService = configurationService;
   }

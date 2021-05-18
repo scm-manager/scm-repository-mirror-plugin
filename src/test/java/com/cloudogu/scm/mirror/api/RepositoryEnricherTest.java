@@ -24,7 +24,7 @@
 
 package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.MirrorConfigurationService;
+import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import de.otto.edison.hal.HalRepresentation;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
@@ -71,7 +71,7 @@ class RepositoryEnricherTest {
   @Mock
   private HalAppender appender;
   @Mock
-  private MirrorConfigurationService configurationService;
+  private MirrorConfigurationStore configurationService;
 
   private RepositoryEnricher enricher;
 

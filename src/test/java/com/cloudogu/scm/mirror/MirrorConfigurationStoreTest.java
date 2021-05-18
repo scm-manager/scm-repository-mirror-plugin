@@ -43,17 +43,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SubjectAware(
   value = "trillian"
 )
-class MirrorConfigurationServiceTest {
+class MirrorConfigurationStoreTest {
 
   public static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
 
-  private MirrorConfigurationService service;
+  private MirrorConfigurationStore store;
   private InMemoryConfigurationStoreFactory storeFactory;
 
   @BeforeEach
   void createService() {
     storeFactory = new InMemoryConfigurationStoreFactory();
-    service = new MirrorConfigurationService(storeFactory);
+    store = new MirrorConfigurationStore(storeFactory);
   }
 
   @BeforeAll
@@ -64,14 +64,14 @@ class MirrorConfigurationServiceTest {
   @Test
   void shouldFailToGetConfigurationWithoutPermission() {
     assertThrows(UnauthorizedException.class,
-      () -> service.getConfiguration(REPOSITORY));
+      () -> store.getConfiguration(REPOSITORY));
   }
 
   @Test
   void shouldFailToSetConfigurationWithoutPermission() {
     MirrorConfiguration configuration = new MirrorConfiguration();
     assertThrows(UnauthorizedException.class,
-      () -> service.setConfiguration(REPOSITORY, configuration));
+      () -> store.setConfiguration(REPOSITORY, configuration));
   }
 
   @Nested
@@ -84,8 +84,8 @@ class MirrorConfigurationServiceTest {
     @Test
     void shouldThrowExceptionForUnknownRepository() {
       assertThrows(
-        MirrorConfigurationService.NotConfiguredForMirrorException.class,
-        () -> service.getConfiguration(REPOSITORY)
+        MirrorConfigurationStore.NotConfiguredForMirrorException.class,
+        () -> store.getConfiguration(REPOSITORY)
       );
     }
 
@@ -94,7 +94,7 @@ class MirrorConfigurationServiceTest {
       MirrorConfiguration existingConfiguration = new MirrorConfiguration();
       mockExistingConfiguration(existingConfiguration);
 
-      MirrorConfiguration configuration = service.getConfiguration(REPOSITORY);
+      MirrorConfiguration configuration = store.getConfiguration(REPOSITORY);
 
       assertThat(configuration).isSameAs(existingConfiguration);
     }
@@ -103,7 +103,7 @@ class MirrorConfigurationServiceTest {
     void shouldSetConfiguration() {
       MirrorConfiguration newConfiguration = new MirrorConfiguration();
 
-      service.setConfiguration(REPOSITORY, newConfiguration);
+      store.setConfiguration(REPOSITORY, newConfiguration);
 
       Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
       assertThat(configurationFromStore).isSameAs(newConfiguration);

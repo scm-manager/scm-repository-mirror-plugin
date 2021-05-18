@@ -26,7 +26,7 @@ package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
-import com.cloudogu.scm.mirror.MirrorConfigurationService;
+import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
@@ -80,11 +80,11 @@ class MirrorRootResourceTest {
   @Mock
   private RepositoryManager repositoryManager;
   @Mock
-  private MirrorConfigurationService configurationService;
+  private MirrorConfigurationStore configurationStore;
 
   @BeforeEach
   void initResource() {
-    MirrorResource mirrorResource = new MirrorResource(configurationService, mirrorService, repositoryManager, forUri("/"));
+    MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, forUri("/"));
     dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService));
   }
 
@@ -197,7 +197,7 @@ class MirrorRootResourceTest {
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(400);
-    verify(configurationService, never()).setConfiguration(any(), any());
+    verify(configurationStore, never()).setConfiguration(any(), any());
   }
 
   @Nested
@@ -221,7 +221,7 @@ class MirrorRootResourceTest {
       dispatcher.invoke(request, response);
 
       assertThat(response.getStatus()).isEqualTo(204);
-      verify(configurationService)
+      verify(configurationStore)
         .setConfiguration(
           eq(repository),
           argThat(configuration -> {
@@ -240,7 +240,7 @@ class MirrorRootResourceTest {
       dispatcher.invoke(request, response);
 
       assertThat(response.getStatus()).isEqualTo(204);
-      verify(configurationService)
+      verify(configurationStore)
         .setConfiguration(
           any(),
           argThat(configuration -> {
@@ -271,7 +271,7 @@ class MirrorRootResourceTest {
             "http://hog/",
             new UsernamePasswordCredential("dent", "hog"),
             new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"));
-        when(configurationService.getConfiguration(repository))
+        when(configurationStore.getConfiguration(repository))
           .thenReturn(existingConfiguration);
       }
 
@@ -301,7 +301,7 @@ class MirrorRootResourceTest {
       void shouldCreateUpdateLinkWithPermission() throws URISyntaxException {
         MirrorConfiguration existingConfiguration =
           new MirrorConfiguration("http://hog/", null, null);
-        when(configurationService.getConfiguration(repository))
+        when(configurationStore.getConfiguration(repository))
           .thenReturn(existingConfiguration);
 
         MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");

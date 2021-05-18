@@ -25,7 +25,7 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfiguration;
-import com.cloudogu.scm.mirror.MirrorConfigurationService;
+import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
 import sonia.scm.NotFoundException;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
@@ -47,7 +47,7 @@ import static org.mapstruct.factory.Mappers.getMapper;
 
 public class MirrorResource {
 
-  private final MirrorConfigurationService configurationService;
+  private final MirrorConfigurationStore configurationService;
   private final MirrorService mirrorService;
   private final RepositoryManager repositoryManager;
 
@@ -55,7 +55,7 @@ public class MirrorResource {
   private final MirrorConfigurationToConfigurationDtoMapper toDtoMapper = getMapper(MirrorConfigurationToConfigurationDtoMapper.class);
 
   @Inject
-  public MirrorResource(MirrorConfigurationService configurationService,
+  public MirrorResource(MirrorConfigurationStore configurationService,
                         MirrorService mirrorService,
                         RepositoryManager repositoryManager,
                         Provider<ScmPathInfoStore> scmPathInfoStore) {

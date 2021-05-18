@@ -51,13 +51,13 @@ public class MirrorService {
 
   private final RepositoryManager manager;
   private final RepositoryServiceFactory repositoryServiceFactory;
-  private final MirrorConfigurationService configurationService;
+  private final MirrorConfigurationStore configurationStore;
 
   @Inject
-  MirrorService(RepositoryManager manager, RepositoryServiceFactory repositoryServiceFactory, MirrorConfigurationService configurationService) {
+  MirrorService(RepositoryManager manager, RepositoryServiceFactory repositoryServiceFactory, MirrorConfigurationStore configurationStore) {
     this.manager = manager;
     this.repositoryServiceFactory = repositoryServiceFactory;
-    this.configurationService = configurationService;
+    this.configurationStore = configurationStore;
   }
 
   public Repository createMirror(MirrorConfiguration configuration, Repository repository) {
@@ -78,14 +78,14 @@ public class MirrorService {
 
   public void updateMirror(Repository repository) {
     MirrorPermissions.checkMirrorPermission(repository);
-    MirrorConfiguration configuration = configurationService.getConfiguration(repository);
+    MirrorConfiguration configuration = configurationStore.getConfiguration(repository);
     withMirrorCommandDo(repository, configuration, MirrorCommandBuilder::update);
   }
 
   private Consumer<Repository> createMirrorCallback(MirrorConfiguration configuration) {
     return repository -> {
       withMirrorCommandDo(repository, configuration, MirrorCommandBuilder::initialCall);
-      configurationService.setConfiguration(repository, configuration);
+      configurationStore.setConfiguration(repository, configuration);
     };
   }
 

@@ -33,14 +33,14 @@ import javax.inject.Inject;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
-public class MirrorConfigurationService {
+public class MirrorConfigurationStore {
 
   private static final String STORE_NAME = "mirror";
 
   private final ConfigurationStoreFactory storeFactory;
 
   @Inject
-  MirrorConfigurationService(ConfigurationStoreFactory storeFactory) {
+  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory) {
     this.storeFactory = storeFactory;
   }
 
