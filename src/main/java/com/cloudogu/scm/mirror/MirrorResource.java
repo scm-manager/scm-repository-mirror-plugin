@@ -26,6 +26,7 @@ package com.cloudogu.scm.mirror;
 
 import org.mapstruct.factory.Mappers;
 
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -55,7 +56,9 @@ public class MirrorResource {
   @POST
   @Path("/configuration")
   @Consumes("application/json")
-  public void setMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, MirrorConfigurationDto configurationDto) {
+  public void setMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid MirrorConfigurationDto configurationDto) {
+    MirrorConfiguration configuration = fromDtoMapper.map(configurationDto);
+    configurationService.setConfiguration(namespace, name, configuration);
   }
 
   @POST

@@ -50,11 +50,7 @@ class MirrorConfigurationService {
   }
 
   MirrorConfiguration getConfiguration(String namespace, String name) {
-    NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
-    Repository repository = repositoryManager.get(namespaceAndName);
-    if (repository == null) {
-      throw new NotFoundException(Repository.class, namespaceAndName.toString());
-    }
+    Repository repository = loadRepository(namespace, name);
     return getConfiguration(repository);
   }
 
@@ -62,6 +58,11 @@ class MirrorConfigurationService {
     return createConfigurationStore(repository)
       .getOptional()
       .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
+  }
+
+  void setConfiguration(String namespace, String name, MirrorConfiguration configuration) {
+    Repository repository = loadRepository(namespace, name);
+    setConfiguration(repository, configuration);
   }
 
   void setConfiguration(Repository repository, MirrorConfiguration configuration) {
@@ -72,6 +73,15 @@ class MirrorConfigurationService {
     return createConfigurationStore(repository)
       .getOptional()
       .isPresent();
+  }
+
+  private Repository loadRepository(String namespace, String name) {
+    NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
+    Repository repository = repositoryManager.get(namespaceAndName);
+    if (repository == null) {
+      throw new NotFoundException(Repository.class, namespaceAndName.toString());
+    }
+    return repository;
   }
 
   private ConfigurationStore<MirrorConfiguration> createConfigurationStore(Repository repository) {

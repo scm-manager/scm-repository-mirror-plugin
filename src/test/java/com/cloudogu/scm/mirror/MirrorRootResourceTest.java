@@ -53,6 +53,8 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -187,6 +189,72 @@ class MirrorRootResourceTest {
       assertThat(configurationDto.getUsernamePasswordCredential().getPassword()).isEqualTo("hog");
       assertThat(configurationDto.getCertificateCredential().getCertificate()).isEqualTo(BASE64_ENCODED_CERTIFICATE.replace("\\n", ""));
       assertThat(configurationDto.getCertificateCredential().getPassword()).isEqualTo("hg2g");
+    }
+
+    @Test
+    void shouldValidateNewConfiguration() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest
+        .post("/v2/mirror/repositories/hitchhiker/heart-of-gold/configuration")
+        .json("{}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(400);
+      verify(configurationService, never()).setConfiguration(any(), any(), any());
+    }
+
+    @Test
+    void shouldSetUrlInConfiguration() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest
+        .post("/v2/mirror/repositories/hitchhiker/heart-of-gold/configuration")
+        .json("{'url':'http://hog/scm'}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(204);
+      verify(configurationService)
+        .setConfiguration(
+          eq("hitchhiker"),
+          eq("heart-of-gold"),
+          argThat(configuration -> {
+            assertThat(configuration.getUrl()).isEqualTo("http://hog/scm");
+            return true;
+          }));
+    }
+
+    @Test
+    void shouldSetUsernamePasswordCredentialInConfiguration() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest
+        .post("/v2/mirror/repositories/hitchhiker/heart-of-gold/configuration")
+        .json("{'url':'http://hog/scm', 'usernamePasswordCredential':{'username':'dent', 'password':'hg2g'}}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(204);
+      verify(configurationService)
+        .setConfiguration(
+          any(),
+          any(),
+          argThat(configuration -> {
+            assertThat(configuration.getUsernamePasswordCredential().getUsername()).isEqualTo("dent");
+            assertThat(configuration.getUsernamePasswordCredential().getPassword()).isEqualTo("hg2g");
+            return true;
+          }));
+    }
+
+    @Test
+    void shouldTriggerSync() throws URISyntaxException {
+      MockHttpRequest request = MockHttpRequest
+        .post("/v2/mirror/repositories/hitchhiker/heart-of-gold/sync");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(204);
+      verify(mirrorService).updateMirror("hitchhiker", "heart-of-gold");
     }
   }
 
