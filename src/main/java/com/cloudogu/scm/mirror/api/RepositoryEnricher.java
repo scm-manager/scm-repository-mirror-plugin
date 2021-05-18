@@ -25,6 +25,7 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfigurationService;
+import com.cloudogu.scm.mirror.MirrorPermissions;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
@@ -33,7 +34,6 @@ import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -54,13 +54,17 @@ public class RepositoryEnricher implements HalEnricher {
   @Override
   public void enrich(HalEnricherContext context, HalAppender appender) {
     Repository repository = context.oneRequireByType(Repository.class);
-    if (RepositoryPermissions.custom("configureMirror", repository).isPermitted()
+    if (MirrorPermissions.hasMirrorPermission(repository)
       && configurationService.hasConfiguration(repository)) {
-      String createUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
-        .method("repository").parameters(repository.getNamespace(), repository.getName())
-        .method("getMirrorConfiguration").parameters()
-        .href();
-      appender.appendLink("mirrorConfiguration", createUrl);
+      appendConfigurationLink(appender, repository);
     }
+  }
+
+  private void appendConfigurationLink(HalAppender appender, Repository repository) {
+    String createUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
+      .method("repository").parameters(repository.getNamespace(), repository.getName())
+      .method("getMirrorConfiguration").parameters()
+      .href();
+    appender.appendLink("mirrorConfiguration", createUrl);
   }
 }

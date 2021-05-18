@@ -29,7 +29,6 @@ import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
-import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
@@ -52,7 +51,7 @@ public class MirrorConfigurationService {
 
   public MirrorConfiguration getConfiguration(String namespace, String name) {
     Repository repository = loadRepository(namespace, name);
-    RepositoryPermissions.custom("configureMirror", repository).check();
+    MirrorPermissions.checkMirrorPermission(repository);
     return getConfiguration(repository);
   }
 
@@ -64,7 +63,7 @@ public class MirrorConfigurationService {
 
   public void setConfiguration(String namespace, String name, MirrorConfiguration configuration) {
     Repository repository = loadRepository(namespace, name);
-    RepositoryPermissions.custom("configureMirror", repository).check();
+    MirrorPermissions.checkMirrorPermission(repository);
     setConfiguration(repository, configuration);
   }
 

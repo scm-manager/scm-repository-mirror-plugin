@@ -25,7 +25,9 @@
 package com.cloudogu.scm.mirror.api;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.repository.RepositoryType;
@@ -36,11 +38,11 @@ import javax.inject.Provider;
 
 import static java.util.Collections.singleton;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static sonia.scm.api.v2.resources.HalEnricherContext.of;
 
+@ExtendWith(MockitoExtension.class)
 class RepositoryTypeEnricherTest {
 
   private final Provider<ScmPathInfoStore> scmPathInfoStore = MockScmPathInfoStore.forUri("/");
