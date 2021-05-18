@@ -31,6 +31,9 @@ import lombok.NoArgsConstructor;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -39,11 +42,14 @@ import static java.util.Optional.ofNullable;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "mirror-status")
 public class MirrorStatus {
 
   private Result result;
+  @XmlJavaTypeAdapter(InstantAdapter.class)
   private Instant started = Instant.now();
   @Nullable
+  @XmlJavaTypeAdapter(InstantAdapter.class)
   private Instant ended;
 
   public MirrorStatus(Result result) {
@@ -62,5 +68,17 @@ public class MirrorStatus {
     SUCCESS,
     FAILED,
     NOT_YET_RUN
+  }
+
+  private static class InstantAdapter extends XmlAdapter<Long, Instant> {
+    @Override
+    public Instant unmarshal(Long v) throws Exception {
+      return Instant.ofEpochMilli(v);
+    }
+
+    @Override
+    public Long marshal(Instant v) throws Exception {
+      return v.getEpochSecond();
+    }
   }
 }

@@ -26,6 +26,8 @@ package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorPermissions;
+import com.cloudogu.scm.mirror.MirrorStatus;
+import com.cloudogu.scm.mirror.MirrorStatusStore;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
@@ -44,26 +46,29 @@ public class RepositoryEnricher implements HalEnricher {
 
   private final Provider<ScmPathInfoStore> scmPathInfoStore;
   private final MirrorConfigurationStore configurationService;
+  private final MirrorStatusStore statusStore;
 
   @Inject
-  public RepositoryEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, MirrorConfigurationStore configurationService) {
+  public RepositoryEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, MirrorConfigurationStore configurationService, MirrorStatusStore statusStore) {
     this.scmPathInfoStore = scmPathInfoStore;
     this.configurationService = configurationService;
+    this.statusStore = statusStore;
   }
 
   @Override
   public void enrich(HalEnricherContext context, HalAppender appender) {
     Repository repository = context.oneRequireByType(Repository.class);
     if (configurationService.hasConfiguration(repository)) {
-      appendStatusEmbedded(appender);
+      appendStatusEmbedded(appender, repository);
       if (MirrorPermissions.hasMirrorPermission(repository)) {
         appendConfigurationLink(appender, repository);
       }
     }
   }
 
-  private void appendStatusEmbedded(HalAppender appender) {
-    appender.appendEmbedded("mirrorStatus", new MirrorStatusDto(true));
+  private void appendStatusEmbedded(HalAppender appender, Repository repository) {
+    MirrorStatus status = statusStore.getStatus(repository);
+    appender.appendEmbedded("mirrorStatus", new MirrorStatusDto(status.getResult()));
   }
 
   private void appendConfigurationLink(HalAppender appender, Repository repository) {

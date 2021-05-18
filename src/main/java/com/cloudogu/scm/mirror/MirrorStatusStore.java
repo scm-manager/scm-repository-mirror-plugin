@@ -30,7 +30,7 @@ import sonia.scm.store.DataStoreFactory;
 
 import javax.inject.Inject;
 
-class MirrorStatusStore {
+public class MirrorStatusStore {
 
   private static final String STORE_ID = "status";
 
@@ -45,7 +45,7 @@ class MirrorStatusStore {
     createStore(repository).put(STORE_ID, status);
   }
 
-  MirrorStatus getStatus(Repository repository) {
+  public MirrorStatus getStatus(Repository repository) {
     return createStore(repository).get(STORE_ID);
   }
 

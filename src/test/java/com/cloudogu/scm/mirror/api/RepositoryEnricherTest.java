@@ -25,7 +25,10 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
+import com.cloudogu.scm.mirror.MirrorStatus;
+import com.cloudogu.scm.mirror.MirrorStatusStore;
 import de.otto.edison.hal.HalRepresentation;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +46,7 @@ import sonia.scm.web.MockScmPathInfoStore;
 
 import javax.inject.Provider;
 
+import static com.cloudogu.scm.mirror.MirrorStatus.Result.SUCCESS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.BOOLEAN;
 import static org.mockito.ArgumentMatchers.any;
@@ -72,18 +76,21 @@ class RepositoryEnricherTest {
   private HalAppender appender;
   @Mock
   private MirrorConfigurationStore configurationService;
+  @Mock
+  private MirrorStatusStore statusStore;
 
   private RepositoryEnricher enricher;
 
   @BeforeEach
   void createEnricher() {
-    enricher = new RepositoryEnricher(scmPathInfoStore, configurationService);
+    enricher = new RepositoryEnricher(scmPathInfoStore, configurationService, statusStore);
   }
 
   @Test
   void shouldNotAppendLinkForRepositoryWithoutPermission() {
     HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
     lenient().when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(true);
+    when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
     enricher.enrich(context, appender);
 
@@ -94,13 +101,14 @@ class RepositoryEnricherTest {
   void shouldAppendStatusAsEmbeddedForMirrorRepository() {
     HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
     lenient().when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(true);
+    when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
     enricher.enrich(context, appender);
 
     verify(appender).appendEmbedded(
       eq("mirrorStatus"),
       (HalRepresentation) argThat(status -> {
-        assertThat(status).extracting("successful").asInstanceOf(BOOLEAN).isTrue();
+        assertThat(status).extracting("result").asInstanceOf(InstanceOfAssertFactories.type(MirrorStatus.Result.class)).isEqualTo(SUCCESS);
         return true;
       })
     );
@@ -137,6 +145,7 @@ class RepositoryEnricherTest {
     void shouldAppendLinkForRepositoryThatIsAMirror() {
       HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
       when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(true);
+      when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
       enricher.enrich(context, appender);
 
