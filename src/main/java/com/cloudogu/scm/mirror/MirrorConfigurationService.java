@@ -29,6 +29,7 @@ import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
+import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
@@ -51,6 +52,7 @@ class MirrorConfigurationService {
 
   MirrorConfiguration getConfiguration(String namespace, String name) {
     Repository repository = loadRepository(namespace, name);
+    RepositoryPermissions.custom("configureMirror", repository).check();
     return getConfiguration(repository);
   }
 
@@ -62,6 +64,7 @@ class MirrorConfigurationService {
 
   void setConfiguration(String namespace, String name, MirrorConfiguration configuration) {
     Repository repository = loadRepository(namespace, name);
+    RepositoryPermissions.custom("configureMirror", repository).check();
     setConfiguration(repository, configuration);
   }
 
@@ -91,6 +94,7 @@ class MirrorConfigurationService {
       .forRepository(repository).build();
   }
 
+  @SuppressWarnings("java:S110") // We accept deep hierarchy for exceptions
   static class NotConfiguredForMirrorException extends BadRequestException {
 
     public NotConfiguredForMirrorException(Repository repository) {
