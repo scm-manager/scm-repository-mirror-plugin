@@ -51,12 +51,14 @@ import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
+import static com.cloudogu.scm.mirror.MirrorStatus.Result.NOT_YET_RUN;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -73,6 +75,8 @@ class MirrorServiceTest {
   private RepositoryServiceFactory repositoryServiceFactory;
   @Mock
   private MirrorConfigurationStore configurationService;
+  @Mock
+  private MirrorStatusStore statusStore;
 
   private MirrorWorker mirrorWorker;
 
@@ -88,7 +92,7 @@ class MirrorServiceTest {
       return null;
     }).when(executor).submit(any(Runnable.class));
     mirrorWorker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor);
-    service = new MirrorService(manager, configurationService, mirrorWorker);
+    service = new MirrorService(manager, configurationService, mirrorWorker, statusStore);
   }
 
   @Test
@@ -176,6 +180,12 @@ class MirrorServiceTest {
           assertThat(mirrorCommandRequest.getSourceUrl()).isEqualTo("http://hog/");
           return true;
         }));
+        verify(statusStore).setStatus(eq(repository), argThat(
+          status -> {
+            assertThat(status.getResult()).isSameAs(NOT_YET_RUN);
+            return true;
+          }
+        ));
       }
 
       @Test

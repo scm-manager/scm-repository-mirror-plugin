@@ -46,12 +46,17 @@ public class MirrorService {
   private final RepositoryManager manager;
   private final MirrorConfigurationStore configurationStore;
   private final MirrorWorker mirrorWorker;
+  private final MirrorStatusStore statusStore;
 
   @Inject
-  MirrorService(RepositoryManager manager, MirrorConfigurationStore configurationStore, MirrorWorker mirrorWorker) {
+  MirrorService(RepositoryManager manager,
+                MirrorConfigurationStore configurationStore,
+                MirrorWorker mirrorWorker,
+                MirrorStatusStore statusStore) {
     this.manager = manager;
     this.mirrorWorker = mirrorWorker;
     this.configurationStore = configurationStore;
+    this.statusStore = statusStore;
   }
 
   public Repository createMirror(MirrorConfiguration configuration, Repository repository) {
@@ -78,8 +83,9 @@ public class MirrorService {
 
   private Consumer<Repository> createMirrorCallback(MirrorConfiguration configuration) {
     return repository -> {
-      mirrorWorker.withMirrorCommandDo(repository, configuration, MirrorCommandBuilder::initialCall);
       configurationStore.setConfiguration(repository, configuration);
+      statusStore.setStatus(repository, MirrorStatus.initialStatus());
+      mirrorWorker.withMirrorCommandDo(repository, configuration, MirrorCommandBuilder::initialCall);
     };
   }
 
