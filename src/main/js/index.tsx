@@ -28,7 +28,7 @@ import MirrorRepositoryCreator from "./MirrorRepositoryCreator";
 binder.bind<extensionPoints.RepositoryCreator>("repos.creator", {
   subtitle: "scm-repository-mirror-plugin.create.subtitle",
   path: "mirror",
-  icon: "sync",
+  icon: "copy",
   label: "scm-repository-mirror-plugin.repositoryForm.createButton",
   component: MirrorRepositoryCreator
 });
