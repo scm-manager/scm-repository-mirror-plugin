@@ -33,6 +33,7 @@ import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermissions;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -53,7 +54,8 @@ public class RepositoryEnricher implements HalEnricher {
   @Override
   public void enrich(HalEnricherContext context, HalAppender appender) {
     Repository repository = context.oneRequireByType(Repository.class);
-    if (configurationService.hasConfiguration(repository)) {
+    if (RepositoryPermissions.custom("configureMirror", repository).isPermitted()
+      && configurationService.hasConfiguration(repository)) {
       String createUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
         .method("repository").parameters(repository.getNamespace(), repository.getName())
         .method("getMirrorConfiguration").parameters()
