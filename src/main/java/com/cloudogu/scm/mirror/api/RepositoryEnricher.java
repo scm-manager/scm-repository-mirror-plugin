@@ -61,10 +61,10 @@ public class RepositoryEnricher implements HalEnricher {
   }
 
   private void appendConfigurationLink(HalAppender appender, Repository repository) {
-    String createUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
+    String configurationUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
       .method("repository").parameters(repository.getNamespace(), repository.getName())
       .method("getMirrorConfiguration").parameters()
       .href();
-    appender.appendLink("mirrorConfiguration", createUrl);
+    appender.appendLink("mirrorConfiguration", configurationUrl);
   }
 }

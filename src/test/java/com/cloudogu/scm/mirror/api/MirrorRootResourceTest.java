@@ -59,6 +59,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static sonia.scm.web.MockScmPathInfoStore.forUri;
 
 @ExtendWith(MockitoExtension.class)
 class MirrorRootResourceTest {
@@ -74,7 +75,8 @@ class MirrorRootResourceTest {
 
   @BeforeEach
   void initResource() {
-    dispatcher.addSingletonResource(new MirrorRootResource(of(new MirrorResource(configurationService, mirrorService)), repositoryLinkProvider, mirrorService));
+    MirrorResource mirrorResource = new MirrorResource(configurationService, mirrorService, forUri("/"));
+    dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService));
   }
 
   @Nested
@@ -191,6 +193,8 @@ class MirrorRootResourceTest {
       assertThat(configurationDto.getUsernamePasswordCredential().getPassword()).isEqualTo("hog");
       assertThat(configurationDto.getCertificateCredential().getCertificate()).isEqualTo(BASE64_ENCODED_CERTIFICATE.replace("\\n", ""));
       assertThat(configurationDto.getCertificateCredential().getPassword()).isEqualTo("hg2g");
+      assertThat(configurationDto.getLinks().getLinkBy("self")).get().extracting("href")
+        .isEqualTo("/v2/mirror/repositories/hitchhiker/heart-of-gold/configuration");
     }
 
     @Test

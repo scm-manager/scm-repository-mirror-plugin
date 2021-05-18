@@ -25,17 +25,37 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfiguration;
+import de.otto.edison.hal.Links;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
+import org.mapstruct.ObjectFactory;
+import sonia.scm.api.v2.resources.LinkBuilder;
+import sonia.scm.api.v2.resources.ScmPathInfoStore;
+import sonia.scm.repository.NamespaceAndName;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import java.util.Base64;
 
 @Mapper
 abstract class MirrorConfigurationToConfigurationDtoMapper {
 
-  abstract MirrorConfigurationDto map(MirrorConfiguration configuration);
+  @Inject
+  Provider<ScmPathInfoStore> scmPathInfoStore;
+
+  abstract MirrorConfigurationDto map(MirrorConfiguration configuration, @Context NamespaceAndName namespaceAndName);
 
   abstract MirrorConfigurationDto.UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
   abstract MirrorConfigurationDto.CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
+
+  @ObjectFactory
+  MirrorConfigurationDto createConfigurationDto(@Context NamespaceAndName namespaceAndName) {
+    String configurationUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
+      .method("repository").parameters(namespaceAndName.getNamespace(), namespaceAndName.getName())
+      .method("getMirrorConfiguration").parameters()
+      .href();
+    return new MirrorConfigurationDto(Links.linkingTo().self(configurationUrl).build());
+  }
 
   String mapBase64(byte[] bytes) {
     return Base64.getEncoder().encodeToString(bytes);

@@ -27,8 +27,11 @@ package com.cloudogu.scm.mirror.api;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationService;
 import com.cloudogu.scm.mirror.MirrorService;
-import org.mapstruct.factory.Mappers;
+import sonia.scm.api.v2.resources.ScmPathInfoStore;
+import sonia.scm.repository.NamespaceAndName;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -37,23 +40,31 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import static org.mapstruct.factory.Mappers.getMapper;
+
 public class MirrorResource {
 
   private final MirrorConfigurationService configurationService;
   private final MirrorService mirrorService;
-  private final MirrorConfigurationDtoToConfigurationMapper fromDtoMapper = Mappers.getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
-  private final MirrorConfigurationToConfigurationDtoMapper toDtoMapper = Mappers.getMapper(MirrorConfigurationToConfigurationDtoMapper.class);
+  private final MirrorConfigurationDtoToConfigurationMapper fromDtoMapper = getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
+  private final MirrorConfigurationToConfigurationDtoMapper toDtoMapper = getMapper(MirrorConfigurationToConfigurationDtoMapper.class);
 
-  public MirrorResource(MirrorConfigurationService configurationService, MirrorService mirrorService) {
+  @Inject
+  public MirrorResource(
+    MirrorConfigurationService configurationService,
+    MirrorService mirrorService,
+    Provider<ScmPathInfoStore> scmPathInfoStore
+  ) {
     this.configurationService = configurationService;
     this.mirrorService = mirrorService;
+    toDtoMapper.scmPathInfoStore = scmPathInfoStore;
   }
 
   @GET
   @Path("/configuration")
   @Produces("application/json")
   public MirrorConfigurationDto getMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name) {
-    return toDtoMapper.map(configurationService.getConfiguration(namespace, name));
+    return toDtoMapper.map(configurationService.getConfiguration(namespace, name), new NamespaceAndName(namespace, name));
   }
 
   @POST
