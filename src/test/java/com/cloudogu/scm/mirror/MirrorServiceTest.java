@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.shiro.authz.AuthorizationException;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
@@ -47,6 +48,7 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.repository.spi.MirrorCommand;
 
 import java.util.Collection;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 import static java.util.Collections.emptySet;
@@ -55,6 +57,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
@@ -70,10 +74,22 @@ class MirrorServiceTest {
   @Mock
   private MirrorConfigurationStore configurationService;
 
-  @InjectMocks
+  private MirrorWorker mirrorWorker;
+
   private MirrorService service;
 
   private final Repository repository = createHeartOfGold("git");
+
+  @BeforeEach
+  void createService() {
+    ExecutorService executor = mock(ExecutorService.class);
+    lenient().doAnswer(invocation -> {
+      invocation.getArgument(0, Runnable.class).run();
+      return null;
+    }).when(executor).submit(any(Runnable.class));
+    mirrorWorker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor);
+    service = new MirrorService(manager, configurationService, mirrorWorker);
+  }
 
   @Test
   void shouldFailToCreateWithoutPermission() {
