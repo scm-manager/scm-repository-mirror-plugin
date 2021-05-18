@@ -32,26 +32,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import sonia.scm.NotFoundException;
-import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.InMemoryConfigurationStoreFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(ShiroExtension.class)
+@SubjectAware(
+  value = "trillian"
+)
 class MirrorConfigurationServiceTest {
 
   public static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
-
-  @Mock
-  private RepositoryManager repositoryManager;
 
   private MirrorConfigurationService service;
   private InMemoryConfigurationStoreFactory storeFactory;
@@ -59,7 +53,7 @@ class MirrorConfigurationServiceTest {
   @BeforeEach
   void createService() {
     storeFactory = new InMemoryConfigurationStoreFactory();
-    service = new MirrorConfigurationService(repositoryManager, storeFactory);
+    service = new MirrorConfigurationService(storeFactory);
   }
 
   @BeforeAll
@@ -68,98 +62,51 @@ class MirrorConfigurationServiceTest {
   }
 
   @Test
-  void shouldThrowExceptionForUnknownRepository() {
-    assertThrows(
-      MirrorConfigurationService.NotConfiguredForMirrorException.class,
-      () -> service.getConfiguration(REPOSITORY)
-    );
+  void shouldFailToGetConfigurationWithoutPermission() {
+    assertThrows(UnauthorizedException.class,
+      () -> service.getConfiguration(REPOSITORY));
   }
 
   @Test
-  void shouldReturnExistingConfiguration() {
-    MirrorConfiguration existingConfiguration = new MirrorConfiguration();
-    mockExistingConfiguration(existingConfiguration);
-
-    MirrorConfiguration configuration = service.getConfiguration(REPOSITORY);
-
-    assertThat(configuration).isSameAs(existingConfiguration);
-  }
-
-  @Test
-  void shouldStoreConfiguration() {
-    MirrorConfiguration newConfiguration = new MirrorConfiguration();
-
-    service.setConfiguration(REPOSITORY, newConfiguration);
-
-    Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
-    assertThat(configurationFromStore).isSameAs(newConfiguration);
-  }
-
-  @Test
-  void shouldFailToGetConfigurationForMissingRepository() {
-    assertThrows(NotFoundException.class,
-      () -> service.getConfiguration("no-such", "repository"));
-  }
-
-  @Test
-  void shouldFailToSetConfigurationForMissingRepository() {
+  void shouldFailToSetConfigurationWithoutPermission() {
     MirrorConfiguration configuration = new MirrorConfiguration();
-    assertThrows(NotFoundException.class,
-      () -> service.setConfiguration("no-such", "repository", configuration));
+    assertThrows(UnauthorizedException.class,
+      () -> service.setConfiguration(REPOSITORY, configuration));
   }
 
   @Nested
-  @ExtendWith(ShiroExtension.class)
   @SubjectAware(
-    value = "trillian"
+    value = "trillian",
+    permissions = "repository:configureMirror:42"
   )
-  class WithPermissionChecks {
+  class WithPermission {
 
-    @BeforeEach
-    void mockExistingRepository() {
-      when(repositoryManager.get(new NamespaceAndName("hitchhiker", "heart-of-gold")))
-        .thenReturn(REPOSITORY);
+    @Test
+    void shouldThrowExceptionForUnknownRepository() {
+      assertThrows(
+        MirrorConfigurationService.NotConfiguredForMirrorException.class,
+        () -> service.getConfiguration(REPOSITORY)
+      );
     }
 
     @Test
-    void shouldFailToGetConfigurationWithoutPermission() {
-      assertThrows(UnauthorizedException.class,
-        () -> service.getConfiguration("hitchhiker", "heart-of-gold"));
+    void shouldGetConfiguration() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      mockExistingConfiguration(existingConfiguration);
+
+      MirrorConfiguration configuration = service.getConfiguration(REPOSITORY);
+
+      assertThat(configuration).isSameAs(existingConfiguration);
     }
 
     @Test
-    void shouldFailToSetConfigurationWithoutPermission() {
-      MirrorConfiguration configuration = new MirrorConfiguration();
-      assertThrows(UnauthorizedException.class,
-        () -> service.setConfiguration("hitchhiker", "heart-of-gold", configuration));
-    }
+    void shouldSetConfiguration() {
+      MirrorConfiguration newConfiguration = new MirrorConfiguration();
 
-    @Nested
-    @SubjectAware(
-      value = "trillian",
-      permissions = "repository:configureMirror:42"
-    )
-    class WithPermission {
+      service.setConfiguration(REPOSITORY, newConfiguration);
 
-      @Test
-      void shouldGetConfiguration() {
-        MirrorConfiguration existingConfiguration = new MirrorConfiguration();
-        mockExistingConfiguration(existingConfiguration);
-
-        MirrorConfiguration configuration = service.getConfiguration("hitchhiker", "heart-of-gold");
-
-        assertThat(configuration).isSameAs(existingConfiguration);
-      }
-
-      @Test
-      void shouldSetConfiguration() {
-        MirrorConfiguration newConfiguration = new MirrorConfiguration();
-
-        service.setConfiguration("hitchhiker", "heart-of-gold", newConfiguration);
-
-        Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
-        assertThat(configurationFromStore).isSameAs(newConfiguration);
-      }
+      Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
+      assertThat(configurationFromStore).isSameAs(newConfiguration);
     }
   }
 

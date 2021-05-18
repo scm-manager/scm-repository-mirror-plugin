@@ -27,8 +27,11 @@ package com.cloudogu.scm.mirror.api;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationService;
 import com.cloudogu.scm.mirror.MirrorService;
+import sonia.scm.NotFoundException;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryManager;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -46,17 +49,19 @@ public class MirrorResource {
 
   private final MirrorConfigurationService configurationService;
   private final MirrorService mirrorService;
+  private final RepositoryManager repositoryManager;
+
   private final MirrorConfigurationDtoToConfigurationMapper fromDtoMapper = getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
   private final MirrorConfigurationToConfigurationDtoMapper toDtoMapper = getMapper(MirrorConfigurationToConfigurationDtoMapper.class);
 
   @Inject
-  public MirrorResource(
-    MirrorConfigurationService configurationService,
-    MirrorService mirrorService,
-    Provider<ScmPathInfoStore> scmPathInfoStore
-  ) {
+  public MirrorResource(MirrorConfigurationService configurationService,
+                        MirrorService mirrorService,
+                        RepositoryManager repositoryManager,
+                        Provider<ScmPathInfoStore> scmPathInfoStore) {
     this.configurationService = configurationService;
     this.mirrorService = mirrorService;
+    this.repositoryManager = repositoryManager;
     toDtoMapper.scmPathInfoStore = scmPathInfoStore;
   }
 
@@ -64,7 +69,8 @@ public class MirrorResource {
   @Path("/configuration")
   @Produces("application/json")
   public MirrorConfigurationDto getMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name) {
-    return toDtoMapper.map(configurationService.getConfiguration(namespace, name), new NamespaceAndName(namespace, name));
+    Repository repository = loadRepository(namespace, name);
+    return toDtoMapper.map(configurationService.getConfiguration(repository), repository);
   }
 
   @POST
@@ -72,12 +78,22 @@ public class MirrorResource {
   @Consumes("application/json")
   public void setMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid MirrorConfigurationDto configurationDto) {
     MirrorConfiguration configuration = fromDtoMapper.map(configurationDto);
-    configurationService.setConfiguration(namespace, name, configuration);
+    Repository repository = loadRepository(namespace, name);
+    configurationService.setConfiguration(repository, configuration);
   }
 
   @POST
   @Path("/sync")
   public void syncMirror(@PathParam("namespace") String namespace, @PathParam("name") String name) {
-    mirrorService.updateMirror(namespace, name);
+    mirrorService.updateMirror(loadRepository(namespace, name));
+  }
+
+  private Repository loadRepository(String namespace, String name) {
+    NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
+    Repository repository = repositoryManager.get(namespaceAndName);
+    if (repository == null) {
+      throw new NotFoundException(Repository.class, namespaceAndName.toString());
+    }
+    return repository;
   }
 }

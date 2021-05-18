@@ -76,10 +76,15 @@ class MirrorServiceTest {
   private final Repository repository = createHeartOfGold("git");
 
   @Test
-  void shouldFailWithoutPermission() {
+  void shouldFailToCreateWithoutPermission() {
     MirrorConfiguration configuration = createConfiguration();
 
     assertThrows(AuthorizationException.class, () -> service.createMirror(configuration, repository));
+  }
+
+  @Test
+  void shouldFailToSyncMirrorWithoutPermission() {
+    assertThrows(AuthorizationException.class, () -> service.updateMirror(repository));
   }
 
   @Nested
@@ -116,6 +121,7 @@ class MirrorServiceTest {
       private MirrorCommandBuilder mirrorCommandBuilder;
 
       @BeforeEach
+      @SuppressWarnings("unchecked")
       void supportMirrorCommand() {
         when(handler.getType()).thenReturn(new RepositoryType("git", "Git", singleton(Command.MIRROR)));
         when(manager.create(any(), any())).thenAnswer(

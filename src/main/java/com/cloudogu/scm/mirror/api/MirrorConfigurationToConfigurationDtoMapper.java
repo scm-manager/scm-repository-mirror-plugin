@@ -25,17 +25,20 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfiguration;
+import com.cloudogu.scm.mirror.MirrorPermissions;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
-import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.Base64;
+
+import static de.otto.edison.hal.Link.link;
 
 @Mapper
 abstract class MirrorConfigurationToConfigurationDtoMapper {
@@ -43,18 +46,26 @@ abstract class MirrorConfigurationToConfigurationDtoMapper {
   @Inject
   Provider<ScmPathInfoStore> scmPathInfoStore;
 
-  abstract MirrorConfigurationDto map(MirrorConfiguration configuration, @Context NamespaceAndName namespaceAndName);
+  abstract MirrorConfigurationDto map(MirrorConfiguration configuration, @Context Repository repository);
 
   abstract MirrorConfigurationDto.UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
   abstract MirrorConfigurationDto.CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
 
   @ObjectFactory
-  MirrorConfigurationDto createConfigurationDto(@Context NamespaceAndName namespaceAndName) {
+  MirrorConfigurationDto createConfigurationDto(@Context Repository repository) {
     String configurationUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
-      .method("repository").parameters(namespaceAndName.getNamespace(), namespaceAndName.getName())
+      .method("repository").parameters(repository.getNamespace(), repository.getName())
       .method("getMirrorConfiguration").parameters()
       .href();
-    return new MirrorConfigurationDto(Links.linkingTo().self(configurationUrl).build());
+    return new MirrorConfigurationDto(createLinks(configurationUrl, repository));
+  }
+
+  private Links createLinks(String configurationUrl, Repository repository) {
+    Links.Builder builder = Links.linkingTo().self(configurationUrl);
+    if (MirrorPermissions.hasMirrorPermission(repository)) {
+      builder.single(link("update", configurationUrl));
+    }
+    return builder.build();
   }
 
   String mapBase64(byte[] bytes) {

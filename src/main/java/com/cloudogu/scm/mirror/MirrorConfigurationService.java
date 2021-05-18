@@ -25,10 +25,7 @@
 package com.cloudogu.scm.mirror;
 
 import sonia.scm.BadRequestException;
-import sonia.scm.NotFoundException;
-import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryManager;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
@@ -40,34 +37,22 @@ public class MirrorConfigurationService {
 
   private static final String STORE_NAME = "mirror";
 
-  private final RepositoryManager repositoryManager;
   private final ConfigurationStoreFactory storeFactory;
 
   @Inject
-  MirrorConfigurationService(RepositoryManager repositoryManager, ConfigurationStoreFactory storeFactory) {
-    this.repositoryManager = repositoryManager;
+  MirrorConfigurationService(ConfigurationStoreFactory storeFactory) {
     this.storeFactory = storeFactory;
   }
 
-  public MirrorConfiguration getConfiguration(String namespace, String name) {
-    Repository repository = loadRepository(namespace, name);
+  public MirrorConfiguration getConfiguration(Repository repository) {
     MirrorPermissions.checkMirrorPermission(repository);
-    return getConfiguration(repository);
-  }
-
-  MirrorConfiguration getConfiguration(Repository repository) {
     return createConfigurationStore(repository)
       .getOptional()
       .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
   }
 
-  public void setConfiguration(String namespace, String name, MirrorConfiguration configuration) {
-    Repository repository = loadRepository(namespace, name);
+  public void setConfiguration(Repository repository, MirrorConfiguration configuration) {
     MirrorPermissions.checkMirrorPermission(repository);
-    setConfiguration(repository, configuration);
-  }
-
-  void setConfiguration(Repository repository, MirrorConfiguration configuration) {
     createConfigurationStore(repository).set(configuration);
   }
 
@@ -75,15 +60,6 @@ public class MirrorConfigurationService {
     return createConfigurationStore(repository)
       .getOptional()
       .isPresent();
-  }
-
-  private Repository loadRepository(String namespace, String name) {
-    NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
-    Repository repository = repositoryManager.get(namespaceAndName);
-    if (repository == null) {
-      throw new NotFoundException(Repository.class, namespaceAndName.toString());
-    }
-    return repository;
   }
 
   private ConfigurationStore<MirrorConfiguration> createConfigurationStore(Repository repository) {
