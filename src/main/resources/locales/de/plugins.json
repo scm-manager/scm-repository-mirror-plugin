@@ -33,6 +33,20 @@
           "label": "Passwort",
           "helpText": "Das Passwort für den Schlüssel, falls vorhanden."
         }
+      },
+      "period": {
+        "label": "Aktualisierungsrate",
+        "helpText": "Interval in welchem das gespiegelte Repository aktualisiert werden soll.",
+        "options": {
+          "fiveMinutes": "5 Minuten",
+          "fifteenMinutes": "15 Minuten",
+          "thirtyMinutes": "30 Minuten",
+          "oneHour": "1 Stunde",
+          "twoHours": "2 Stunden",
+          "fourHours": "4 Stunden",
+          "twelveHours": "12 Stunden",
+          "oneDay": "1 Tag"
+        }
       }
     },
     "flag": {

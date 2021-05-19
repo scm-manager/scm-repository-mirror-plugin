@@ -33,6 +33,20 @@
           "label": "Password",
           "helpText": "If present, the password for the keystore."
         }
+      },
+      "period": {
+        "label": "Refresh Period",
+        "helpText": "The periodic interval at which the scm-manager re-fetches repository data.",
+        "options": {
+          "fiveMinutes": "5 minutes",
+          "fifteenMinutes": "15 minutes",
+          "thirtyMinutes": "30 minutes",
+          "oneHour": "1 hour",
+          "twoHours": "2 hours",
+          "fourHours": "4 hours",
+          "twelveHours": "12 hours",
+          "oneDay": "1 day"
+        }
       }
     },
     "flag": {

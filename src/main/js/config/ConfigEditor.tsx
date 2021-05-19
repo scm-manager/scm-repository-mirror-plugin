@@ -2,7 +2,7 @@ import React, { FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { MirrorConfigurationDto } from "../types";
-import { InputField, Textarea } from "@scm-manager/ui-components";
+import { InputField, Select, SelectItem, Textarea } from "@scm-manager/ui-components";
 import styled from "styled-components";
 import { Repository } from "@scm-manager/ui-types";
 
@@ -30,7 +30,53 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
   });
   const formValue = watch();
 
-  useEffect(() => onConfigurationChange(formValue, formState.isValid), [formValue, formState.isValid]);
+  useEffect(() => {
+    const output = { ...formValue };
+
+    if (!output.usernamePasswordCredential?.username) {
+      delete output.usernamePasswordCredential;
+    }
+    if (!output.certificationCredential?.certificate) {
+      delete output.certificationCredential;
+    }
+
+    onConfigurationChange(output, formState.isValid);
+  }, [formValue, formState.isValid]);
+
+  const periodOptions: SelectItem[] = [
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.fiveMinutes"),
+      value: "5"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.fifteenMinutes"),
+      value: "15"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.thirtyMinutes"),
+      value: "30"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.oneHour"),
+      value: "60"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.twoHours"),
+      value: "120"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.fourHours"),
+      value: "240"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.twelveHours"),
+      value: "720"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.oneDay"),
+      value: "1440"
+    }
+  ];
 
   let credentialsForm = null;
   switch (repository.type) {
@@ -101,6 +147,15 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
               message: t("scm-repository-mirror-plugin.form.url.errors.invalid")
             }
           })}
+        />
+      </Column>
+      <Column className="column is-full">
+        <Select
+          label={t("scm-repository-mirror-plugin.form.period.label")}
+          helpText={t("scm-repository-mirror-plugin.form.period.helpText")}
+          options={periodOptions}
+          disabled={disabled}
+          {...register("synchronizationPeriod")}
         />
       </Column>
       {credentialsForm}

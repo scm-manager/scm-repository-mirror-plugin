@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { InputField, Level, SubmitButton, Textarea } from "@scm-manager/ui-components";
+import { InputField, Level, Select, SelectItem, SubmitButton, Textarea } from "@scm-manager/ui-components";
 import React, { FC, useEffect, useState } from "react";
 import { MirrorConfigurationDto, MirrorRequestDto } from "./types";
 import { useForm } from "react-hook-form";
@@ -64,6 +64,41 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
   const [valid, setValid] = useState({ namespaceAndName: false, contact: true });
   const watchUrl = watch("url", "");
 
+  const periodOptions: SelectItem[] = [
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.fiveMinutes"),
+      value: "5"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.fifteenMinutes"),
+      value: "15"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.thirtyMinutes"),
+      value: "30"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.oneHour"),
+      value: "60"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.twoHours"),
+      value: "120"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.fourHours"),
+      value: "240"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.twelveHours"),
+      value: "720"
+    },
+    {
+      label: t("scm-repository-mirror-plugin.form.period.options.oneDay"),
+      value: "1440"
+    }
+  ];
+
   useEffect(() => {
     if (!repository.name) {
       // If the repository name is not fill we set a name suggestion
@@ -81,6 +116,12 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
       ...repository,
       type: repositoryType
     };
+    if (!request.usernamePasswordCredential?.username) {
+      delete request.usernamePasswordCredential;
+    }
+    if (!request.certificationCredential?.certificate) {
+      delete request.certificationCredential;
+    }
     onSubmit(request);
   };
 
@@ -154,6 +195,16 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
                 message: t("scm-repository-mirror-plugin.form.url.errors.invalid")
               }
             })}
+          />
+        </Column>
+        <Column className="column is-full">
+          <Select
+            defaultValue={"60"}
+            label={t("scm-repository-mirror-plugin.form.period.label")}
+            helpText={t("scm-repository-mirror-plugin.form.period.helpText")}
+            options={periodOptions}
+            disabled={disabled}
+            {...register("synchronizationPeriod")}
           />
         </Column>
         {credentialsForm}
