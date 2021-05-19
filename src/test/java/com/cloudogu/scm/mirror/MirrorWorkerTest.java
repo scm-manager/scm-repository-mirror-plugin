@@ -47,6 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -68,6 +69,8 @@ class MirrorWorkerTest {
   private RepositoryService repositoryService;
   @Mock(answer = Answers.RETURNS_SELF)
   private MirrorCommandBuilder mirrorCommandBuilder;
+  @Mock
+  private MirrorReadOnlyCheck readOnlyCheck;
 
   private MirrorWorker worker;
 
@@ -80,7 +83,13 @@ class MirrorWorkerTest {
       invocation.getArgument(0, Runnable.class).run();
       return null;
     }).when(executor).submit(any(Runnable.class));
-    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, configurationStore);
+    doAnswer(
+      invocationOnMock -> {
+        invocationOnMock.getArgument(0, Runnable.class).run();
+        return null;
+      }
+    ).when(readOnlyCheck).exceptedFromReadOnly(any());
+    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, configurationStore, readOnlyCheck);
   }
 
 

@@ -49,24 +49,35 @@ class MirrorWorker {
   private final ExecutorService executor;
   private final MirrorStatusStore statusStore;
   private final MirrorConfigurationStore configurationStore;
+  private final MirrorReadOnlyCheck readOnlyCheck;
 
   @Inject
-  public MirrorWorker(RepositoryServiceFactory repositoryServiceFactory, MeterRegistry registry, MirrorStatusStore statusStore, MirrorConfigurationStore configurationStore) {
-    this(repositoryServiceFactory, registry, Executors.newFixedThreadPool(4), statusStore, configurationStore);
+  MirrorWorker(RepositoryServiceFactory repositoryServiceFactory,
+               MeterRegistry registry,
+               MirrorStatusStore statusStore,
+               MirrorConfigurationStore configurationStore,
+               MirrorReadOnlyCheck readOnlyCheck) {
+    this(repositoryServiceFactory, registry, Executors.newFixedThreadPool(4), statusStore, configurationStore, readOnlyCheck);
   }
 
   @VisibleForTesting
-  MirrorWorker(RepositoryServiceFactory repositoryServiceFactory, MeterRegistry registry, ExecutorService executor, MirrorStatusStore statusStore, MirrorConfigurationStore configurationStore) {
+  MirrorWorker(RepositoryServiceFactory repositoryServiceFactory,
+               MeterRegistry registry,
+               ExecutorService executor,
+               MirrorStatusStore statusStore,
+               MirrorConfigurationStore configurationStore,
+               MirrorReadOnlyCheck readOnlyCheck) {
     this.repositoryServiceFactory = repositoryServiceFactory;
     this.executor = executor;
     this.statusStore = statusStore;
     this.configurationStore = configurationStore;
+    this.readOnlyCheck = readOnlyCheck;
     Metrics.executor(registry, executor, "mirror", "fixed");
   }
 
   void startInitialSync(Repository repository) {
-    statusStore.setStatus(repository, MirrorStatus.initialStatus());
-    startAsynchronously(repository, MirrorCommandBuilder::initialCall);
+    readOnlyCheck.exceptedFromReadOnly(() -> statusStore.setStatus(repository, MirrorStatus.initialStatus()));
+      startAsynchronously(repository, MirrorCommandBuilder::initialCall);
   }
 
   void startUpdate(Repository repository) {
@@ -76,23 +87,23 @@ class MirrorWorker {
   private void startAsynchronously(Repository repository, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
     // TODO Shiro context should either be set to admin or inherit the current subject
     executor.submit(
-      () -> startSynchronously(repository, callback)
+      () -> readOnlyCheck.exceptedFromReadOnly(() -> startSynchronously(repository, callback))
     );
   }
 
   private void startSynchronously(Repository repository, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
-    Instant startTime = Instant.now();
-    MirrorConfiguration configuration = configurationStore.getConfiguration(repository);
-    try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
-      MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
-      setCredentials(configuration, mirrorCommand);
-      MirrorCommandResult commandResult = callback.apply(mirrorCommand);
-      if (commandResult.isSuccess()) {
-        statusStore.setStatus(repository, MirrorStatus.success(startTime));
-      } else {
-        statusStore.setStatus(repository, MirrorStatus.failed(startTime));
+      Instant startTime = Instant.now();
+      MirrorConfiguration configuration = configurationStore.getConfiguration(repository);
+      try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+        MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
+        setCredentials(configuration, mirrorCommand);
+        MirrorCommandResult commandResult = callback.apply(mirrorCommand);
+        if (commandResult.isSuccess()) {
+          statusStore.setStatus(repository, MirrorStatus.success(startTime));
+        } else {
+          statusStore.setStatus(repository, MirrorStatus.failed(startTime));
+        }
       }
-    }
   }
 
   private void setCredentials(MirrorConfiguration configuration, MirrorCommandBuilder mirrorCommand) {
