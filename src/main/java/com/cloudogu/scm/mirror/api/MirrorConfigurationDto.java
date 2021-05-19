@@ -30,6 +30,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
 @Getter
@@ -40,7 +41,9 @@ public class MirrorConfigurationDto extends HalRepresentation {
   @NotBlank
   private String url;
 
+  @Valid
   private UsernamePasswordCredentialDto usernamePasswordCredential;
+  @Valid
   private CertificateCredentialDto certificateCredential;
 
   MirrorConfigurationDto(Links links) {
