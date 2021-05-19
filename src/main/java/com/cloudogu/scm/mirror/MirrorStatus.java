@@ -27,6 +27,7 @@ package com.cloudogu.scm.mirror;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import sonia.scm.xml.XmlInstantAdapter;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -46,10 +47,10 @@ import static java.util.Optional.ofNullable;
 public class MirrorStatus {
 
   private Result result;
-  @XmlJavaTypeAdapter(InstantAdapter.class)
+  @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant started;
   @Nullable
-  @XmlJavaTypeAdapter(InstantAdapter.class)
+  @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant ended;
 
   public MirrorStatus(Result result) {
@@ -84,17 +85,5 @@ public class MirrorStatus {
     SUCCESS,
     FAILED,
     NOT_YET_RUN
-  }
-
-  private static class InstantAdapter extends XmlAdapter<Long, Instant> {
-    @Override
-    public Instant unmarshal(Long v) throws Exception {
-      return Instant.ofEpochMilli(v);
-    }
-
-    @Override
-    public Long marshal(Instant v) throws Exception {
-      return v.getEpochSecond();
-    }
   }
 }
