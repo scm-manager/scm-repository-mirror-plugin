@@ -39,14 +39,16 @@ import javax.inject.Inject;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 class MirrorWorker {
 
   private final RepositoryServiceFactory repositoryServiceFactory;
-  private final ExecutorService executor;
+  private final ScheduledExecutorService executor;
   private final MirrorStatusStore statusStore;
   private final MirrorConfigurationStore configurationStore;
   private final MirrorReadOnlyCheck readOnlyCheck;
@@ -57,13 +59,13 @@ class MirrorWorker {
                MirrorStatusStore statusStore,
                MirrorConfigurationStore configurationStore,
                MirrorReadOnlyCheck readOnlyCheck) {
-    this(repositoryServiceFactory, registry, Executors.newFixedThreadPool(4), statusStore, configurationStore, readOnlyCheck);
+    this(repositoryServiceFactory, registry, Executors.newScheduledThreadPool(4), statusStore, configurationStore, readOnlyCheck);
   }
 
   @VisibleForTesting
   MirrorWorker(RepositoryServiceFactory repositoryServiceFactory,
                MeterRegistry registry,
-               ExecutorService executor,
+               ScheduledExecutorService executor,
                MirrorStatusStore statusStore,
                MirrorConfigurationStore configurationStore,
                MirrorReadOnlyCheck readOnlyCheck) {
@@ -77,11 +79,21 @@ class MirrorWorker {
 
   void startInitialSync(Repository repository) {
     readOnlyCheck.exceptedFromReadOnly(() -> statusStore.setStatus(repository, MirrorStatus.initialStatus()));
-      startAsynchronously(repository, MirrorCommandBuilder::initialCall);
+    startAsynchronously(repository, MirrorCommandBuilder::initialCall);
   }
 
   void startUpdate(Repository repository) {
     startAsynchronously(repository, MirrorCommandBuilder::update);
+  }
+
+  CancelableSchedule scheduleUpdate(Repository repository, int delay) {
+    ScheduledFuture<?> scheduledFuture =
+      executor.scheduleAtFixedRate(
+        () -> readOnlyCheck.exceptedFromReadOnly(() -> startSynchronously(repository, MirrorCommandBuilder::update)),
+        delay,
+        10,
+        TimeUnit.MINUTES);
+    return () -> scheduledFuture.cancel(false);
   }
 
   private void startAsynchronously(Repository repository, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
@@ -91,19 +103,22 @@ class MirrorWorker {
     );
   }
 
+  // TODO event listener when repository is deleted -> remove from schedules
+
   private void startSynchronously(Repository repository, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
-      Instant startTime = Instant.now();
-      MirrorConfiguration configuration = configurationStore.getConfiguration(repository);
-      try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
-        MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
-        setCredentials(configuration, mirrorCommand);
-        MirrorCommandResult commandResult = callback.apply(mirrorCommand);
-        if (commandResult.isSuccess()) {
-          statusStore.setStatus(repository, MirrorStatus.success(startTime));
-        } else {
-          statusStore.setStatus(repository, MirrorStatus.failed(startTime));
-        }
+    // TODO Abort if already running
+    Instant startTime = Instant.now();
+    MirrorConfiguration configuration = configurationStore.getConfiguration(repository);
+    try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+      MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
+      setCredentials(configuration, mirrorCommand);
+      MirrorCommandResult commandResult = callback.apply(mirrorCommand);
+      if (commandResult.isSuccess()) {
+        statusStore.setStatus(repository, MirrorStatus.success(startTime));
+      } else {
+        statusStore.setStatus(repository, MirrorStatus.failed(startTime));
       }
+    }
   }
 
   private void setCredentials(MirrorConfiguration configuration, MirrorCommandBuilder mirrorCommand) {
@@ -115,5 +130,9 @@ class MirrorWorker {
       credentials.add(new Pkcs12ClientCertificateCredential(configuration.getCertificateCredential().getCertificate(), configuration.getCertificateCredential().getPassword().toCharArray()));
     }
     mirrorCommand.setCredentials(credentials);
+  }
+
+  interface CancelableSchedule {
+    void cancel();
   }
 }

@@ -102,7 +102,7 @@ class MirrorRootResourceTest {
     @Test
     void shouldExecuteBasicRequest() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git'}");
+        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -113,6 +113,7 @@ class MirrorRootResourceTest {
       verify(mirrorService).createMirror(
         argThat(mirrorRequest -> {
           assertThat(mirrorRequest.getUrl()).isEqualTo("http://hog/git");
+          assertThat(mirrorRequest.getSynchronizationPeriod()).isEqualTo(42);
           return true;
         }),
         argThat(repository -> {
@@ -127,7 +128,7 @@ class MirrorRootResourceTest {
     void shouldConfigureBasicAuth() throws URISyntaxException {
 
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'usernamePasswordCredential':{'username':'trillian','password':'hog'}}");
+        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'trillian','password':'hog'}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -147,7 +148,7 @@ class MirrorRootResourceTest {
     @Test
     void shouldConfigureCertificateAuth() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'certificateCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'}}");
+        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'certificateCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -179,7 +180,7 @@ class MirrorRootResourceTest {
   void shouldFailToSetConfigurationForMissingRepository() throws URISyntaxException {
     JsonMockHttpRequest request = JsonMockHttpRequest
       .post("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
-      .json("{'url':'http://hog/scm'}");
+      .json("{'url':'http://hog/scm', 'synchronizationPeriod':42}");
     MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
@@ -212,10 +213,10 @@ class MirrorRootResourceTest {
     }
 
     @Test
-    void shouldSetUrlInConfiguration() throws URISyntaxException {
+    void shouldSetUrlAndPeriodInConfiguration() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest
         .post("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
-        .json("{'url':'http://hog/scm'}");
+        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -226,6 +227,7 @@ class MirrorRootResourceTest {
           eq(repository),
           argThat(configuration -> {
             assertThat(configuration.getUrl()).isEqualTo("http://hog/scm");
+            assertThat(configuration.getSynchronizationPeriod()).isEqualTo(42);
             return true;
           }));
     }
@@ -234,7 +236,7 @@ class MirrorRootResourceTest {
     void shouldSetUsernamePasswordCredentialInConfiguration() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest
         .post("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
-        .json("{'url':'http://hog/scm', 'usernamePasswordCredential':{'username':'dent', 'password':'hg2g'}}");
+        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'dent', 'password':'hg2g'}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -269,6 +271,7 @@ class MirrorRootResourceTest {
         MirrorConfiguration existingConfiguration =
           new MirrorConfiguration(
             "http://hog/",
+            42,
             new UsernamePasswordCredential("dent", "hog"),
             new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"));
         when(configurationStore.getConfiguration(repository))
@@ -300,7 +303,7 @@ class MirrorRootResourceTest {
       )
       void shouldCreateUpdateLinkWithPermission() throws URISyntaxException {
         MirrorConfiguration existingConfiguration =
-          new MirrorConfiguration("http://hog/", null, null);
+          new MirrorConfiguration("http://hog/", 42, null, null);
         when(configurationStore.getConfiguration(repository))
           .thenReturn(existingConfiguration);
 

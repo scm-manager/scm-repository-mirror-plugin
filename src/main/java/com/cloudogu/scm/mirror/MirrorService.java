@@ -45,14 +45,16 @@ public class MirrorService {
   private final RepositoryManager manager;
   private final MirrorConfigurationStore configurationStore;
   private final MirrorWorker mirrorWorker;
+  private final MirrorScheduler scheduler;
 
   @Inject
   MirrorService(RepositoryManager manager,
                 MirrorConfigurationStore configurationStore,
-                MirrorWorker mirrorWorker) {
+                MirrorWorker mirrorWorker, MirrorScheduler scheduler) {
     this.manager = manager;
     this.mirrorWorker = mirrorWorker;
     this.configurationStore = configurationStore;
+    this.scheduler = scheduler;
   }
 
   public Repository createMirror(MirrorConfiguration configuration, Repository repository) {
@@ -84,6 +86,7 @@ public class MirrorService {
     return repository -> {
       configurationStore.setConfiguration(repository, configuration);
       mirrorWorker.startInitialSync(repository);
+      scheduler.schedule(repository);
     };
   }
 

@@ -40,7 +40,7 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import java.time.Duration;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,7 +78,7 @@ class MirrorWorkerTest {
 
   @BeforeEach
   void createService() {
-    ExecutorService executor = mock(ExecutorService.class);
+    ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
     lenient().doAnswer(invocation -> {
       invocation.getArgument(0, Runnable.class).run();
       return null;
@@ -102,7 +102,7 @@ class MirrorWorkerTest {
   @Test
   void shouldSetSuccessStatus() {
     when(configurationStore.getConfiguration(repository))
-      .thenReturn(new MirrorConfiguration("https://hog/", null, null));
+      .thenReturn(new MirrorConfiguration("https://hog/", 42, null, null));
     when(mirrorCommandBuilder.initialCall()).thenReturn(new MirrorCommandResult(true, emptyList(), Duration.ZERO));
 
     worker.startInitialSync(repository);
@@ -126,7 +126,7 @@ class MirrorWorkerTest {
     @Test
     void shouldSetFailedStatus() {
       when(configurationStore.getConfiguration(repository))
-        .thenReturn(new MirrorConfiguration("https://hog/", null, null));
+        .thenReturn(new MirrorConfiguration("https://hog/", 42, null, null));
 
       worker.startUpdate(repository);
 
@@ -138,7 +138,7 @@ class MirrorWorkerTest {
     @Test
     void shouldSetUrlInCommand() {
       when(configurationStore.getConfiguration(repository))
-        .thenReturn(new MirrorConfiguration("https://hog/", null, null));
+        .thenReturn(new MirrorConfiguration("https://hog/", 42, null, null));
 
       worker.startUpdate(repository);
 
@@ -148,7 +148,7 @@ class MirrorWorkerTest {
     @Test
     void shouldSetUsernamePasswordCredentialsInCommand() {
       when(configurationStore.getConfiguration(repository))
-        .thenReturn(new MirrorConfiguration("https://hog/", new MirrorConfiguration.UsernamePasswordCredential("dent", "hog"), null));
+        .thenReturn(new MirrorConfiguration("https://hog/", 42, new MirrorConfiguration.UsernamePasswordCredential("dent", "hog"), null));
 
       worker.startUpdate(repository);
 
@@ -165,7 +165,7 @@ class MirrorWorkerTest {
     void shouldSetKeyCredentialsInCommand() {
       byte[] key = {};
       when(configurationStore.getConfiguration(repository))
-        .thenReturn(new MirrorConfiguration("https://hog/", null, new MirrorConfiguration.CertificateCredential(key, "hog")));
+        .thenReturn(new MirrorConfiguration("https://hog/", 42, null, new MirrorConfiguration.CertificateCredential(key, "hog")));
 
       worker.startUpdate(repository);
 

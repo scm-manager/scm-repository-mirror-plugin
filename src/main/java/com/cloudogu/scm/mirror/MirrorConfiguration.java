@@ -42,6 +42,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MirrorConfiguration {
 
   private String url;
+  private int synchronizationPeriod;
 
   private UsernamePasswordCredential usernamePasswordCredential;
   private CertificateCredential certificateCredential;
