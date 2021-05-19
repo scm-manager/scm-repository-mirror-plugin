@@ -22,25 +22,30 @@
  * SOFTWARE.
  */
 
-import { binder, extensionPoints } from "@scm-manager/ui-extensions";
-import { ConfigurationBinder as configurationBinder } from "@scm-manager/ui-components";
-import MirrorRepositoryCreator from "./MirrorRepositoryCreator";
-import RepositoryConfig from "./config/RepositoryConfig";
-import MirrorRepositoryFlag from "./MirrorRepositoryFlag";
+import React, { FC } from "react";
+import { Repository } from "@scm-manager/ui-types";
+import { RepositoryFlag } from "@scm-manager/ui-components";
 
-binder.bind<extensionPoints.RepositoryCreator>("repos.creator", {
-  subtitle: "scm-repository-mirror-plugin.create.subtitle",
-  path: "mirror",
-  icon: "copy",
-  label: "scm-repository-mirror-plugin.repositoryForm.createButton",
-  component: MirrorRepositoryCreator
-});
+type Props = {
+  repository: Repository;
+}
 
-configurationBinder.bindRepositorySetting(
-  "/mirror",
-  "scm-repository-mirror-plugin.settings.navLink",
-  "mirrorConfiguration",
-  RepositoryConfig
-);
+type MirrorStatus = {
+  result: "SUCCESS" | "FAILED" | "NOT_YET_RUN";
+}
 
-binder.bind<extensionPoints.RepositoryCardFlags>("repository.flags", MirrorRepositoryFlag)
+const MirrorRepositoryFlag: FC<Props> = ({repository}) => {
+  const mirrorStatus = repository._embedded?.mirrorStatus as MirrorStatus;
+  switch (mirrorStatus?.result) {
+    case "SUCCESS":
+      return <RepositoryFlag color={"success"} title={"last sync successful"}>mirror</RepositoryFlag>;
+    case "FAILED":
+      return <RepositoryFlag color={"danger"} title={"last sync falied"}>mirror</RepositoryFlag>;
+    case "NOT_YET_RUN":
+      return <RepositoryFlag title={"not yet run"}>mirror</RepositoryFlag>;
+    default:
+      return null;
+  }
+}
+
+export default MirrorRepositoryFlag;
