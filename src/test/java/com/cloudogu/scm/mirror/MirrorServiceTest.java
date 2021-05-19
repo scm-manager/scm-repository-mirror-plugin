@@ -24,7 +24,6 @@
 
 package com.cloudogu.scm.mirror;
 
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.shiro.authz.AuthorizationException;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
@@ -32,7 +31,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.ScmConstraintViolationException;
@@ -42,25 +40,15 @@ import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryPermission;
 import sonia.scm.repository.RepositoryType;
 import sonia.scm.repository.api.Command;
-import sonia.scm.repository.api.MirrorCommandBuilder;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.repository.spi.MirrorCommand;
 
 import java.util.Collection;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
-import static com.cloudogu.scm.mirror.MirrorStatus.Result.NOT_YET_RUN;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
@@ -72,12 +60,8 @@ class MirrorServiceTest {
   @Mock
   private RepositoryManager manager;
   @Mock
-  private RepositoryServiceFactory repositoryServiceFactory;
+  private MirrorConfigurationStore configurationStore;
   @Mock
-  private MirrorConfigurationStore configurationService;
-  @Mock
-  private MirrorStatusStore statusStore;
-
   private MirrorWorker mirrorWorker;
 
   private MirrorService service;
@@ -86,13 +70,7 @@ class MirrorServiceTest {
 
   @BeforeEach
   void createService() {
-    ExecutorService executor = mock(ExecutorService.class);
-    lenient().doAnswer(invocation -> {
-      invocation.getArgument(0, Runnable.class).run();
-      return null;
-    }).when(executor).submit(any(Runnable.class));
-    mirrorWorker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor);
-    service = new MirrorService(manager, configurationService, mirrorWorker, statusStore);
+    service = new MirrorService(manager, configurationStore, mirrorWorker);
   }
 
   @Test
@@ -105,6 +83,32 @@ class MirrorServiceTest {
   @Test
   void shouldFailToSyncMirrorWithoutPermission() {
     assertThrows(AuthorizationException.class, () -> service.updateMirror(repository));
+  }
+
+  @Test
+  @SubjectAware(
+    value = "trillian",
+    permissions = "repository:configureMirror:42"
+  )
+  void shouldCallUpdateCommand() {
+    repository.setId("42");
+    when(configurationStore.hasConfiguration(repository)).thenReturn(true);
+
+    service.updateMirror(repository);
+
+    verify(mirrorWorker).startUpdate(repository);
+  }
+
+  @Test
+  @SubjectAware(
+    value = "trillian",
+    permissions = "repository:configureMirror:42"
+  )
+  void shouldFailUpdateCommandWhenNotConfiguredAsMirror() {
+    repository.setId("42");
+    when(configurationStore.hasConfiguration(repository)).thenReturn(false);
+
+    assertThrows(IllegalArgumentException.class, () -> service.updateMirror(repository));
   }
 
   @Nested
@@ -133,13 +137,6 @@ class MirrorServiceTest {
     @Nested
     class WithSupportingType {
 
-      @Mock
-      private RepositoryService repositoryService;
-      @Mock
-      private MirrorCommand mirrorCommand;
-      @InjectMocks
-      private MirrorCommandBuilder mirrorCommandBuilder;
-
       @BeforeEach
       @SuppressWarnings("unchecked")
       void supportMirrorCommand() {
@@ -150,8 +147,6 @@ class MirrorServiceTest {
             return invocation.getArgument(0);
           }
         );
-        when(repositoryServiceFactory.create(repository)).thenReturn(repositoryService);
-        when(repositoryService.getMirrorCommand()).thenReturn(mirrorCommandBuilder);
       }
 
       @Test
@@ -176,34 +171,8 @@ class MirrorServiceTest {
 
         service.createMirror(configuration, repository);
 
-        verify(mirrorCommand).mirror(argThat(mirrorCommandRequest -> {
-          assertThat(mirrorCommandRequest.getSourceUrl()).isEqualTo("http://hog/");
-          return true;
-        }));
-        verify(statusStore).setStatus(eq(repository), argThat(
-          status -> {
-            assertThat(status.getResult()).isSameAs(NOT_YET_RUN);
-            return true;
-          }
-        ));
-      }
-
-      @Test
-      void shouldSetCredentialsForMirrorCall() {
-        MirrorConfiguration configuration = createConfiguration();
-        MirrorConfiguration.UsernamePasswordCredential usernamePasswordCredential = new MirrorConfiguration.UsernamePasswordCredential();
-        usernamePasswordCredential.setUsername("dent");
-        usernamePasswordCredential.setPassword("hg2g");
-        configuration.setUsernamePasswordCredential(usernamePasswordCredential);
-
-        service.createMirror(configuration, repository);
-
-        verify(mirrorCommand).mirror(argThat(mirrorCommandRequest -> {
-          assertThat(mirrorCommandRequest.getCredentials()).hasSize(1);
-          assertThat(mirrorCommandRequest.getCredentials()).extracting("username").containsExactly("dent");
-          assertThat(mirrorCommandRequest.getCredentials()).extracting("password").containsExactly("hg2g");
-          return true;
-        }));
+        verify(configurationStore).setConfiguration(repository, configuration);
+        verify(mirrorWorker).startInitialSync(repository);
       }
     }
   }

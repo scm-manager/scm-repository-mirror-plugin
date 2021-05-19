@@ -30,51 +30,79 @@ import sonia.scm.metrics.Metrics;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Credential;
 import sonia.scm.repository.api.MirrorCommandBuilder;
+import sonia.scm.repository.api.MirrorCommandResult;
 import sonia.scm.repository.api.Pkcs12ClientCertificateCredential;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
-public class MirrorWorker {
+class MirrorWorker {
 
   private final RepositoryServiceFactory repositoryServiceFactory;
   private final ExecutorService executor;
+  private final MirrorStatusStore statusStore;
+  private final MirrorConfigurationStore configurationStore;
 
   @Inject
-  public MirrorWorker(RepositoryServiceFactory repositoryServiceFactory, MeterRegistry registry) {
-    this(repositoryServiceFactory, registry, Executors.newFixedThreadPool(4));
+  public MirrorWorker(RepositoryServiceFactory repositoryServiceFactory, MeterRegistry registry, MirrorStatusStore statusStore, MirrorConfigurationStore configurationStore) {
+    this(repositoryServiceFactory, registry, Executors.newFixedThreadPool(4), statusStore, configurationStore);
   }
 
   @VisibleForTesting
-  MirrorWorker(RepositoryServiceFactory repositoryServiceFactory, MeterRegistry registry, ExecutorService executor) {
+  MirrorWorker(RepositoryServiceFactory repositoryServiceFactory, MeterRegistry registry, ExecutorService executor, MirrorStatusStore statusStore, MirrorConfigurationStore configurationStore) {
     this.repositoryServiceFactory = repositoryServiceFactory;
     this.executor = executor;
+    this.statusStore = statusStore;
+    this.configurationStore = configurationStore;
     Metrics.executor(registry, executor, "mirror", "fixed");
   }
 
-  void withMirrorCommandDo(Repository repository, MirrorConfiguration configuration, Consumer<MirrorCommandBuilder> consumer) {
+  void startInitialSync(Repository repository) {
+    statusStore.setStatus(repository, MirrorStatus.initialStatus());
+    startAsynchronously(repository, MirrorCommandBuilder::initialCall);
+  }
+
+  void startUpdate(Repository repository) {
+    startAsynchronously(repository, MirrorCommandBuilder::update);
+  }
+
+  private void startAsynchronously(Repository repository, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
     // TODO Shiro context should either be set to admin or inherit the current subject
     executor.submit(
-      () -> {
-        try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
-          MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
-          Collection<Credential> credentials = new ArrayList<>();
-          if (configuration.getUsernamePasswordCredential() != null) {
-            credentials.add(configuration.getUsernamePasswordCredential());
-          }
-          if (configuration.getCertificateCredential() != null) {
-            credentials.add(new Pkcs12ClientCertificateCredential(configuration.getCertificateCredential().getCertificate(), configuration.getCertificateCredential().getPassword().toCharArray()));
-          }
-          mirrorCommand.setCredentials(credentials);
-          consumer.accept(mirrorCommand);
-        }
-      }
+      () -> startSynchronously(repository, callback)
     );
+  }
+
+  private void startSynchronously(Repository repository, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
+    Instant startTime = Instant.now();
+    MirrorConfiguration configuration = configurationStore.getConfiguration(repository);
+    try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+      MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
+      setCredentials(configuration, mirrorCommand);
+      MirrorCommandResult commandResult = callback.apply(mirrorCommand);
+      if (commandResult.isSuccess()) {
+        statusStore.setStatus(repository, MirrorStatus.success(startTime));
+      } else {
+        statusStore.setStatus(repository, MirrorStatus.failed(startTime));
+      }
+    }
+  }
+
+  private void setCredentials(MirrorConfiguration configuration, MirrorCommandBuilder mirrorCommand) {
+    Collection<Credential> credentials = new ArrayList<>();
+    if (configuration.getUsernamePasswordCredential() != null) {
+      credentials.add(configuration.getUsernamePasswordCredential());
+    }
+    if (configuration.getCertificateCredential() != null) {
+      credentials.add(new Pkcs12ClientCertificateCredential(configuration.getCertificateCredential().getCertificate(), configuration.getCertificateCredential().getPassword().toCharArray()));
+    }
+    mirrorCommand.setCredentials(credentials);
   }
 }

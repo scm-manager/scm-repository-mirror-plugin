@@ -47,7 +47,7 @@ public class MirrorStatus {
 
   private Result result;
   @XmlJavaTypeAdapter(InstantAdapter.class)
-  private Instant started = Instant.now();
+  private Instant started;
   @Nullable
   @XmlJavaTypeAdapter(InstantAdapter.class)
   private Instant ended;
@@ -57,7 +57,23 @@ public class MirrorStatus {
   }
 
   static MirrorStatus initialStatus() {
-    return new MirrorStatus(Result.NOT_YET_RUN);
+    MirrorStatus status = new MirrorStatus(Result.NOT_YET_RUN);
+    status.started = Instant.now();
+    return status;
+  }
+
+  public static MirrorStatus success(Instant startTime) {
+    MirrorStatus status = new MirrorStatus(Result.SUCCESS);
+    status.started = startTime;
+    status.ended = Instant.now();
+    return status;
+  }
+
+  public static MirrorStatus failed(Instant startTime) {
+    MirrorStatus status = new MirrorStatus(Result.FAILED);
+    status.started = startTime;
+    status.ended = Instant.now();
+    return status;
   }
 
   public Optional<Instant> getEnded() {

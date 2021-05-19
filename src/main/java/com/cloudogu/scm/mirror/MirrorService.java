@@ -32,7 +32,6 @@ import sonia.scm.repository.RepositoryPermission;
 import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.repository.RepositoryType;
 import sonia.scm.repository.api.Command;
-import sonia.scm.repository.api.MirrorCommandBuilder;
 
 import javax.inject.Inject;
 import java.util.Set;
@@ -46,17 +45,14 @@ public class MirrorService {
   private final RepositoryManager manager;
   private final MirrorConfigurationStore configurationStore;
   private final MirrorWorker mirrorWorker;
-  private final MirrorStatusStore statusStore;
 
   @Inject
   MirrorService(RepositoryManager manager,
                 MirrorConfigurationStore configurationStore,
-                MirrorWorker mirrorWorker,
-                MirrorStatusStore statusStore) {
+                MirrorWorker mirrorWorker) {
     this.manager = manager;
     this.mirrorWorker = mirrorWorker;
     this.configurationStore = configurationStore;
-    this.statusStore = statusStore;
   }
 
   public Repository createMirror(MirrorConfiguration configuration, Repository repository) {
@@ -77,15 +73,17 @@ public class MirrorService {
 
   public void updateMirror(Repository repository) {
     MirrorPermissions.checkMirrorPermission(repository);
-    MirrorConfiguration configuration = configurationStore.getConfiguration(repository);
-    mirrorWorker.withMirrorCommandDo(repository, configuration, MirrorCommandBuilder::update);
+    if (configurationStore.hasConfiguration(repository)) {
+      mirrorWorker.startUpdate(repository);
+    } else {
+      throw new IllegalArgumentException("repository not configured as mirror");
+    }
   }
 
   private Consumer<Repository> createMirrorCallback(MirrorConfiguration configuration) {
     return repository -> {
       configurationStore.setConfiguration(repository, configuration);
-      statusStore.setStatus(repository, MirrorStatus.initialStatus());
-      mirrorWorker.withMirrorCommandDo(repository, configuration, MirrorCommandBuilder::initialCall);
+      mirrorWorker.startInitialSync(repository);
     };
   }
 
