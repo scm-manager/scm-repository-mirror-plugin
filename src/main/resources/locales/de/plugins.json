@@ -34,6 +34,12 @@
           "helpText": "Das Passwort für den Schlüssel, falls vorhanden."
         }
       }
+    },
+    "flag": {
+      "label": "mirror",
+      "success": "Letzte Synchronisation erfolgreich",
+      "failed": "Letzte Synchronisation fehlgeschlagen",
+      "notYetRun": "Noch nicht synchronisiert"
     }
   }
 }

@@ -25,27 +25,42 @@
 import React, { FC } from "react";
 import { Repository } from "@scm-manager/ui-types";
 import { RepositoryFlag } from "@scm-manager/ui-components";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   repository: Repository;
-}
+};
 
 type MirrorStatus = {
   result: "SUCCESS" | "FAILED" | "NOT_YET_RUN";
-}
+};
 
-const MirrorRepositoryFlag: FC<Props> = ({repository}) => {
+const MirrorRepositoryFlag: FC<Props> = ({ repository }) => {
+  const [t] = useTranslation("plugins");
   const mirrorStatus = repository._embedded?.mirrorStatus as MirrorStatus;
+
   switch (mirrorStatus?.result) {
     case "SUCCESS":
-      return <RepositoryFlag color={"success"} title={"last sync successful"}>mirror</RepositoryFlag>;
+      return (
+        <RepositoryFlag color={"success"} title={t("scm-repository-mirror-plugin.flag.success")}>
+          {t("scm-repository-mirror-plugin.flag.label")}
+        </RepositoryFlag>
+      );
     case "FAILED":
-      return <RepositoryFlag color={"danger"} title={"last sync falied"}>mirror</RepositoryFlag>;
+      return (
+        <RepositoryFlag color={"danger"} title={t("scm-repository-mirror-plugin.flag.failed")}>
+          {t("scm-repository-mirror-plugin.flag.label")}
+        </RepositoryFlag>
+      );
     case "NOT_YET_RUN":
-      return <RepositoryFlag title={"not yet run"}>mirror</RepositoryFlag>;
+      return (
+        <RepositoryFlag title={t("scm-repository-mirror-plugin.flag.notYetRun")}>
+          {t("scm-repository-mirror-plugin.flag.label")}
+        </RepositoryFlag>
+      );
     default:
       return null;
   }
-}
+};
 
 export default MirrorRepositoryFlag;

@@ -34,6 +34,12 @@
           "helpText": "If present, the password for the keystore."
         }
       }
+    },
+    "flag": {
+      "label": "mirror",
+      "success": "Last synchronization successful",
+      "failed": "Last synchronization failed",
+      "notYetRun": "Not yet synchronized"
     }
   }
 }
