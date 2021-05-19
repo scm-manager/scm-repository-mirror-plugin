@@ -17,3 +17,5 @@ export type MirrorConfigurationDto = {
 };
 
 export type MirrorRequestDto = MirrorConfigurationDto & RepositoryCreation;
+
+export type RepositoryMirrorConfiguration = MirrorConfigurationDto;

@@ -1,5 +1,8 @@
 {
   "scm-repository-mirror-plugin": {
+    "settings": {
+      "navLink": "Mirror"
+    },
     "create": {
       "subtitle": "Mirror existing repository"
     },

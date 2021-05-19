@@ -21,23 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+import React, { FC } from "react";
+import { Configuration } from "@scm-manager/ui-components";
+import ConfigEditor from "./ConfigEditor";
+import { Repository } from "@scm-manager/ui-types";
 
-import { binder, extensionPoints } from "@scm-manager/ui-extensions";
-import { ConfigurationBinder as configurationBinder } from "@scm-manager/ui-components";
-import MirrorRepositoryCreator from "./MirrorRepositoryCreator";
-import RepositoryConfig from "./config/RepositoryConfig";
+type Props = {
+  link: string;
+  repository: Repository;
+};
 
-binder.bind<extensionPoints.RepositoryCreator>("repos.creator", {
-  subtitle: "scm-repository-mirror-plugin.create.subtitle",
-  path: "mirror",
-  icon: "copy",
-  label: "scm-repository-mirror-plugin.repositoryForm.createButton",
-  component: MirrorRepositoryCreator
-});
-
-configurationBinder.bindRepositorySetting(
-  "/mirror",
-  "scm-repository-mirror-plugin.settings.navLink",
-  "mirrorConfiguration",
-  RepositoryConfig
+const RepositoryConfig: FC<Props> = ({ repository, link }) => (
+  <Configuration link={link} render={props => <ConfigEditor repository={repository} {...props} />} />
 );
+
+export default RepositoryConfig;
