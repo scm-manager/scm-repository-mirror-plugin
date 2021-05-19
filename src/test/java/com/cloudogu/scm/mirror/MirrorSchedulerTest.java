@@ -31,6 +31,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.OngoingStubbing;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryTestData;
@@ -65,7 +66,7 @@ class MirrorSchedulerTest {
   @InjectMocks
   private MirrorScheduler scheduler;
 
-  private Set<String> cancelledSchedules = new HashSet<>();
+  private final Set<String> cancelledSchedules = new HashSet<>();
 
   @BeforeEach
   void mockWorkerCancellation() {
@@ -98,20 +99,29 @@ class MirrorSchedulerTest {
   @Test
   void shouldSchedule() {
     Repository repository = RepositoryTestData.create42Puzzle();
+    mockConfiguration(repository, 42);
 
     scheduler.schedule(repository);
 
-    verify(worker).scheduleUpdate(repository, 0);
+    verify(worker).scheduleUpdate(repository, 42);
   }
 
   @Test
   void shouldCancelExistingSchedule() {
     Repository repository = RepositoryTestData.create42Puzzle();
+    mockConfiguration(repository, 42);
 
     scheduler.schedule(repository);
+
+    mockConfiguration(repository, 23);
     scheduler.schedule(repository);
 
-    verify(worker, times(2)).scheduleUpdate(repository, 0);
+    verify(worker).scheduleUpdate(repository, 42);
     assertThat(cancelledSchedules).contains(repository.getId());
+    verify(worker).scheduleUpdate(repository, 23);
+  }
+
+  private OngoingStubbing<MirrorConfiguration> mockConfiguration(Repository repository, int i) {
+    return when(configurationStore.getConfiguration(repository)).thenReturn(new MirrorConfiguration(null, i, null, null));
   }
 }

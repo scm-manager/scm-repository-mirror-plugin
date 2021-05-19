@@ -63,8 +63,6 @@ class MirrorServiceTest {
   private MirrorConfigurationStore configurationStore;
   @Mock
   private MirrorWorker mirrorWorker;
-  @Mock
-  private MirrorScheduler scheduler;
 
   private MirrorService service;
 
@@ -72,7 +70,7 @@ class MirrorServiceTest {
 
   @BeforeEach
   void createService() {
-    service = new MirrorService(manager, configurationStore, mirrorWorker, scheduler);
+    service = new MirrorService(manager, configurationStore, mirrorWorker);
   }
 
   @Test
@@ -175,7 +173,6 @@ class MirrorServiceTest {
 
         verify(configurationStore).setConfiguration(repository, configuration);
         verify(mirrorWorker).startInitialSync(repository);
-        verify(scheduler).schedule(repository);
       }
     }
   }

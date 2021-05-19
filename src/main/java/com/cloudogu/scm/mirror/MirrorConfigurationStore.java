@@ -38,10 +38,12 @@ public class MirrorConfigurationStore {
   private static final String STORE_NAME = "mirror";
 
   private final ConfigurationStoreFactory storeFactory;
+  private final MirrorScheduler scheduler;
 
   @Inject
-  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory) {
+  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory, MirrorScheduler scheduler) {
     this.storeFactory = storeFactory;
+    this.scheduler = scheduler;
   }
 
   public MirrorConfiguration getConfiguration(Repository repository) {
@@ -54,6 +56,7 @@ public class MirrorConfigurationStore {
   public void setConfiguration(Repository repository, MirrorConfiguration configuration) {
     MirrorPermissions.checkMirrorPermission(repository);
     createConfigurationStore(repository).set(configuration);
+    scheduler.schedule(repository);
   }
 
   public boolean hasConfiguration(Repository repository) {

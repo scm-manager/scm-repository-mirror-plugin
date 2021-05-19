@@ -32,14 +32,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.InMemoryConfigurationStoreFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(ShiroExtension.class)
+@ExtendWith(MockitoExtension.class)
 @SubjectAware(
   value = "trillian"
 )
@@ -47,13 +51,15 @@ class MirrorConfigurationStoreTest {
 
   public static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
 
+  @Mock
+  private MirrorScheduler scheduler;
   private MirrorConfigurationStore store;
   private InMemoryConfigurationStoreFactory storeFactory;
 
   @BeforeEach
   void createService() {
     storeFactory = new InMemoryConfigurationStoreFactory();
-    store = new MirrorConfigurationStore(storeFactory);
+    store = new MirrorConfigurationStore(storeFactory, scheduler);
   }
 
   @BeforeAll
@@ -107,6 +113,7 @@ class MirrorConfigurationStoreTest {
 
       Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
       assertThat(configurationFromStore).isSameAs(newConfiguration);
+      verify(scheduler).schedule(REPOSITORY);
     }
   }
 

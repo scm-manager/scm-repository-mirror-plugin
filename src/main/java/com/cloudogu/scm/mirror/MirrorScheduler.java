@@ -66,7 +66,7 @@ class MirrorScheduler implements Initable {
   }
 
   public void schedule(Repository repository) {
-      schedules.getOrDefault(repository.getId(), () -> {}).cancel();
-      schedules.put(repository.getId(), worker.scheduleUpdate(repository, 0));
+    schedules.getOrDefault(repository.getId(), () -> {}).cancel();
+    schedules.put(repository.getId(), worker.scheduleUpdate(repository, configurationStore.getConfiguration(repository).getSynchronizationPeriod()));
   }
 }
