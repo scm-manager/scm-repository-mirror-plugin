@@ -22,24 +22,42 @@
  * SOFTWARE.
  */
 
-import { RepositoryCreation } from "@scm-manager/ui-types";
+package com.cloudogu.scm.mirror;
 
-export type UsernamePasswordCredentialDto = {
-  username: string;
-  password: string;
-};
+import sonia.scm.plugin.Extension;
+import sonia.scm.repository.ReadOnlyCheck;
 
-export type CertificationCredentialDto = {
-  certificate: string;
-  password: string;
-};
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-export type MirrorConfigurationDto = {
-  url: string;
-  usernamePasswordCredential?: UsernamePasswordCredentialDto;
-  certificationCredential?: CertificationCredentialDto;
-};
+@Extension
+@Singleton
+class MirrorReadOnlyCheck implements ReadOnlyCheck {
 
-export type MirrorRequestDto = MirrorConfigurationDto & RepositoryCreation;
+  private final MirrorConfigurationStore configurationStore;
+  private final ThreadLocal<Boolean> excepted = ThreadLocal.withInitial(() -> false);
 
-export type RepositoryMirrorConfiguration = MirrorConfigurationDto;
+  @Inject
+  MirrorReadOnlyCheck(MirrorConfigurationStore configurationStore) {
+    this.configurationStore = configurationStore;
+  }
+
+  @Override
+  public String getReason() {
+    return "repository is a mirror";
+  }
+
+  @Override
+  public boolean isReadOnly(String repositoryId) {
+    return !excepted.get() && configurationStore.hasConfiguration(repositoryId);
+  }
+
+  void exceptedFromReadOnly(Runnable runnable) {
+    excepted.set(true);
+    try {
+      runnable.run();
+    } finally {
+      excepted.remove();
+    }
+  }
+}

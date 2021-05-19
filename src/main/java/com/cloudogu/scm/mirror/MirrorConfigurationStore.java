@@ -57,16 +57,24 @@ public class MirrorConfigurationStore {
   }
 
   public boolean hasConfiguration(Repository repository) {
-    return createConfigurationStore(repository)
+    return hasConfiguration(repository.getId());
+  }
+
+  public boolean hasConfiguration(String repositoryId) {
+    return createConfigurationStore(repositoryId)
       .getOptional()
       .isPresent();
   }
 
   private ConfigurationStore<MirrorConfiguration> createConfigurationStore(Repository repository) {
+    return createConfigurationStore(repository.getId());
+  }
+
+  private ConfigurationStore<MirrorConfiguration> createConfigurationStore(String repositoryId) {
     return storeFactory
       .withType(MirrorConfiguration.class)
       .withName(STORE_NAME)
-      .forRepository(repository).build();
+      .forRepository(repositoryId).build();
   }
 
   @SuppressWarnings("java:S110") // We accept deep hierarchy for exceptions
