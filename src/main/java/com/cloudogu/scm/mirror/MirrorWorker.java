@@ -39,6 +39,9 @@ import javax.inject.Inject;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -51,6 +54,8 @@ class MirrorWorker {
   private final ScheduledExecutorService executor;
   private final MirrorStatusStore statusStore;
   private final PrivilegedMirrorRunner privilegedMirrorRunner;
+
+  private final Set<String> runningSynchronizations = Collections.synchronizedSet(new HashSet<>());
 
   @Inject
   MirrorWorker(RepositoryServiceFactory repositoryServiceFactory,
@@ -102,16 +107,19 @@ class MirrorWorker {
   // TODO event listener when repository is deleted -> remove from schedules
 
   private void startSynchronously(Repository repository, MirrorConfiguration configuration, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
-    // TODO Abort if already running
-    Instant startTime = Instant.now();
-    try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
-      MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
-      setCredentials(configuration, mirrorCommand);
-      MirrorCommandResult commandResult = callback.apply(mirrorCommand);
-      if (commandResult.isSuccess()) {
-        statusStore.setStatus(repository, MirrorStatus.success(startTime));
-      } else {
-        statusStore.setStatus(repository, MirrorStatus.failed(startTime));
+    if (runningSynchronizations.add(repository.getId())) {
+      Instant startTime = Instant.now();
+      try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+        MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
+        setCredentials(configuration, mirrorCommand);
+        MirrorCommandResult commandResult = callback.apply(mirrorCommand);
+        if (commandResult.isSuccess()) {
+          statusStore.setStatus(repository, MirrorStatus.success(startTime));
+        } else {
+          statusStore.setStatus(repository, MirrorStatus.failed(startTime));
+        }
+      } finally {
+        runningSynchronizations.remove(repository.getId());
       }
     }
   }

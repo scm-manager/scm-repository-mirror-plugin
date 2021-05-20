@@ -40,6 +40,7 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.Collections.emptyList;
@@ -66,11 +67,11 @@ class MirrorWorkerTest {
   @Mock(answer = Answers.RETURNS_SELF)
   private MirrorCommandBuilder mirrorCommandBuilder;
   @Mock
-  private MirrorReadOnlyCheck readOnlyCheck;
+  private PrivilegedMirrorRunner privilegedMirrorRunner;
 
   private MirrorWorker worker;
 
-  private Repository repository = RepositoryTestData.createHeartOfGold();
+  private final Repository repository = RepositoryTestData.createHeartOfGold();
 
   @BeforeEach
   void createService() {
@@ -84,10 +85,9 @@ class MirrorWorkerTest {
         invocationOnMock.getArgument(0, Runnable.class).run();
         return null;
       }
-    ).when(readOnlyCheck).exceptedFromReadOnly(any());
-    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, readOnlyCheck);
+    ).when(privilegedMirrorRunner).exceptedFromReadOnly(any());
+    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, privilegedMirrorRunner);
   }
-
 
   @BeforeEach
   void supportMirrorCommand() {
@@ -167,6 +167,34 @@ class MirrorWorkerTest {
           return true;
         }
       ));
+    }
+
+    @Test
+    void shouldRunOnlyOneUpdateAtATime() throws InterruptedException {
+      byte[] key = {};
+      MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, null, new MirrorConfiguration.CertificateCredential(key, "hog"));
+      CountDownLatch startedLatch = new CountDownLatch(1);
+      when(mirrorCommandBuilder.update())
+        .thenAnswer(invocation -> {
+          startedLatch.await();
+          return new MirrorCommandResult(false, emptyList(), Duration.ZERO);
+        });
+
+      CountDownLatch doneLatch = new CountDownLatch(2);
+      // start two updates in parallel
+      for (int i = 0; i < 2; ++i) {
+        new Thread(() -> {
+          worker.startUpdate(repository, configuration);
+          startedLatch.countDown();
+          doneLatch.countDown();
+        }).start();
+      }
+
+      // make sure both updates have been triggered
+      doneLatch.await();
+
+      // make sure both updates have been run
+      verify(mirrorCommandBuilder).update();
     }
   }
 }
