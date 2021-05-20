@@ -24,7 +24,6 @@
 
 package com.cloudogu.scm.mirror;
 
-import sonia.scm.BadRequestException;
 import sonia.scm.Initable;
 import sonia.scm.SCMContextProvider;
 import sonia.scm.repository.Repository;
@@ -34,8 +33,7 @@ import sonia.scm.store.ConfigurationStoreFactory;
 import sonia.scm.web.security.AdministrationContext;
 
 import javax.inject.Inject;
-
-import static sonia.scm.ContextEntry.ContextBuilder.entity;
+import java.util.Optional;
 
 public class MirrorConfigurationStore implements Initable {
 
@@ -56,11 +54,9 @@ public class MirrorConfigurationStore implements Initable {
     this.privilegedMirrorRunner = privilegedMirrorRunner;
   }
 
-  public MirrorConfiguration getConfiguration(Repository repository) {
+  public Optional<MirrorConfiguration> getConfiguration(Repository repository) {
     MirrorPermissions.checkMirrorPermission(repository);
-    return createConfigurationStore(repository)
-      .getOptional()
-      .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
+    return createConfigurationStore(repository).getOptional();
   }
 
   public void setConfiguration(Repository repository, MirrorConfiguration configuration) {
@@ -71,10 +67,6 @@ public class MirrorConfigurationStore implements Initable {
         scheduler.schedule(repository, configuration);
       }
     );
-  }
-
-  public boolean hasConfiguration(Repository repository) {
-    return hasConfiguration(repository.getId());
   }
 
   public boolean hasConfiguration(String repositoryId) {
@@ -89,10 +81,8 @@ public class MirrorConfigurationStore implements Initable {
   }
 
   private void init(Repository repository) {
-    if (hasConfiguration(repository)) {
-      MirrorConfiguration configuration = getConfiguration(repository);
-      scheduler.scheduleNow(repository, configuration);
-    }
+    getConfiguration(repository)
+      .ifPresent(configuration -> scheduler.scheduleNow(repository, configuration));
   }
 
   private ConfigurationStore<MirrorConfiguration> createConfigurationStore(Repository repository) {
@@ -104,18 +94,5 @@ public class MirrorConfigurationStore implements Initable {
       .withType(MirrorConfiguration.class)
       .withName(STORE_NAME)
       .forRepository(repositoryId).build();
-  }
-
-  @SuppressWarnings("java:S110") // We accept deep hierarchy for exceptions
-  static class NotConfiguredForMirrorException extends BadRequestException {
-
-    public NotConfiguredForMirrorException(Repository repository) {
-      super(entity(repository).build(), "repository not configured as a mirror");
-    }
-
-    @Override
-    public String getCode() {
-      return "9vSXNxLT01";
-    }
   }
 }

@@ -51,6 +51,7 @@ import sonia.scm.web.RestDispatcher;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 import static com.google.common.io.Resources.getResource;
 import static com.google.common.io.Resources.toByteArray;
@@ -179,7 +180,7 @@ class MirrorRootResourceTest {
   @Test
   void shouldFailToSetConfigurationForMissingRepository() throws URISyntaxException {
     JsonMockHttpRequest request = JsonMockHttpRequest
-      .post("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
+      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
       .json("{'url':'http://hog/scm', 'synchronizationPeriod':42}");
     MockHttpResponse response = new MockHttpResponse();
 
@@ -191,7 +192,7 @@ class MirrorRootResourceTest {
   @Test
   void shouldValidateNewConfiguration() throws URISyntaxException {
     JsonMockHttpRequest request = JsonMockHttpRequest
-      .post("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
+      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
       .json("{}");
     MockHttpResponse response = new MockHttpResponse();
 
@@ -215,7 +216,7 @@ class MirrorRootResourceTest {
     @Test
     void shouldSetUrlAndPeriodInConfiguration() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest
-        .post("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
+        .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
         .json("{'url':'http://hog/scm', 'synchronizationPeriod':42}");
       MockHttpResponse response = new MockHttpResponse();
 
@@ -235,7 +236,7 @@ class MirrorRootResourceTest {
     @Test
     void shouldSetUsernamePasswordCredentialInConfiguration() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest
-        .post("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
+        .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
         .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'dent', 'password':'hg2g'}}");
       MockHttpResponse response = new MockHttpResponse();
 
@@ -275,7 +276,7 @@ class MirrorRootResourceTest {
             new UsernamePasswordCredential("dent", "hog"),
             new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"));
         when(configurationStore.getConfiguration(repository))
-          .thenReturn(existingConfiguration);
+          .thenReturn(Optional.of(existingConfiguration));
       }
 
       @Test
@@ -305,7 +306,7 @@ class MirrorRootResourceTest {
         MirrorConfiguration existingConfiguration =
           new MirrorConfiguration("http://hog/", 42, null, null);
         when(configurationStore.getConfiguration(repository))
-          .thenReturn(existingConfiguration);
+          .thenReturn(Optional.of(existingConfiguration));
 
         MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
         JsonMockHttpResponse response = new JsonMockHttpResponse();

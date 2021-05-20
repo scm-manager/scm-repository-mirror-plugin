@@ -27,6 +27,7 @@ package com.cloudogu.scm.mirror.api;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
+import com.cloudogu.scm.mirror.NotConfiguredForMirrorException;
 import sonia.scm.NotFoundException;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.repository.NamespaceAndName;
@@ -71,7 +72,10 @@ public class MirrorResource {
   @Produces("application/json")
   public MirrorConfigurationDto getMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name) {
     Repository repository = loadRepository(namespace, name);
-    return toDtoMapper.map(configurationService.getConfiguration(repository), repository);
+    MirrorConfiguration configuration =
+      configurationService.getConfiguration(repository)
+      .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
+    return toDtoMapper.map(configuration, repository);
   }
 
   @PUT
@@ -97,4 +101,5 @@ public class MirrorResource {
     }
     return repository;
   }
+
 }

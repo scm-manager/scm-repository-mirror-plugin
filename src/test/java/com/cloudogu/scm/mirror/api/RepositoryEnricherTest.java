@@ -48,7 +48,6 @@ import javax.inject.Provider;
 
 import static com.cloudogu.scm.mirror.MirrorStatus.Result.SUCCESS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.BOOLEAN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -89,7 +88,7 @@ class RepositoryEnricherTest {
   @Test
   void shouldNotAppendLinkForRepositoryWithoutPermission() {
     HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-    lenient().when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(true);
+    lenient().when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
     when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
     enricher.enrich(context, appender);
@@ -100,7 +99,7 @@ class RepositoryEnricherTest {
   @Test
   void shouldAppendStatusAsEmbeddedForMirrorRepository() {
     HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-    lenient().when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(true);
+    lenient().when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
     when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
     enricher.enrich(context, appender);
@@ -117,7 +116,7 @@ class RepositoryEnricherTest {
   @Test
   void shouldNotAppendStatusForNormalRepository() {
     HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-    lenient().when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(false);
+    lenient().when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(false);
 
     enricher.enrich(context, appender);
 
@@ -134,7 +133,7 @@ class RepositoryEnricherTest {
     @Test
     void shouldNotAppendLinkForRepositoryThatIsNoMirror() {
       HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-      when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(false);
+      when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(false);
 
       enricher.enrich(context, appender);
 
@@ -144,7 +143,7 @@ class RepositoryEnricherTest {
     @Test
     void shouldAppendLinkForRepositoryThatIsAMirror() {
       HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-      when(configurationService.hasConfiguration(REPOSITORY)).thenReturn(true);
+      when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
       when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
       enricher.enrich(context, appender);

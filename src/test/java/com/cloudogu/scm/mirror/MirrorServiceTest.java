@@ -46,6 +46,8 @@ import java.util.function.Consumer;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -93,9 +95,8 @@ class MirrorServiceTest {
   )
   void shouldCallUpdateCommand() {
     repository.setId("42");
-    when(configurationStore.hasConfiguration(repository)).thenReturn(true);
     MirrorConfiguration configuration = mock(MirrorConfiguration.class);
-    when(configurationStore.getConfiguration(repository)).thenReturn(configuration);
+    when(configurationStore.getConfiguration(repository)).thenReturn(of(configuration));
 
     service.updateMirror(repository);
 
@@ -109,9 +110,9 @@ class MirrorServiceTest {
   )
   void shouldFailUpdateCommandWhenNotConfiguredAsMirror() {
     repository.setId("42");
-    when(configurationStore.hasConfiguration(repository)).thenReturn(false);
+    when(configurationStore.getConfiguration(repository)).thenReturn(empty());
 
-    assertThrows(IllegalArgumentException.class, () -> service.updateMirror(repository));
+    assertThrows(NotConfiguredForMirrorException.class, () -> service.updateMirror(repository));
   }
 
   @Nested

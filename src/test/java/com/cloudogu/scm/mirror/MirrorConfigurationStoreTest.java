@@ -41,6 +41,8 @@ import sonia.scm.store.InMemoryConfigurationStoreFactory;
 import sonia.scm.web.security.AdministrationContext;
 import sonia.scm.web.security.PrivilegedAction;
 
+import java.util.Optional;
+
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -106,11 +108,10 @@ class MirrorConfigurationStoreTest {
   class WithPermission {
 
     @Test
-    void shouldThrowExceptionForUnknownRepository() {
-      assertThrows(
-        MirrorConfigurationStore.NotConfiguredForMirrorException.class,
-        () -> store.getConfiguration(REPOSITORY)
-      );
+    void shouldReturnEmptyOptionalForUnknownRepository() {
+      Optional<MirrorConfiguration> configuration = store.getConfiguration(REPOSITORY);
+
+      assertThat(configuration).isEmpty();
     }
 
     @Test
@@ -118,9 +119,9 @@ class MirrorConfigurationStoreTest {
       MirrorConfiguration existingConfiguration = new MirrorConfiguration();
       mockExistingConfiguration(existingConfiguration);
 
-      MirrorConfiguration configuration = store.getConfiguration(REPOSITORY);
+      Optional<MirrorConfiguration> configuration = store.getConfiguration(REPOSITORY);
 
-      assertThat(configuration).isSameAs(existingConfiguration);
+      assertThat(configuration).get().isSameAs(existingConfiguration);
     }
 
     @Test
