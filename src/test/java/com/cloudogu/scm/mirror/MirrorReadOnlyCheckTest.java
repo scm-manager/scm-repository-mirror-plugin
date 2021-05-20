@@ -69,4 +69,13 @@ class MirrorReadOnlyCheckTest {
       assertThat(readOnly).isFalse();
     });
   }
+
+  @Test
+  void shouldBeDeletableEvenWithConfiguration() {
+    lenient().when(configurationStore.hasConfiguration("mirror")).thenReturn(true);
+
+    boolean readOnly = check.isReadOnly("delete", "mirror");
+
+    assertThat(readOnly).isFalse();
+  }
 }

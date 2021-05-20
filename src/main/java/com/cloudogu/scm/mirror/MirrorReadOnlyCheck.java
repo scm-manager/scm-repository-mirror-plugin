@@ -53,6 +53,11 @@ class MirrorReadOnlyCheck implements ReadOnlyCheck, PrivilegedMirrorRunner {
   }
 
   @Override
+  public boolean isReadOnly(String permission, String repositoryId) {
+    return !"delete".equals(permission) && isReadOnly(repositoryId);
+  }
+
+  @Override
   public void exceptedFromReadOnly(Runnable runnable) {
     excepted.set(true);
     try {
