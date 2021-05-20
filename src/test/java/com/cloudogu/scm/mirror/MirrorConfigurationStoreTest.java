@@ -39,10 +39,18 @@ import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.InMemoryConfigurationStoreFactory;
 import sonia.scm.web.security.AdministrationContext;
+import sonia.scm.web.security.PrivilegedAction;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(ShiroExtension.class)
 @ExtendWith(MockitoExtension.class)
@@ -125,31 +133,37 @@ class MirrorConfigurationStoreTest {
     }
   }
 
-//  @Test
-//  void shouldScheduleRepositoriesAtStartup() {
-//    doAnswer(
-//      invocation -> {
-//        invocation.getArgument(0, PrivilegedAction.class).run();
-//        return null;
-//      }
-//    ).when(administrationContext).runAsAdmin(any(PrivilegedAction.class));
-//    Repository normalRepository = RepositoryTestData.createHeartOfGold();
-//    Repository mirrorRepository = RepositoryTestData.create42Puzzle();
-//    when(repositoryManager.getAll())
-//      .thenReturn(asList(normalRepository, mirrorRepository));
-//    when(configurationStore.hasConfiguration(normalRepository)).thenReturn(false);
-//    when(configurationStore.hasConfiguration(mirrorRepository)).thenReturn(true);
-//    MirrorConfiguration configuration = mock(MirrorConfiguration.class);
-//    when(configurationStore.getConfiguration(mirrorRepository)).thenReturn(configuration);
-//
-//    scheduler.init(null);
-//
-//    verify(worker).scheduleUpdate(mirrorRepository, configuration, 5);
-//    verify(worker, never()).scheduleUpdate(normalRepository, configuration, 5);
-//  }
+  @Test
+  @SubjectAware(
+    value = "trillian",
+    permissions = "*" // admin context
+  )
+  void shouldScheduleRepositoriesAtStartup() {
+    doAnswer(
+      invocation -> {
+        invocation.getArgument(0, PrivilegedAction.class).run();
+        return null;
+      }
+    ).when(administrationContext).runAsAdmin(any(PrivilegedAction.class));
+    Repository normalRepository = RepositoryTestData.createHeartOfGold();
+    Repository mirrorRepository = RepositoryTestData.create42Puzzle();
+    when(repositoryManager.getAll())
+      .thenReturn(asList(normalRepository, mirrorRepository));
+    MirrorConfiguration configuration = mock(MirrorConfiguration.class);
+    mockExistingConfiguration(configuration, mirrorRepository);
+
+    store.init(null);
+
+    verify(scheduler).scheduleNow(mirrorRepository, configuration);
+    verify(scheduler, never()).scheduleNow(eq(normalRepository), any());
+  }
 
   @SuppressWarnings("unchecked")
   private void mockExistingConfiguration(MirrorConfiguration existingConfiguration) {
-    storeFactory.get("mirror", REPOSITORY.getId()).set(existingConfiguration);
+    mockExistingConfiguration(existingConfiguration, REPOSITORY);
+  }
+
+  private void mockExistingConfiguration(MirrorConfiguration existingConfiguration, Repository repository) {
+    storeFactory.get("mirror", repository.getId()).set(existingConfiguration);
   }
 }
