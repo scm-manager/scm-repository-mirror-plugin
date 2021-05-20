@@ -74,7 +74,8 @@ public class MirrorService {
   public void updateMirror(Repository repository) {
     MirrorPermissions.checkMirrorPermission(repository);
     if (configurationStore.hasConfiguration(repository)) {
-      mirrorWorker.startUpdate(repository);
+      MirrorConfiguration configuration = configurationStore.getConfiguration(repository);
+      mirrorWorker.startUpdate(repository, configuration);
     } else {
       throw new IllegalArgumentException("repository not configured as mirror");
     }
@@ -83,7 +84,7 @@ public class MirrorService {
   private Consumer<Repository> createMirrorCallback(MirrorConfiguration configuration) {
     return repository -> {
       configurationStore.setConfiguration(repository, configuration);
-      mirrorWorker.startInitialSync(repository);
+      mirrorWorker.startInitialSync(repository, configuration);
     };
   }
 

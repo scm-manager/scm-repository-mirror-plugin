@@ -49,6 +49,7 @@ import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
@@ -93,10 +94,12 @@ class MirrorServiceTest {
   void shouldCallUpdateCommand() {
     repository.setId("42");
     when(configurationStore.hasConfiguration(repository)).thenReturn(true);
+    MirrorConfiguration configuration = mock(MirrorConfiguration.class);
+    when(configurationStore.getConfiguration(repository)).thenReturn(configuration);
 
     service.updateMirror(repository);
 
-    verify(mirrorWorker).startUpdate(repository);
+    verify(mirrorWorker).startUpdate(repository, configuration);
   }
 
   @Test
@@ -172,7 +175,7 @@ class MirrorServiceTest {
         service.createMirror(configuration, repository);
 
         verify(configurationStore).setConfiguration(repository, configuration);
-        verify(mirrorWorker).startInitialSync(repository);
+        verify(mirrorWorker).startInitialSync(repository, configuration);
       }
     }
   }

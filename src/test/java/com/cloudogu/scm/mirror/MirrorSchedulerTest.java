@@ -31,37 +31,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.OngoingStubbing;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryTestData;
-import sonia.scm.web.security.AdministrationContext;
-import sonia.scm.web.security.PrivilegedAction;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MirrorSchedulerTest {
 
   @Mock
   private MirrorWorker worker;
-  @Mock
-  private MirrorConfigurationStore configurationStore;
-  @Mock
-  private RepositoryManager repositoryManager;
-  @Mock
-  private AdministrationContext administrationContext;
 
   @InjectMocks
   private MirrorScheduler scheduler;
@@ -72,56 +59,33 @@ class MirrorSchedulerTest {
   void mockWorkerCancellation() {
     doAnswer(
       invocation -> (CancelableSchedule) (() -> cancelledSchedules.add(invocation.getArgument(0, Repository.class).getId()))
-    ).when(worker).scheduleUpdate(any(), anyInt());
-  }
-
-  @Test
-  void shouldScheduleRepositoriesAtStartup() {
-    doAnswer(
-      invocation -> {
-        invocation.getArgument(0, PrivilegedAction.class).run();
-        return null;
-      }
-    ).when(administrationContext).runAsAdmin(any(PrivilegedAction.class));
-    Repository normalRepository = RepositoryTestData.createHeartOfGold();
-    Repository mirrorRepository = RepositoryTestData.create42Puzzle();
-    when(repositoryManager.getAll())
-      .thenReturn(asList(normalRepository, mirrorRepository));
-    when(configurationStore.hasConfiguration(normalRepository)).thenReturn(false);
-    when(configurationStore.hasConfiguration(mirrorRepository)).thenReturn(true);
-
-    scheduler.init(null);
-
-    verify(worker).scheduleUpdate(mirrorRepository, 5);
-    verify(worker, never()).scheduleUpdate(normalRepository, 5);
+    ).when(worker).scheduleUpdate(any(), any(), anyInt());
   }
 
   @Test
   void shouldSchedule() {
     Repository repository = RepositoryTestData.create42Puzzle();
-    mockConfiguration(repository, 42);
+    MirrorConfiguration configuration = mockConfiguration(repository, 42);
 
-    scheduler.schedule(repository);
+    scheduler.schedule(repository, configuration);
 
-    verify(worker).scheduleUpdate(repository, 42);
+    verify(worker).scheduleUpdate(repository, configuration, 42);
   }
 
   @Test
   void shouldCancelExistingSchedule() {
     Repository repository = RepositoryTestData.create42Puzzle();
-    mockConfiguration(repository, 42);
+    scheduler.schedule(repository, mockConfiguration(repository, 42));
 
-    scheduler.schedule(repository);
+    MirrorConfiguration configuration = mockConfiguration(repository, 23);
+    scheduler.schedule(repository, configuration);
 
-    mockConfiguration(repository, 23);
-    scheduler.schedule(repository);
-
-    verify(worker).scheduleUpdate(repository, 42);
+    verify(worker).scheduleUpdate(eq(repository), any(), eq(42));
     assertThat(cancelledSchedules).contains(repository.getId());
-    verify(worker).scheduleUpdate(repository, 23);
+    verify(worker).scheduleUpdate(repository, configuration, 23);
   }
 
-  private OngoingStubbing<MirrorConfiguration> mockConfiguration(Repository repository, int i) {
-    return when(configurationStore.getConfiguration(repository)).thenReturn(new MirrorConfiguration(null, i, null, null));
+  private MirrorConfiguration mockConfiguration(Repository repository, int i) {
+    return new MirrorConfiguration(null, i, null, null);
   }
 }

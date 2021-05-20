@@ -24,33 +24,6 @@
 
 package com.cloudogu.scm.mirror;
 
-import sonia.scm.repository.Repository;
-
-import javax.inject.Inject;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-class MirrorScheduler  {
-
-  private final MirrorWorker worker;
-
-  private final Map<String, MirrorWorker.CancelableSchedule> schedules = new ConcurrentHashMap<>();
-
-  @Inject
-  MirrorScheduler(MirrorWorker worker) {
-    this.worker = worker;
-  }
-
-  public void scheduleNow(Repository repository, MirrorConfiguration configuration) {
-    schedule(repository, configuration, 5);
-  }
-
-  public void schedule(Repository repository, MirrorConfiguration configuration) {
-    schedule(repository, configuration, configuration.getSynchronizationPeriod());
-  }
-
-  private void schedule(Repository repository, MirrorConfiguration configuration, int delay) {
-    schedules.getOrDefault(repository.getId(), () -> {}).cancel();
-    schedules.put(repository.getId(), worker.scheduleUpdate(repository, configuration, delay));
-  }
+interface PrivilegedMirrorRunner {
+  void exceptedFromReadOnly(Runnable runnable);
 }

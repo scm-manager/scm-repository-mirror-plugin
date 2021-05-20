@@ -59,11 +59,7 @@ class MirrorWorkerTest {
   @Mock
   private RepositoryServiceFactory repositoryServiceFactory;
   @Mock
-  private MirrorConfigurationStore configurationService;
-  @Mock
   private MirrorStatusStore statusStore;
-  @Mock
-  private MirrorConfigurationStore configurationStore;
 
   @Mock
   private RepositoryService repositoryService;
@@ -89,7 +85,7 @@ class MirrorWorkerTest {
         return null;
       }
     ).when(readOnlyCheck).exceptedFromReadOnly(any());
-    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, configurationStore, readOnlyCheck);
+    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, readOnlyCheck);
   }
 
 
@@ -101,11 +97,10 @@ class MirrorWorkerTest {
 
   @Test
   void shouldSetSuccessStatus() {
-    when(configurationStore.getConfiguration(repository))
-      .thenReturn(new MirrorConfiguration("https://hog/", 42, null, null));
+    MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, null, null);
     when(mirrorCommandBuilder.initialCall()).thenReturn(new MirrorCommandResult(true, emptyList(), Duration.ZERO));
 
-    worker.startInitialSync(repository);
+    worker.startInitialSync(repository, configuration);
 
     verify(statusStore).setStatus(
       eq(repository),
@@ -125,10 +120,9 @@ class MirrorWorkerTest {
 
     @Test
     void shouldSetFailedStatus() {
-      when(configurationStore.getConfiguration(repository))
-        .thenReturn(new MirrorConfiguration("https://hog/", 42, null, null));
+      MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, null, null);
 
-      worker.startUpdate(repository);
+      worker.startUpdate(repository, configuration);
 
       verify(statusStore).setStatus(
         eq(repository),
@@ -137,20 +131,18 @@ class MirrorWorkerTest {
 
     @Test
     void shouldSetUrlInCommand() {
-      when(configurationStore.getConfiguration(repository))
-        .thenReturn(new MirrorConfiguration("https://hog/", 42, null, null));
+      MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, null, null);
 
-      worker.startUpdate(repository);
+      worker.startUpdate(repository, configuration);
 
       verify(mirrorCommandBuilder).setSourceUrl("https://hog/");
     }
 
     @Test
     void shouldSetUsernamePasswordCredentialsInCommand() {
-      when(configurationStore.getConfiguration(repository))
-        .thenReturn(new MirrorConfiguration("https://hog/", 42, new MirrorConfiguration.UsernamePasswordCredential("dent", "hog"), null));
+      MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, new MirrorConfiguration.UsernamePasswordCredential("dent", "hog"), null);
 
-      worker.startUpdate(repository);
+      worker.startUpdate(repository, configuration);
 
       verify(mirrorCommandBuilder).setCredentials(argThat(
         credentials -> {
@@ -164,10 +156,9 @@ class MirrorWorkerTest {
     @Test
     void shouldSetKeyCredentialsInCommand() {
       byte[] key = {};
-      when(configurationStore.getConfiguration(repository))
-        .thenReturn(new MirrorConfiguration("https://hog/", 42, null, new MirrorConfiguration.CertificateCredential(key, "hog")));
+      MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, null, new MirrorConfiguration.CertificateCredential(key, "hog"));
 
-      worker.startUpdate(repository);
+      worker.startUpdate(repository, configuration);
 
       verify(mirrorCommandBuilder).setCredentials(argThat(
         credentials -> {

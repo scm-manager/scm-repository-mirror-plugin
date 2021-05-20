@@ -25,25 +25,33 @@
 package com.cloudogu.scm.mirror;
 
 import sonia.scm.BadRequestException;
+import sonia.scm.Initable;
+import sonia.scm.SCMContextProvider;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryManager;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
+import sonia.scm.web.security.AdministrationContext;
 
 import javax.inject.Inject;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
-public class MirrorConfigurationStore {
+public class MirrorConfigurationStore implements Initable {
 
   private static final String STORE_NAME = "mirror";
 
   private final ConfigurationStoreFactory storeFactory;
   private final MirrorScheduler scheduler;
+  private final RepositoryManager repositoryManager;
+  private final AdministrationContext administrationContext;
 
   @Inject
-  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory, MirrorScheduler scheduler) {
+  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory, MirrorScheduler scheduler, RepositoryManager repositoryManager, AdministrationContext administrationContext) {
     this.storeFactory = storeFactory;
     this.scheduler = scheduler;
+    this.repositoryManager = repositoryManager;
+    this.administrationContext = administrationContext;
   }
 
   public MirrorConfiguration getConfiguration(Repository repository) {
@@ -56,7 +64,7 @@ public class MirrorConfigurationStore {
   public void setConfiguration(Repository repository, MirrorConfiguration configuration) {
     MirrorPermissions.checkMirrorPermission(repository);
     createConfigurationStore(repository).set(configuration);
-    scheduler.schedule(repository);
+    scheduler.schedule(repository, configuration);
   }
 
   public boolean hasConfiguration(Repository repository) {
@@ -67,6 +75,18 @@ public class MirrorConfigurationStore {
     return createConfigurationStore(repositoryId)
       .getOptional()
       .isPresent();
+  }
+
+  @Override
+  public void init(SCMContextProvider context) {
+    administrationContext.runAsAdmin(() -> repositoryManager.getAll().forEach(this::init));
+  }
+
+  private void init(Repository repository) {
+    if (hasConfiguration(repository)) {
+      MirrorConfiguration configuration = getConfiguration(repository);
+      scheduler.scheduleNow(repository, configuration);
+    }
   }
 
   private ConfigurationStore<MirrorConfiguration> createConfigurationStore(Repository repository) {

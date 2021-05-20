@@ -32,7 +32,7 @@ import javax.inject.Singleton;
 
 @Extension
 @Singleton
-class MirrorReadOnlyCheck implements ReadOnlyCheck {
+class MirrorReadOnlyCheck implements ReadOnlyCheck, PrivilegedMirrorRunner {
 
   private final MirrorConfigurationStore configurationStore;
   private final ThreadLocal<Boolean> excepted = ThreadLocal.withInitial(() -> false);
@@ -52,7 +52,8 @@ class MirrorReadOnlyCheck implements ReadOnlyCheck {
     return !excepted.get() && configurationStore.hasConfiguration(repositoryId);
   }
 
-  void exceptedFromReadOnly(Runnable runnable) {
+  @Override
+  public void exceptedFromReadOnly(Runnable runnable) {
     excepted.set(true);
     try {
       runnable.run();

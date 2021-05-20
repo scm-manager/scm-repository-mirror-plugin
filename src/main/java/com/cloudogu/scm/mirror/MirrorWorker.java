@@ -50,16 +50,14 @@ class MirrorWorker {
   private final RepositoryServiceFactory repositoryServiceFactory;
   private final ScheduledExecutorService executor;
   private final MirrorStatusStore statusStore;
-  private final MirrorConfigurationStore configurationStore;
-  private final MirrorReadOnlyCheck readOnlyCheck;
+  private final PrivilegedMirrorRunner privilegedMirrorRunner;
 
   @Inject
   MirrorWorker(RepositoryServiceFactory repositoryServiceFactory,
                MeterRegistry registry,
                MirrorStatusStore statusStore,
-               MirrorConfigurationStore configurationStore,
-               MirrorReadOnlyCheck readOnlyCheck) {
-    this(repositoryServiceFactory, registry, Executors.newScheduledThreadPool(4), statusStore, configurationStore, readOnlyCheck);
+               PrivilegedMirrorRunner privilegedMirrorRunner) {
+    this(repositoryServiceFactory, registry, Executors.newScheduledThreadPool(4), statusStore, privilegedMirrorRunner);
   }
 
   @VisibleForTesting
@@ -67,48 +65,45 @@ class MirrorWorker {
                MeterRegistry registry,
                ScheduledExecutorService executor,
                MirrorStatusStore statusStore,
-               MirrorConfigurationStore configurationStore,
-               MirrorReadOnlyCheck readOnlyCheck) {
+               PrivilegedMirrorRunner privilegedMirrorRunner) {
     this.repositoryServiceFactory = repositoryServiceFactory;
     this.executor = executor;
     this.statusStore = statusStore;
-    this.configurationStore = configurationStore;
-    this.readOnlyCheck = readOnlyCheck;
+    this.privilegedMirrorRunner = privilegedMirrorRunner;
     Metrics.executor(registry, executor, "mirror", "fixed");
   }
 
-  void startInitialSync(Repository repository) {
-    readOnlyCheck.exceptedFromReadOnly(() -> statusStore.setStatus(repository, MirrorStatus.initialStatus()));
-    startAsynchronously(repository, MirrorCommandBuilder::initialCall);
+  void startInitialSync(Repository repository, MirrorConfiguration configuration) {
+    privilegedMirrorRunner.exceptedFromReadOnly(() -> statusStore.setStatus(repository, MirrorStatus.initialStatus()));
+    startAsynchronously(repository, configuration, MirrorCommandBuilder::initialCall);
   }
 
-  void startUpdate(Repository repository) {
-    startAsynchronously(repository, MirrorCommandBuilder::update);
+  void startUpdate(Repository repository, MirrorConfiguration configuration) {
+    startAsynchronously(repository, configuration, MirrorCommandBuilder::update);
   }
 
-  CancelableSchedule scheduleUpdate(Repository repository, int delay) {
+  CancelableSchedule scheduleUpdate(Repository repository, MirrorConfiguration configuration, int delay) {
     ScheduledFuture<?> scheduledFuture =
       executor.scheduleAtFixedRate(
-        () -> readOnlyCheck.exceptedFromReadOnly(() -> startSynchronously(repository, MirrorCommandBuilder::update)),
+        () -> privilegedMirrorRunner.exceptedFromReadOnly(() -> startSynchronously(repository, configuration, MirrorCommandBuilder::update)),
         delay,
         10,
         TimeUnit.MINUTES);
     return () -> scheduledFuture.cancel(false);
   }
 
-  private void startAsynchronously(Repository repository, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
+  private void startAsynchronously(Repository repository, MirrorConfiguration configuration, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
     // TODO Shiro context should either be set to admin or inherit the current subject
     executor.submit(
-      () -> readOnlyCheck.exceptedFromReadOnly(() -> startSynchronously(repository, callback))
+      () -> privilegedMirrorRunner.exceptedFromReadOnly(() -> startSynchronously(repository, configuration, callback))
     );
   }
 
   // TODO event listener when repository is deleted -> remove from schedules
 
-  private void startSynchronously(Repository repository, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
+  private void startSynchronously(Repository repository, MirrorConfiguration configuration, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
     // TODO Abort if already running
     Instant startTime = Instant.now();
-    MirrorConfiguration configuration = configurationStore.getConfiguration(repository);
     try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
       MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
       setCredentials(configuration, mirrorCommand);
