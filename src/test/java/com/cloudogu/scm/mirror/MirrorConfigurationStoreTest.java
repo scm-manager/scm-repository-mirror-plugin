@@ -68,6 +68,8 @@ class MirrorConfigurationStoreTest {
   private RepositoryManager repositoryManager;
   @Mock
   private AdministrationContext administrationContext;
+  @Mock
+  private PrivilegedMirrorRunner privilegedMirrorRunner;
 
   private MirrorConfigurationStore store;
   private InMemoryConfigurationStoreFactory storeFactory;
@@ -75,7 +77,7 @@ class MirrorConfigurationStoreTest {
   @BeforeEach
   void createService() {
     storeFactory = new InMemoryConfigurationStoreFactory();
-    store = new MirrorConfigurationStore(storeFactory, scheduler, repositoryManager, administrationContext);
+    store = new MirrorConfigurationStore(storeFactory, scheduler, repositoryManager, administrationContext, privilegedMirrorRunner);
   }
 
   @BeforeAll
@@ -124,6 +126,12 @@ class MirrorConfigurationStoreTest {
     @Test
     void shouldSetConfiguration() {
       MirrorConfiguration newConfiguration = new MirrorConfiguration();
+      doAnswer(
+        invocation -> {
+          invocation.getArgument(0, Runnable.class).run();
+          return null;
+        }
+      ).when(privilegedMirrorRunner).exceptedFromReadOnly(any());
 
       store.setConfiguration(REPOSITORY, newConfiguration);
 
@@ -158,11 +166,11 @@ class MirrorConfigurationStoreTest {
     verify(scheduler, never()).scheduleNow(eq(normalRepository), any());
   }
 
-  @SuppressWarnings("unchecked")
   private void mockExistingConfiguration(MirrorConfiguration existingConfiguration) {
     mockExistingConfiguration(existingConfiguration, REPOSITORY);
   }
 
+  @SuppressWarnings("unchecked")
   private void mockExistingConfiguration(MirrorConfiguration existingConfiguration, Repository repository) {
     storeFactory.get("mirror", repository.getId()).set(existingConfiguration);
   }

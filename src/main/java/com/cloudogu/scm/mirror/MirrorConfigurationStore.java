@@ -45,13 +45,15 @@ public class MirrorConfigurationStore implements Initable {
   private final MirrorScheduler scheduler;
   private final RepositoryManager repositoryManager;
   private final AdministrationContext administrationContext;
+  private final PrivilegedMirrorRunner privilegedMirrorRunner;
 
   @Inject
-  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory, MirrorScheduler scheduler, RepositoryManager repositoryManager, AdministrationContext administrationContext) {
+  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory, MirrorScheduler scheduler, RepositoryManager repositoryManager, AdministrationContext administrationContext, PrivilegedMirrorRunner privilegedMirrorRunner) {
     this.storeFactory = storeFactory;
     this.scheduler = scheduler;
     this.repositoryManager = repositoryManager;
     this.administrationContext = administrationContext;
+    this.privilegedMirrorRunner = privilegedMirrorRunner;
   }
 
   public MirrorConfiguration getConfiguration(Repository repository) {
@@ -63,8 +65,12 @@ public class MirrorConfigurationStore implements Initable {
 
   public void setConfiguration(Repository repository, MirrorConfiguration configuration) {
     MirrorPermissions.checkMirrorPermission(repository);
-    createConfigurationStore(repository).set(configuration);
-    scheduler.schedule(repository, configuration);
+    privilegedMirrorRunner.exceptedFromReadOnly(
+      () -> {
+        createConfigurationStore(repository).set(configuration);
+        scheduler.schedule(repository, configuration);
+      }
+    );
   }
 
   public boolean hasConfiguration(Repository repository) {
