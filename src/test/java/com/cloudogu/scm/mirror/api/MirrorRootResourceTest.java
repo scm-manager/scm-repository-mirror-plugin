@@ -127,7 +127,6 @@ class MirrorRootResourceTest {
 
     @Test
     void shouldConfigureBasicAuth() throws URISyntaxException {
-
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
         .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'trillian','password':'hog'}}");
       MockHttpResponse response = new MockHttpResponse();
@@ -290,9 +289,9 @@ class MirrorRootResourceTest {
         MirrorConfigurationDto configurationDto = response.getContentAs(MirrorConfigurationDto.class);
         assertThat(configurationDto.getUrl()).isEqualTo("http://hog/");
         assertThat(configurationDto.getUsernamePasswordCredential().getUsername()).isEqualTo("dent");
-        assertThat(configurationDto.getUsernamePasswordCredential().getPassword()).isEqualTo("hog");
-        assertThat(configurationDto.getCertificateCredential().getCertificate()).isEqualTo(BASE64_ENCODED_CERTIFICATE.replace("\\n", ""));
-        assertThat(configurationDto.getCertificateCredential().getPassword()).isEqualTo("hg2g");
+        assertThat(configurationDto.getUsernamePasswordCredential().getPassword()).isEqualTo("_DUMMY_");
+        assertThat(configurationDto.getCertificateCredential().getCertificate()).isNull();
+        assertThat(configurationDto.getCertificateCredential().getPassword()).isEqualTo("_DUMMY_");
         assertThat(configurationDto.getLinks().getLinkBy("self")).get().extracting("href")
           .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
       }

@@ -25,10 +25,12 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfiguration;
+import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorPermissions;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
@@ -36,7 +38,6 @@ import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.Base64;
 
 import static de.otto.edison.hal.Link.link;
 
@@ -48,7 +49,10 @@ abstract class MirrorConfigurationToConfigurationDtoMapper {
 
   abstract MirrorConfigurationDto map(MirrorConfiguration configuration, @Context Repository repository);
 
+  @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
   abstract MirrorConfigurationDto.UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
+  @Mapping(target = "certificate", expression = "java(null)")
+  @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
   abstract MirrorConfigurationDto.CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
 
   @ObjectFactory
@@ -66,9 +70,5 @@ abstract class MirrorConfigurationToConfigurationDtoMapper {
       builder.single(link("update", configurationUrl));
     }
     return builder.build();
-  }
-
-  String mapBase64(byte[] bytes) {
-    return Base64.getEncoder().encodeToString(bytes);
   }
 }

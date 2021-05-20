@@ -37,6 +37,7 @@ import java.util.Optional;
 
 public class MirrorConfigurationStore implements Initable {
 
+  public static final String DUMMY_PASSWORD = "_DUMMY_";
   private static final String STORE_NAME = "mirror";
 
   private final ConfigurationStoreFactory storeFactory;
@@ -63,10 +64,30 @@ public class MirrorConfigurationStore implements Initable {
     MirrorPermissions.checkMirrorPermission(repository);
     privilegedMirrorRunner.exceptedFromReadOnly(
       () -> {
-        createConfigurationStore(repository).set(configuration);
+        ConfigurationStore<MirrorConfiguration> store = createConfigurationStore(repository);
+        store.getOptional().ifPresent(
+          existingConfig -> updateWithExisting(existingConfig, configuration)
+        );
+        store.set(configuration);
         scheduler.schedule(repository, configuration);
       }
     );
+  }
+
+  private void updateWithExisting(MirrorConfiguration existingConfig, MirrorConfiguration configuration) {
+    if (configuration.getUsernamePasswordCredential() != null && existingConfig.getUsernamePasswordCredential() != null) {
+      if (DUMMY_PASSWORD.equals(configuration.getUsernamePasswordCredential().getPassword())) {
+        configuration.getUsernamePasswordCredential().setPassword(existingConfig.getUsernamePasswordCredential().getPassword());
+      }
+    }
+    if (configuration.getCertificateCredential() != null && existingConfig.getCertificateCredential() != null) {
+      if ("_DUMMY_".equals(configuration.getCertificateCredential().getPassword())) {
+        configuration.getCertificateCredential().setPassword(existingConfig.getCertificateCredential().getPassword());
+      }
+      if (configuration.getCertificateCredential().getCertificate() == null) {
+        configuration.getCertificateCredential().setCertificate(existingConfig.getCertificateCredential().getCertificate());
+      }
+    }
   }
 
   public boolean hasConfiguration(String repositoryId) {

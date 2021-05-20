@@ -24,6 +24,8 @@
 
 package com.cloudogu.scm.mirror;
 
+import com.cloudogu.scm.mirror.MirrorConfiguration.CertificateCredential;
+import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
@@ -49,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -107,6 +110,16 @@ class MirrorConfigurationStoreTest {
   )
   class WithPermission {
 
+    @BeforeEach
+    void mockPrivilegeRunner() {
+      lenient().doAnswer(
+        invocation -> {
+          invocation.getArgument(0, Runnable.class).run();
+          return null;
+        }
+      ).when(privilegedMirrorRunner).exceptedFromReadOnly(any());
+    }
+
     @Test
     void shouldReturnEmptyOptionalForUnknownRepository() {
       Optional<MirrorConfiguration> configuration = store.getConfiguration(REPOSITORY);
@@ -127,18 +140,30 @@ class MirrorConfigurationStoreTest {
     @Test
     void shouldSetConfiguration() {
       MirrorConfiguration newConfiguration = new MirrorConfiguration();
-      doAnswer(
-        invocation -> {
-          invocation.getArgument(0, Runnable.class).run();
-          return null;
-        }
-      ).when(privilegedMirrorRunner).exceptedFromReadOnly(any());
 
       store.setConfiguration(REPOSITORY, newConfiguration);
 
       Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
       assertThat(configurationFromStore).isSameAs(newConfiguration);
       verify(scheduler).schedule(REPOSITORY, newConfiguration);
+    }
+
+    @Test
+    void shouldOverwriteDummyCredentialsWithExistingCredentials() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      existingConfiguration.setUsernamePasswordCredential(new UsernamePasswordCredential("dent", "oldUsernamePassword"));
+      existingConfiguration.setCertificateCredential(new CertificateCredential(new byte[] {1, 2, 3}, "oldCertPassword"));
+      mockExistingConfiguration(existingConfiguration);
+
+      MirrorConfiguration newConfiguration = new MirrorConfiguration();
+      newConfiguration.setUsernamePasswordCredential(new UsernamePasswordCredential("dent", "_DUMMY_"));
+      newConfiguration.setCertificateCredential(new CertificateCredential(null, "_DUMMY_"));
+
+      store.setConfiguration(REPOSITORY, newConfiguration);
+
+      assertThat(newConfiguration.getUsernamePasswordCredential().getPassword()).isEqualTo("oldUsernamePassword");
+      assertThat(newConfiguration.getCertificateCredential().getPassword()).isEqualTo("oldCertPassword");
+      assertThat(newConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
     }
   }
 
