@@ -24,37 +24,30 @@
 
 package com.cloudogu.scm.mirror;
 
-import sonia.scm.repository.Repository;
+import com.github.legman.Subscribe;
+import sonia.scm.EagerSingleton;
+import sonia.scm.HandlerEventType;
+import sonia.scm.plugin.Extension;
+import sonia.scm.repository.RepositoryEvent;
 
 import javax.inject.Inject;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import javax.inject.Provider;
 
-class MirrorScheduler  {
+@Extension
+@EagerSingleton
+public class MirrorCleanupHook {
 
-  private final MirrorWorker worker;
-
-  private final Map<String, MirrorWorker.CancelableSchedule> schedules = new ConcurrentHashMap<>();
+  private final Provider<MirrorScheduler> scheduler;
 
   @Inject
-  MirrorScheduler(MirrorWorker worker) {
-    this.worker = worker;
+  MirrorCleanupHook(Provider<MirrorScheduler> scheduler) {
+    this.scheduler = scheduler;
   }
 
-  void scheduleNow(Repository repository, MirrorConfiguration configuration) {
-    schedule(repository, configuration, 5);
-  }
-
-  void schedule(Repository repository, MirrorConfiguration configuration) {
-    schedule(repository, configuration, configuration.getSynchronizationPeriod());
-  }
-
-  void cancel(Repository repository) {
-    schedules.getOrDefault(repository.getId(), () -> {}).cancel();
-  }
-
-  private void schedule(Repository repository, MirrorConfiguration configuration, int delay) {
-    cancel(repository);
-    schedules.put(repository.getId(), worker.scheduleUpdate(repository, configuration, delay));
+  @Subscribe
+  public void cleanupSchedules(RepositoryEvent event) {
+    if (event.getEventType() == HandlerEventType.DELETE) {
+      scheduler.get().cancel(event.getItem());
+    }
   }
 }

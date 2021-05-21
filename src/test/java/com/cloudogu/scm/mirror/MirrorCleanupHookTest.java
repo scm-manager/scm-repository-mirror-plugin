@@ -24,37 +24,38 @@
 
 package com.cloudogu.scm.mirror;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryEvent;
+import sonia.scm.repository.RepositoryTestData;
 
-import javax.inject.Inject;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import static com.google.inject.util.Providers.of;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
-class MirrorScheduler  {
+@ExtendWith(MockitoExtension.class)
+class MirrorCleanupHookTest {
 
-  private final MirrorWorker worker;
+  private final Repository repository = RepositoryTestData.createHeartOfGold();
 
-  private final Map<String, MirrorWorker.CancelableSchedule> schedules = new ConcurrentHashMap<>();
+  @Mock
+  private MirrorScheduler scheduler;
 
-  @Inject
-  MirrorScheduler(MirrorWorker worker) {
-    this.worker = worker;
+  @Test
+  void shouldCancelScheduleForDeletedRepository() {
+    new MirrorCleanupHook(of(scheduler)).cleanupSchedules(new RepositoryEvent(HandlerEventType.DELETE, repository));
+
+    verify(scheduler).cancel(repository);
   }
 
-  void scheduleNow(Repository repository, MirrorConfiguration configuration) {
-    schedule(repository, configuration, 5);
-  }
+  @Test
+  void shouldIgnoreOtherEvents() {
+    new MirrorCleanupHook(of(scheduler)).cleanupSchedules(new RepositoryEvent(HandlerEventType.BEFORE_DELETE, repository));
 
-  void schedule(Repository repository, MirrorConfiguration configuration) {
-    schedule(repository, configuration, configuration.getSynchronizationPeriod());
-  }
-
-  void cancel(Repository repository) {
-    schedules.getOrDefault(repository.getId(), () -> {}).cancel();
-  }
-
-  private void schedule(Repository repository, MirrorConfiguration configuration, int delay) {
-    cancel(repository);
-    schedules.put(repository.getId(), worker.scheduleUpdate(repository, configuration, delay));
+    verify(scheduler, never()).cancel(repository);
   }
 }
