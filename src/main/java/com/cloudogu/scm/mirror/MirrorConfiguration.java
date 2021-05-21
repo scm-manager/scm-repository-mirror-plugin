@@ -28,10 +28,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sonia.scm.xml.XmlCipherStringAdapter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 @Getter
 @Setter
@@ -51,8 +53,10 @@ public class MirrorConfiguration {
   @Setter
   @AllArgsConstructor
   @NoArgsConstructor
+  @XmlAccessorType(XmlAccessType.FIELD)
   public static class UsernamePasswordCredential implements sonia.scm.repository.api.UsernamePasswordCredential {
     private String username;
+    @XmlJavaTypeAdapter(XmlCipherStringAdapter.class)
     private String password;
 
     @Override
@@ -70,8 +74,10 @@ public class MirrorConfiguration {
   @Setter
   @AllArgsConstructor
   @NoArgsConstructor
+  @XmlAccessorType(XmlAccessType.FIELD)
   public static class CertificateCredential {
     private byte[] certificate;
+    @XmlJavaTypeAdapter(XmlCipherStringAdapter.class)
     private String password;
   }
 }
