@@ -209,6 +209,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
         </Column>
         {credentialsForm}
       </Columns>
+      <hr />
       <NameForm
         repository={repository}
         onChange={setRepository}
