@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.notifications.NotificationSender;
@@ -48,15 +49,16 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -77,6 +79,8 @@ class MirrorWorkerTest {
   private PrivilegedMirrorRunner privilegedMirrorRunner;
   @Mock
   private NotificationSender notificationSender;
+  @Mock
+  private ScheduledExecutorService executor;
 
   private MirrorWorker worker;
 
@@ -84,7 +88,6 @@ class MirrorWorkerTest {
 
   @BeforeEach
   void createService() {
-    ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
     lenient().doAnswer(invocation -> {
       invocation.getArgument(0, Runnable.class).run();
       return null;
@@ -226,6 +229,26 @@ class MirrorWorkerTest {
       doneLatch.await();
 
       // make sure both updates have been run
+      verify(mirrorCommandBuilder).update();
+    }
+
+    @Test
+    void shouldScheduleUpdates() {
+      ArgumentCaptor<Runnable> runnableArgumentCaptor = forClass(Runnable.class);
+      MirrorConfiguration configuration = createMirrorConfig();
+      configuration.setSynchronizationPeriod(42);
+
+      worker.scheduleUpdate(repository, configuration, 23);
+
+      verify(executor).scheduleAtFixedRate(
+        runnableArgumentCaptor.capture(),
+        eq(23L),
+        eq(42L),
+        eq(TimeUnit.MINUTES)
+      );
+
+      runnableArgumentCaptor.getValue().run();
+
       verify(mirrorCommandBuilder).update();
     }
   }

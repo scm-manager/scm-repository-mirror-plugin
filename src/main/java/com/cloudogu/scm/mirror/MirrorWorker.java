@@ -99,7 +99,7 @@ class MirrorWorker {
       executor.scheduleAtFixedRate(
         () -> privilegedMirrorRunner.exceptedFromReadOnly(() -> startSynchronously(repository, configuration, MirrorCommandBuilder::update)),
         delay,
-        10,
+        configuration.getSynchronizationPeriod(),
         TimeUnit.MINUTES);
     return () -> scheduledFuture.cancel(false);
   }
