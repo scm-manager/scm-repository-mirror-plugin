@@ -26,6 +26,8 @@ package com.cloudogu.scm.mirror;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sonia.scm.metrics.Metrics;
 import sonia.scm.notifications.Notification;
 import sonia.scm.notifications.NotificationSender;
@@ -52,6 +54,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 class MirrorWorker {
+
+  private static final Logger LOG = LoggerFactory.getLogger(MirrorWorker.class);
 
   private final RepositoryServiceFactory repositoryServiceFactory;
   private final ScheduledExecutorService executor;
@@ -87,21 +91,27 @@ class MirrorWorker {
 
   void startInitialSync(Repository repository, MirrorConfiguration configuration) {
     privilegedMirrorRunner.exceptedFromReadOnly(() -> statusStore.setStatus(repository, MirrorStatus.initialStatus()));
+    LOG.info("enqueuing initial sync for mirror {} from url {}", repository, configuration.getUrl());
     startAsynchronously(repository, configuration, MirrorCommandBuilder::initialCall);
   }
 
   void startUpdate(Repository repository, MirrorConfiguration configuration) {
+    LOG.info("enqueuing update for mirror {} from url {}", repository, configuration.getUrl());
     startAsynchronously(repository, configuration, MirrorCommandBuilder::update);
   }
 
   CancelableSchedule scheduleUpdate(Repository repository, MirrorConfiguration configuration, int delay) {
+    LOG.info("scheduling update for mirror {} from url {} in {} minutes every {} minutes", repository, configuration.getUrl(), delay, configuration.getSynchronizationPeriod());
     ScheduledFuture<?> scheduledFuture =
       executor.scheduleAtFixedRate(
         () -> privilegedMirrorRunner.exceptedFromReadOnly(() -> startSynchronously(repository, configuration, MirrorCommandBuilder::update)),
         delay,
         configuration.getSynchronizationPeriod(),
         TimeUnit.MINUTES);
-    return () -> scheduledFuture.cancel(false);
+    return () -> {
+      LOG.info("cancelling schedule for repository {}", repository);
+      scheduledFuture.cancel(false);
+    };
   }
 
   private void startAsynchronously(Repository repository, MirrorConfiguration configuration, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
@@ -111,24 +121,28 @@ class MirrorWorker {
     );
   }
 
-  // TODO event listener when repository is deleted -> remove from schedules
-
   private void startSynchronously(Repository repository, MirrorConfiguration configuration, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
+    LOG.debug("running sync for mirror {}", repository);
     if (runningSynchronizations.add(repository.getId())) {
       Instant startTime = Instant.now();
       try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+        LOG.debug("using url {}", configuration.getUrl());
         MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
         setCredentials(configuration, mirrorCommand);
         MirrorCommandResult commandResult = callback.apply(mirrorCommand);
         if (commandResult.isSuccess()) {
+          LOG.debug("got successful result for sync of {}", repository);
           statusStore.setStatus(repository, MirrorStatus.success(startTime));
         } else {
+          LOG.debug("got failure for sync of {}", repository);
           shouldSendFailureNotification(repository, configuration);
           statusStore.setStatus(repository, MirrorStatus.failed(startTime));
         }
       } finally {
         runningSynchronizations.remove(repository.getId());
       }
+    } else {
+      LOG.info("skipping sync for mirror {}; other sync still running", repository);
     }
   }
 
@@ -143,9 +157,11 @@ class MirrorWorker {
   private void setCredentials(MirrorConfiguration configuration, MirrorCommandBuilder mirrorCommand) {
     Collection<Credential> credentials = new ArrayList<>();
     if (configuration.getUsernamePasswordCredential() != null) {
+      LOG.debug("using username/password credential for sync");
       credentials.add(configuration.getUsernamePasswordCredential());
     }
     if (configuration.getCertificateCredential() != null) {
+      LOG.debug("using certificate credential for sync");
       credentials.add(new Pkcs12ClientCertificateCredential(configuration.getCertificateCredential().getCertificate(), configuration.getCertificateCredential().getPassword().toCharArray()));
     }
     mirrorCommand.setCredentials(credentials);
