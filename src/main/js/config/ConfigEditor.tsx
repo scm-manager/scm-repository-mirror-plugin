@@ -25,7 +25,7 @@ import React, { FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { MirrorConfigurationDto } from "../types";
-import { InputField, Select, SelectItem, Textarea } from "@scm-manager/ui-components";
+import {AutocompleteAddEntryToTableField, InputField, MemberNameTagGroup, Select, SelectItem, Textarea } from "@scm-manager/ui-components";
 import styled from "styled-components";
 import { Repository } from "@scm-manager/ui-types";
 
@@ -182,6 +182,20 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
         />
       </Column>
       {credentialsForm}
+      <Column className="column is-full">
+        {/*<MemberNameTagGroup*/}
+        {/*  members={emergencyContacts}*/}
+        {/*  memberListChanged={handleEmergencyContactsChange}*/}
+        {/*  label={t("general-settings.emergencyContacts.label")}*/}
+        {/*  helpText={t("general-settings.emergencyContacts.helpText")}*/}
+        {/*/>*/}
+        {/*<AutocompleteAddEntryToTableField*/}
+        {/*  addEntry={addEmergencyContact}*/}
+        {/*  buttonLabel={t("general-settings.emergencyContacts.addButton")}*/}
+        {/*  loadSuggestions={userSuggestions}*/}
+        {/*  placeholder={t("general-settings.emergencyContacts.autocompletePlaceholder")}*/}
+        {/*/>*/}
+      </Column>
     </Columns>
   );
 };

@@ -34,6 +34,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.List;
 
 @Getter
 @Setter
@@ -45,6 +46,7 @@ public class MirrorConfiguration {
 
   private String url;
   private int synchronizationPeriod;
+  private List<String> managingUsers;
 
   private UsernamePasswordCredential usernamePasswordCredential;
   private CertificateCredential certificateCredential;

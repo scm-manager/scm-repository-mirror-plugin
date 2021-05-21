@@ -55,5 +55,8 @@
       "failed": "Letzte Synchronisation fehlgeschlagen",
       "notYetRun": "Noch nicht synchronisiert"
     }
+  },
+  "notifications": {
+    "mirrorFailed": "Das Spiegeln des Repository ist fehlgeschlagen."
   }
 }

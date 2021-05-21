@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHandler;
@@ -59,8 +60,10 @@ public class MirrorService {
     RepositoryPermissions.create().check();
     checkMirrorSupport(repository);
 
+    String currentUser = SecurityUtils.getSubject().getPrincipal().toString();
+    configuration.setManagingUsers(ImmutableList.of(currentUser));
     RepositoryPermission ownerPermission = new RepositoryPermission(
-      SecurityUtils.getSubject().getPrincipal().toString(),
+      currentUser,
       "OWNER",
       false);
     repository.setPermissions(singletonList(ownerPermission));

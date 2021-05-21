@@ -55,5 +55,8 @@
       "failed": "Last synchronization failed",
       "notYetRun": "Not yet synchronized"
     }
+  },
+  "notifications": {
+    "mirrorFailed": "Repository mirroring has failed."
   }
 }

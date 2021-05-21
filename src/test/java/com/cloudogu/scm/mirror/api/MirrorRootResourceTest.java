@@ -57,6 +57,7 @@ import static com.google.common.io.Resources.getResource;
 import static com.google.common.io.Resources.toByteArray;
 import static com.google.inject.util.Providers.of;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -272,6 +273,7 @@ class MirrorRootResourceTest {
           new MirrorConfiguration(
             "http://hog/",
             42,
+            emptyList(),
             new UsernamePasswordCredential("dent", "hog"),
             new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"));
         when(configurationStore.getConfiguration(repository))
@@ -303,7 +305,7 @@ class MirrorRootResourceTest {
       )
       void shouldCreateUpdateLinkWithPermission() throws URISyntaxException {
         MirrorConfiguration existingConfiguration =
-          new MirrorConfiguration("http://hog/", 42, null, null);
+          new MirrorConfiguration("http://hog/", 42, emptyList(), null, null);
         when(configurationStore.getConfiguration(repository))
           .thenReturn(Optional.of(existingConfiguration));
 

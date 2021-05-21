@@ -27,6 +27,9 @@ package com.cloudogu.scm.mirror;
 import com.google.common.annotations.VisibleForTesting;
 import io.micrometer.core.instrument.MeterRegistry;
 import sonia.scm.metrics.Metrics;
+import sonia.scm.notifications.Notification;
+import sonia.scm.notifications.NotificationSender;
+import sonia.scm.notifications.Type;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Credential;
 import sonia.scm.repository.api.MirrorCommandBuilder;
@@ -54,6 +57,7 @@ class MirrorWorker {
   private final ScheduledExecutorService executor;
   private final MirrorStatusStore statusStore;
   private final PrivilegedMirrorRunner privilegedMirrorRunner;
+  private final NotificationSender notificationSender;
 
   private final Set<String> runningSynchronizations = Collections.synchronizedSet(new HashSet<>());
 
@@ -61,8 +65,9 @@ class MirrorWorker {
   MirrorWorker(RepositoryServiceFactory repositoryServiceFactory,
                MeterRegistry registry,
                MirrorStatusStore statusStore,
-               PrivilegedMirrorRunner privilegedMirrorRunner) {
-    this(repositoryServiceFactory, registry, Executors.newScheduledThreadPool(4), statusStore, privilegedMirrorRunner);
+               PrivilegedMirrorRunner privilegedMirrorRunner,
+               NotificationSender notificationSender) {
+    this(repositoryServiceFactory, registry, Executors.newScheduledThreadPool(4), statusStore, privilegedMirrorRunner, notificationSender);
   }
 
   @VisibleForTesting
@@ -70,11 +75,13 @@ class MirrorWorker {
                MeterRegistry registry,
                ScheduledExecutorService executor,
                MirrorStatusStore statusStore,
-               PrivilegedMirrorRunner privilegedMirrorRunner) {
+               PrivilegedMirrorRunner privilegedMirrorRunner,
+               NotificationSender notificationSender) {
     this.repositoryServiceFactory = repositoryServiceFactory;
     this.executor = executor;
     this.statusStore = statusStore;
     this.privilegedMirrorRunner = privilegedMirrorRunner;
+    this.notificationSender = notificationSender;
     Metrics.executor(registry, executor, "mirror", "fixed");
   }
 
@@ -116,10 +123,19 @@ class MirrorWorker {
         if (commandResult.isSuccess()) {
           statusStore.setStatus(repository, MirrorStatus.success(startTime));
         } else {
+          shouldSendFailureNotification(repository, configuration);
           statusStore.setStatus(repository, MirrorStatus.failed(startTime));
         }
       } finally {
         runningSynchronizations.remove(repository.getId());
+      }
+    }
+  }
+
+  private void shouldSendFailureNotification(Repository repository, MirrorConfiguration configuration) {
+    if (statusStore.getStatus(repository).getResult() == MirrorStatus.Result.SUCCESS) {
+      for (String user : configuration.getManagingUsers()) {
+        notificationSender.send(new Notification(Type.ERROR, "/repo/" + repository.getNamespaceAndName() + "/settings/general", "mirrorFailed"), user);
       }
     }
   }

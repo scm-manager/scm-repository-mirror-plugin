@@ -34,10 +34,12 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@SuppressWarnings("java:S2160") // Equals and Hashcode not needed for dto
 public class MirrorConfigurationDto extends HalRepresentation {
 
   @NotBlank
@@ -45,6 +47,7 @@ public class MirrorConfigurationDto extends HalRepresentation {
   @NotNull
   @Min(5)
   private Integer synchronizationPeriod;
+  private List<String> managingUsers;
 
   @Valid
   private UsernamePasswordCredentialDto usernamePasswordCredential;

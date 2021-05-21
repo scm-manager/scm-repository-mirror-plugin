@@ -37,6 +37,7 @@ export type CertificationCredentialDto = {
 export type MirrorConfigurationDto = {
   url: string;
   synchronizationPeriod: number;
+  managingUsers: string[];
   usernamePasswordCredential?: UsernamePasswordCredentialDto;
   certificationCredential?: CertificationCredentialDto;
 };

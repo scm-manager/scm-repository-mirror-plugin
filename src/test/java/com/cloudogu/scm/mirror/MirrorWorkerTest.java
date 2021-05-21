@@ -24,6 +24,9 @@
 
 package com.cloudogu.scm.mirror;
 
+import com.cloudogu.scm.mirror.MirrorConfiguration.CertificateCredential;
+import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
+import com.google.common.collect.ImmutableList;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -32,6 +35,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.notifications.NotificationSender;
+import sonia.scm.notifications.Type;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.MirrorCommandBuilder;
@@ -40,6 +45,7 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -51,6 +57,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -68,6 +75,8 @@ class MirrorWorkerTest {
   private MirrorCommandBuilder mirrorCommandBuilder;
   @Mock
   private PrivilegedMirrorRunner privilegedMirrorRunner;
+  @Mock
+  private NotificationSender notificationSender;
 
   private MirrorWorker worker;
 
@@ -86,7 +95,7 @@ class MirrorWorkerTest {
         return null;
       }
     ).when(privilegedMirrorRunner).exceptedFromReadOnly(any());
-    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, privilegedMirrorRunner);
+    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, privilegedMirrorRunner, notificationSender);
   }
 
   @BeforeEach
@@ -97,7 +106,7 @@ class MirrorWorkerTest {
 
   @Test
   void shouldSetSuccessStatus() {
-    MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, null, null);
+    MirrorConfiguration configuration = createMirrorConfig();
     when(mirrorCommandBuilder.initialCall()).thenReturn(new MirrorCommandResult(true, emptyList(), Duration.ZERO));
 
     worker.startInitialSync(repository, configuration);
@@ -115,23 +124,46 @@ class MirrorWorkerTest {
 
     @BeforeEach
     void mockUpdate() {
+      when(statusStore.getStatus(repository)).thenReturn(new MirrorStatus(MirrorStatus.Result.SUCCESS));
       when(mirrorCommandBuilder.update()).thenReturn(new MirrorCommandResult(false, emptyList(), Duration.ZERO));
     }
 
     @Test
-    void shouldSetFailedStatus() {
-      MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, null, null);
+    void shouldSetFailedStatusAndSendNotificationToManagingUsers() {
+      MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
 
       worker.startUpdate(repository, configuration);
 
       verify(statusStore).setStatus(
         eq(repository),
         argThat(status -> status.getResult().equals(MirrorStatus.Result.FAILED)));
+      verify(notificationSender).send(argThat(n -> {
+          assertThat(n.getMessage()).isEqualTo("mirrorFailed");
+          assertThat(n.getType()).isEqualTo(Type.ERROR);
+          assertThat(n.getLink()).isEqualTo("/repo/" + repository.getNamespaceAndName() + "/settings/general");
+          return true;
+        }),
+        eq("trillian")
+      );
+    }
+
+    @Test
+    void shouldSetFailedStatusAndButNotSendNotificationToManagingUsers() {
+      when(statusStore.getStatus(repository)).thenReturn(new MirrorStatus(MirrorStatus.Result.FAILED));
+
+      MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
+
+      worker.startUpdate(repository, configuration);
+
+      verify(statusStore).setStatus(
+        eq(repository),
+        argThat(status -> status.getResult().equals(MirrorStatus.Result.FAILED)));
+      verify(notificationSender, never()).send(any(), any());
     }
 
     @Test
     void shouldSetUrlInCommand() {
-      MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, null, null);
+      MirrorConfiguration configuration = createMirrorConfig();
 
       worker.startUpdate(repository, configuration);
 
@@ -140,7 +172,7 @@ class MirrorWorkerTest {
 
     @Test
     void shouldSetUsernamePasswordCredentialsInCommand() {
-      MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, new MirrorConfiguration.UsernamePasswordCredential("dent", "hog"), null);
+      MirrorConfiguration configuration = createMirrorConfig(new UsernamePasswordCredential("dent", "hog"));
 
       worker.startUpdate(repository, configuration);
 
@@ -156,7 +188,7 @@ class MirrorWorkerTest {
     @Test
     void shouldSetKeyCredentialsInCommand() {
       byte[] key = {};
-      MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, null, new MirrorConfiguration.CertificateCredential(key, "hog"));
+      MirrorConfiguration configuration = createMirrorConfig(new CertificateCredential(key, "hog"));
 
       worker.startUpdate(repository, configuration);
 
@@ -172,7 +204,7 @@ class MirrorWorkerTest {
     @Test
     void shouldRunOnlyOneUpdateAtATime() throws InterruptedException {
       byte[] key = {};
-      MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, null, new MirrorConfiguration.CertificateCredential(key, "hog"));
+      MirrorConfiguration configuration = createMirrorConfig(new CertificateCredential(key, "hog"));
       CountDownLatch startedLatch = new CountDownLatch(1);
       when(mirrorCommandBuilder.update())
         .thenAnswer(invocation -> {
@@ -196,5 +228,21 @@ class MirrorWorkerTest {
       // make sure both updates have been run
       verify(mirrorCommandBuilder).update();
     }
+  }
+
+  private MirrorConfiguration createMirrorConfig() {
+    return createMirrorConfig(emptyList(), null, null);
+  }
+
+  private MirrorConfiguration createMirrorConfig(CertificateCredential cc) {
+    return createMirrorConfig(emptyList(), null, cc);
+  }
+
+  private MirrorConfiguration createMirrorConfig(UsernamePasswordCredential upc) {
+    return createMirrorConfig(emptyList(), upc, null);
+  }
+
+  private MirrorConfiguration createMirrorConfig(List<String> managingUsers, UsernamePasswordCredential upc, CertificateCredential cc) {
+    return new MirrorConfiguration("https://hog/", 42, managingUsers, upc, cc);
   }
 }

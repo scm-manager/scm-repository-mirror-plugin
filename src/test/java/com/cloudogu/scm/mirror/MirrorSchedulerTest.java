@@ -34,9 +34,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -86,6 +88,6 @@ class MirrorSchedulerTest {
   }
 
   private MirrorConfiguration mockConfiguration(Repository repository, int i) {
-    return new MirrorConfiguration(null, i, null, null);
+    return new MirrorConfiguration(null, i, emptyList(), null, null);
   }
 }
