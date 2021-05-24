@@ -21,13 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { MirrorConfigurationDto } from "../types";
-import {AutocompleteAddEntryToTableField, InputField, MemberNameTagGroup, Select, SelectItem, Textarea } from "@scm-manager/ui-components";
+import {
+  AutocompleteAddEntryToTableField,
+  InputField,
+  MemberNameTagGroup,
+  Select,
+  SelectItem,
+  Textarea
+} from "@scm-manager/ui-components";
 import styled from "styled-components";
 import { Repository } from "@scm-manager/ui-types";
+import { useUserSuggestions } from "@scm-manager/ui-api";
 
 const Column = styled.div`
   padding: 0 0.75rem;
@@ -38,6 +46,8 @@ const Columns = styled.div`
   padding: 0.75rem 0 0;
 `;
 
+type FormType = Omit<MirrorConfigurationDto, "managingUsers">;
+
 type Props = {
   onConfigurationChange: (config: MirrorConfigurationDto, valid: boolean) => void;
   initialConfiguration: MirrorConfigurationDto;
@@ -46,15 +56,19 @@ type Props = {
 };
 
 const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, readOnly: disabled, repository }) => {
+  const userSuggestions = useUserSuggestions();
   const [t] = useTranslation("plugins");
-  const { register, formState, watch } = useForm<MirrorConfigurationDto>({
+  const { register, formState, watch } = useForm<FormType>({
     mode: "onChange",
     defaultValues: initialConfiguration
   });
+  const [managingUsers, setManagingUsers] = useState(initialConfiguration.managingUsers || []);
   const formValue = watch();
 
+  const addManagingUser = (user: string) => setManagingUsers([...managingUsers, user]);
+
   useEffect(() => {
-    const output = { ...formValue };
+    const output: MirrorConfigurationDto = { ...formValue, managingUsers };
 
     if (!output.usernamePasswordCredential?.username) {
       delete output.usernamePasswordCredential;
@@ -64,7 +78,7 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
     }
 
     onConfigurationChange(output, formState.isValid);
-  }, [formValue, formState.isValid]);
+  }, [formValue, formState.isValid, managingUsers]);
 
   const periodOptions: SelectItem[] = [
     {
@@ -101,55 +115,44 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
     }
   ];
 
-  let credentialsForm = null;
-  switch (repository.type) {
-    case "git":
-      credentialsForm = (
-        <>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.username.label")}
-              helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
-              disabled={disabled}
-              {...register("usernamePasswordCredential.username")}
-            />
-          </Column>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.password.label")}
-              type="password"
-              helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
-              disabled={disabled}
-              {...register("usernamePasswordCredential.password")}
-            />
-          </Column>
-        </>
-      );
-      break;
-    case "svn":
-      credentialsForm = (
-        <>
-          <Column className="column is-full">
-            <Textarea
-              label={t("scm-repository-mirror-plugin.form.certificate.label")}
-              helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
-              disabled={disabled}
-              {...register("certificationCredential.certificate")}
-            />
-          </Column>
-          <Column className="column is-full">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
-              type="password"
-              helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
-              disabled={disabled}
-              {...register("certificationCredential.password")}
-            />
-          </Column>
-        </>
-      );
-      break;
-  }
+  const credentialsForm = (
+    <>
+      <Column className="column is-half">
+        <InputField
+          label={t("scm-repository-mirror-plugin.form.username.label")}
+          helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
+          disabled={disabled}
+          {...register("usernamePasswordCredential.username")}
+        />
+      </Column>
+      <Column className="column is-half">
+        <InputField
+          label={t("scm-repository-mirror-plugin.form.password.label")}
+          type="password"
+          helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
+          disabled={disabled}
+          {...register("usernamePasswordCredential.password")}
+        />
+      </Column>
+      <Column className="column is-full">
+        <Textarea
+          label={t("scm-repository-mirror-plugin.form.certificate.label")}
+          helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
+          disabled={disabled}
+          {...register("certificationCredential.certificate")}
+        />
+      </Column>
+      <Column className="column is-full">
+        <InputField
+          label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
+          type="password"
+          helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
+          disabled={disabled}
+          {...register("certificationCredential.password")}
+        />
+      </Column>
+    </>
+  );
 
   return (
     <Columns className="columns is-multiline">
@@ -183,18 +186,18 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
       </Column>
       {credentialsForm}
       <Column className="column is-full">
-        {/*<MemberNameTagGroup*/}
-        {/*  members={emergencyContacts}*/}
-        {/*  memberListChanged={handleEmergencyContactsChange}*/}
-        {/*  label={t("general-settings.emergencyContacts.label")}*/}
-        {/*  helpText={t("general-settings.emergencyContacts.helpText")}*/}
-        {/*/>*/}
-        {/*<AutocompleteAddEntryToTableField*/}
-        {/*  addEntry={addEmergencyContact}*/}
-        {/*  buttonLabel={t("general-settings.emergencyContacts.addButton")}*/}
-        {/*  loadSuggestions={userSuggestions}*/}
-        {/*  placeholder={t("general-settings.emergencyContacts.autocompletePlaceholder")}*/}
-        {/*/>*/}
+        <MemberNameTagGroup
+          members={managingUsers}
+          memberListChanged={setManagingUsers}
+          label={t("scm-repository-mirror-plugin.form.managingUsers.label")}
+          helpText={t("scm-repository-mirror-plugin.form.managingUsers.helpText")}
+        />
+        <AutocompleteAddEntryToTableField
+          addEntry={addManagingUser}
+          buttonLabel={t("scm-repository-mirror-plugin.form.managingUsers.addButton")}
+          loadSuggestions={userSuggestions}
+          placeholder={t("scm-repository-mirror-plugin.form.managingUsers.autocompletePlaceholder")}
+        />
       </Column>
     </Columns>
   );

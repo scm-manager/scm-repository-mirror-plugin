@@ -125,55 +125,44 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     onSubmit(request);
   };
 
-  let credentialsForm = null;
-  switch (repositoryType) {
-    case "git":
-      credentialsForm = (
-        <>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.username.label")}
-              helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
-              disabled={disabled}
-              {...register("usernamePasswordCredential.username")}
-            />
-          </Column>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.password.label")}
-              type="password"
-              helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
-              disabled={disabled}
-              {...register("usernamePasswordCredential.password")}
-            />
-          </Column>
-        </>
-      );
-      break;
-    case "svn":
-      credentialsForm = (
-        <>
-          <Column className="column is-full">
-            <Textarea
-              label={t("scm-repository-mirror-plugin.form.certificate.label")}
-              helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
-              disabled={disabled}
-              {...register("certificationCredential.certificate")}
-            />
-          </Column>
-          <Column className="column is-full">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
-              type="password"
-              helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
-              disabled={disabled}
-              {...register("certificationCredential.password")}
-            />
-          </Column>
-        </>
-      );
-      break;
-  }
+  const credentialsForm = (
+    <>
+      <Column className="column is-half">
+        <InputField
+          label={t("scm-repository-mirror-plugin.form.username.label")}
+          helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
+          disabled={disabled}
+          {...register("usernamePasswordCredential.username")}
+        />
+      </Column>
+      <Column className="column is-half">
+        <InputField
+          label={t("scm-repository-mirror-plugin.form.password.label")}
+          type="password"
+          helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
+          disabled={disabled}
+          {...register("usernamePasswordCredential.password")}
+        />
+      </Column>
+      <Column className="column is-full">
+        <Textarea
+          label={t("scm-repository-mirror-plugin.form.certificate.label")}
+          helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
+          disabled={disabled}
+          {...register("certificationCredential.certificate")}
+        />
+      </Column>
+      <Column className="column is-full">
+        <InputField
+          label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
+          type="password"
+          helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
+          disabled={disabled}
+          {...register("certificationCredential.password")}
+        />
+      </Column>
+    </>
+  );
 
   return (
     <form onSubmit={handleSubmit(innerOnSubmit)}>

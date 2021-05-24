@@ -47,6 +47,12 @@
           "twelveHours": "12 hours",
           "oneDay": "1 day"
         }
+      },
+      "managingUsers": {
+        "label": "Emergency Contacts",
+        "helpText": "These users will be notified whenever mirroring fails.",
+        "addButton": "Add user",
+        "autocompletePlaceholder": "Add users to notify"
       }
     },
     "flag": {

@@ -47,6 +47,12 @@
           "twelveHours": "12 Stunden",
           "oneDay": "1 Tag"
         }
+      },
+      "managingUsers": {
+        "label": "Notfallkontakte",
+        "helpText": "Diese Benutzer werden benachrichtig, falls das Spiegeln fehlschlägt.",
+        "addButton": "Benutzer hinzufügen",
+        "autocompletePlaceholder": "Nutzer zum Benachrichtigen hinzufügen"
       }
     },
     "flag": {
