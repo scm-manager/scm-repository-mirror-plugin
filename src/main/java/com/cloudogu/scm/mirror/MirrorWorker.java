@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.metrics.Metrics;
 import sonia.scm.notifications.Notification;
 import sonia.scm.notifications.NotificationSender;
@@ -62,6 +63,7 @@ class MirrorWorker {
   private final MirrorStatusStore statusStore;
   private final PrivilegedMirrorRunner privilegedMirrorRunner;
   private final NotificationSender notificationSender;
+  private final ScmEventBus eventBus;
 
   private final Set<String> runningSynchronizations = Collections.synchronizedSet(new HashSet<>());
 
@@ -70,8 +72,8 @@ class MirrorWorker {
                MeterRegistry registry,
                MirrorStatusStore statusStore,
                PrivilegedMirrorRunner privilegedMirrorRunner,
-               NotificationSender notificationSender) {
-    this(repositoryServiceFactory, registry, Executors.newScheduledThreadPool(4), statusStore, privilegedMirrorRunner, notificationSender);
+               NotificationSender notificationSender, ScmEventBus eventBus) {
+    this(repositoryServiceFactory, registry, Executors.newScheduledThreadPool(4), statusStore, privilegedMirrorRunner, notificationSender, eventBus);
   }
 
   @VisibleForTesting
@@ -80,12 +82,13 @@ class MirrorWorker {
                ScheduledExecutorService executor,
                MirrorStatusStore statusStore,
                PrivilegedMirrorRunner privilegedMirrorRunner,
-               NotificationSender notificationSender) {
+               NotificationSender notificationSender, ScmEventBus eventBus) {
     this.repositoryServiceFactory = repositoryServiceFactory;
     this.executor = executor;
     this.statusStore = statusStore;
     this.privilegedMirrorRunner = privilegedMirrorRunner;
     this.notificationSender = notificationSender;
+    this.eventBus = eventBus;
     Metrics.executor(registry, executor, "mirror", "fixed");
   }
 
@@ -138,6 +141,7 @@ class MirrorWorker {
           shouldSendFailureNotification(repository, configuration);
           statusStore.setStatus(repository, MirrorStatus.failed(startTime));
         }
+        eventBus.post(new MirrorSyncEvent(repository, commandResult));
       } finally {
         runningSynchronizations.remove(repository.getId());
       }

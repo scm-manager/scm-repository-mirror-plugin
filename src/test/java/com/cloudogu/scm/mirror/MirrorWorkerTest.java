@@ -36,6 +36,7 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.notifications.NotificationSender;
 import sonia.scm.notifications.Type;
 import sonia.scm.repository.Repository;
@@ -81,6 +82,8 @@ class MirrorWorkerTest {
   private NotificationSender notificationSender;
   @Mock
   private ScheduledExecutorService executor;
+  @Mock
+  private ScmEventBus eventBus;
 
   private MirrorWorker worker;
 
@@ -98,7 +101,7 @@ class MirrorWorkerTest {
         return null;
       }
     ).when(privilegedMirrorRunner).exceptedFromReadOnly(any());
-    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, privilegedMirrorRunner, notificationSender);
+    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, privilegedMirrorRunner, notificationSender, eventBus);
   }
 
   @BeforeEach
@@ -148,6 +151,21 @@ class MirrorWorkerTest {
         }),
         eq("trillian")
       );
+    }
+
+    @Test
+    void shouldPostSyncEvent() {
+      MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
+
+      worker.startUpdate(repository, configuration);
+
+      verify(eventBus).post(
+        argThat(event -> {
+          MirrorSyncEvent syncEvent = (MirrorSyncEvent) event;
+          assertThat(syncEvent.getResult().isSuccess()).isFalse();
+          assertThat(syncEvent.getRepository()).isSameAs(repository);
+          return true;
+        }));
     }
 
     @Test
