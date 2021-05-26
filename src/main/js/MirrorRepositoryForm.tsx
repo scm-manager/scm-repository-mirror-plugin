@@ -132,8 +132,8 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     if (!request.usernamePasswordCredential?.username) {
       delete request.usernamePasswordCredential;
     }
-    if (!request.certificateCredential?.certificate) {
-      delete request.certificateCredential;
+    if (!request.keyCredential?.key) {
+      delete request.keyCredential;
     }
     onSubmit(request);
   };
@@ -179,24 +179,24 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
         <>
           <Column className="column is-half">
             <BlobFileInput
-              label={t("scm-repository-mirror-plugin.form.certificate.label")}
-              helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
+              label={t("scm-repository-mirror-plugin.form.key.label")}
+              helpText={t("scm-repository-mirror-plugin.form.key.helpText")}
               disabled={disabled}
               onChange={(files: FileList) =>
                 readBinaryFileAsBase64String(files[0]).then(base64String =>
                   // @ts-ignore
-                  setValue("certificateCredential.certificate", base64String)
+                  setValue("keyCredential.key", base64String)
                 )
               }
             />
           </Column>
           <Column className="column is-half">
             <InputField
-              label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
+              label={t("scm-repository-mirror-plugin.form.key.password.label")}
               type="password"
-              helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
+              helpText={t("scm-repository-mirror-plugin.form.key.password.helpText")}
               disabled={disabled}
-              {...register("certificateCredential.password")}
+              {...register("keyCredential.password")}
             />
           </Column>
         </>

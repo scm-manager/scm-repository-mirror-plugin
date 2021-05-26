@@ -52,7 +52,7 @@ public class MirrorConfigurationDto extends HalRepresentation {
   @Valid
   private UsernamePasswordCredentialDto usernamePasswordCredential;
   @Valid
-  private CertificateCredentialDto certificateCredential;
+  private KeyCredentialDto keyCredential;
 
   MirrorConfigurationDto(Links links) {
     super(links);
@@ -69,9 +69,9 @@ public class MirrorConfigurationDto extends HalRepresentation {
 
   @Getter
   @Setter
-  static class CertificateCredentialDto {
+  static class KeyCredentialDto {
     @NotBlank
-    private String certificate;
+    private String key;
     private String password;
   }
 }

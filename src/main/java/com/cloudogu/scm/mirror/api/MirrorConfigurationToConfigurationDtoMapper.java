@@ -51,9 +51,9 @@ abstract class MirrorConfigurationToConfigurationDtoMapper {
 
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
   abstract MirrorConfigurationDto.UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
-  @Mapping(target = "certificate", expression = "java(null)")
+  @Mapping(target = "key", expression = "java(null)")
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
-  abstract MirrorConfigurationDto.CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
+  abstract MirrorConfigurationDto.KeyCredentialDto map(MirrorConfiguration.KeyCredential credential);
 
   @ObjectFactory
   MirrorConfigurationDto createConfigurationDto(@Context Repository repository) {

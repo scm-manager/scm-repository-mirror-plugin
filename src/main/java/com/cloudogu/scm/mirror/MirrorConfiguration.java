@@ -50,7 +50,7 @@ public class MirrorConfiguration {
   private List<String> managingUsers;
 
   private UsernamePasswordCredential usernamePasswordCredential;
-  private CertificateCredential certificateCredential;
+  private KeyCredential keyCredential;
 
   @Getter
   @Setter
@@ -78,9 +78,9 @@ public class MirrorConfiguration {
   @AllArgsConstructor
   @NoArgsConstructor
   @XmlAccessorType(XmlAccessType.FIELD)
-  public static class CertificateCredential {
+  public static class KeyCredential {
     @XmlJavaTypeAdapter(XmlCipherByteArrayAdapter.class)
-    private byte[] certificate;
+    private byte[] key;
     @XmlJavaTypeAdapter(XmlCipherStringAdapter.class)
     private String password;
   }

@@ -85,14 +85,14 @@ public class MirrorConfigurationStore implements Initable {
         configuration.getUsernamePasswordCredential().setPassword(existingConfig.getUsernamePasswordCredential().getPassword());
       }
     }
-    if (configuration.getCertificateCredential() != null && existingConfig.getCertificateCredential() != null) {
-      if (DUMMY_PASSWORD.equals(configuration.getCertificateCredential().getPassword())) {
-        LOG.trace("keeping password for certificate from existing configuration");
-        configuration.getCertificateCredential().setPassword(existingConfig.getCertificateCredential().getPassword());
+    if (configuration.getKeyCredential() != null && existingConfig.getKeyCredential() != null) {
+      if (DUMMY_PASSWORD.equals(configuration.getKeyCredential().getPassword())) {
+        LOG.trace("keeping password for key from existing configuration");
+        configuration.getKeyCredential().setPassword(existingConfig.getKeyCredential().getPassword());
       }
-      if (configuration.getCertificateCredential().getCertificate() == null) {
-        LOG.trace("keeping certificate from existing configuration");
-        configuration.getCertificateCredential().setCertificate(existingConfig.getCertificateCredential().getCertificate());
+      if (configuration.getKeyCredential().getKey() == null) {
+        LOG.trace("keeping key from existing configuration");
+        configuration.getKeyCredential().setKey(existingConfig.getKeyCredential().getKey());
       }
     }
   }

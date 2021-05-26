@@ -37,7 +37,7 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Credential;
 import sonia.scm.repository.api.MirrorCommandBuilder;
 import sonia.scm.repository.api.MirrorCommandResult;
-import sonia.scm.repository.api.Pkcs12ClientCertificateCredential;
+import sonia.scm.repository.api.Pkcs12ClientKeyCredential;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
@@ -193,9 +193,9 @@ class MirrorWorker {
       LOG.debug("using username/password credential for sync");
       credentials.add(configuration.getUsernamePasswordCredential());
     }
-    if (configuration.getCertificateCredential() != null) {
-      LOG.debug("using certificate credential for sync");
-      credentials.add(new Pkcs12ClientCertificateCredential(configuration.getCertificateCredential().getCertificate(), configuration.getCertificateCredential().getPassword().toCharArray()));
+    if (configuration.getKeyCredential() != null) {
+      LOG.debug("using key credential for sync");
+      credentials.add(new Pkcs12ClientKeyCredential(configuration.getKeyCredential().getKey(), configuration.getKeyCredential().getPassword().toCharArray()));
     }
     mirrorCommand.setCredentials(credentials);
   }

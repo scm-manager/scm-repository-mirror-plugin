@@ -137,7 +137,7 @@ class MirrorRootResourceTest {
       verify(mirrorService).createMirror(
         argThat(mirrorRequest -> {
           assertThat(mirrorRequest.getUsernamePasswordCredential()).isNotNull();
-          assertThat(mirrorRequest.getCertificateCredential()).isNull();
+          assertThat(mirrorRequest.getKeyCredential()).isNull();
           assertThat(mirrorRequest.getUsernamePasswordCredential().getUsername()).isEqualTo("trillian");
           assertThat(mirrorRequest.getUsernamePasswordCredential().getPassword()).isEqualTo("hog");
           return true;
@@ -147,9 +147,9 @@ class MirrorRootResourceTest {
     }
 
     @Test
-    void shouldConfigureCertificateAuth() throws URISyntaxException {
+    void shouldConfigureKeyAuth() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'certificateCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'}}");
+        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'keyCredential':{'key':'" + BASE64_ENCODED_KEY + "','password':'hog'}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -157,9 +157,9 @@ class MirrorRootResourceTest {
       verify(mirrorService).createMirror(
         argThat(mirrorRequest -> {
           assertThat(mirrorRequest.getUsernamePasswordCredential()).isNull();
-          assertThat(mirrorRequest.getCertificateCredential()).isNotNull();
-          assertThat(mirrorRequest.getCertificateCredential().getCertificate()).contains(CERTIFICATE);
-          assertThat(mirrorRequest.getCertificateCredential().getPassword()).isEqualTo("hog");
+          assertThat(mirrorRequest.getKeyCredential()).isNotNull();
+          assertThat(mirrorRequest.getKeyCredential().getKey()).contains(KEY);
+          assertThat(mirrorRequest.getKeyCredential().getPassword()).isEqualTo("hog");
           return true;
         }),
         any()
@@ -275,7 +275,7 @@ class MirrorRootResourceTest {
             42,
             emptyList(),
             new UsernamePasswordCredential("dent", "hog"),
-            new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"));
+            new MirrorConfiguration.KeyCredential(KEY, "hg2g"));
         when(configurationStore.getConfiguration(repository))
           .thenReturn(Optional.of(existingConfiguration));
       }
@@ -292,8 +292,8 @@ class MirrorRootResourceTest {
         assertThat(configurationDto.getUrl()).isEqualTo("http://hog/");
         assertThat(configurationDto.getUsernamePasswordCredential().getUsername()).isEqualTo("dent");
         assertThat(configurationDto.getUsernamePasswordCredential().getPassword()).isEqualTo("_DUMMY_");
-        assertThat(configurationDto.getCertificateCredential().getCertificate()).isNull();
-        assertThat(configurationDto.getCertificateCredential().getPassword()).isEqualTo("_DUMMY_");
+        assertThat(configurationDto.getKeyCredential().getKey()).isNull();
+        assertThat(configurationDto.getKeyCredential().getPassword()).isEqualTo("_DUMMY_");
         assertThat(configurationDto.getLinks().getLinkBy("self")).get().extracting("href")
           .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
       }
@@ -324,12 +324,12 @@ class MirrorRootResourceTest {
 
   @BeforeAll
   @SuppressWarnings("UnstableApiUsage")
-  static void readCertificate() throws IOException {
-    CERTIFICATE = toByteArray(getResource("com/cloudogu/scm/mirror/client.pfx"));
+  static void readKey() throws IOException {
+    KEY = toByteArray(getResource("com/cloudogu/scm/mirror/client.pfx"));
   }
 
-  private static byte[] CERTIFICATE;
-  private static final String BASE64_ENCODED_CERTIFICATE = "MIIJ4QIBAzCCCacGCSqGSIb3DQEHAaCCCZgEggmUMIIJkDCCBEcGCSqGSIb3DQEHBqCCBDgwggQ0\\n" +
+  private static byte[] KEY;
+  private static final String BASE64_ENCODED_KEY = "MIIJ4QIBAzCCCacGCSqGSIb3DQEHAaCCCZgEggmUMIIJkDCCBEcGCSqGSIb3DQEHBqCCBDgwggQ0\\n" +
     "AgEAMIIELQYJKoZIhvcNAQcBMBwGCiqGSIb3DQEMAQYwDgQI9iXc2UvgHhwCAggAgIIEAKo7Vigr\\n" +
     "gQHP6JaQk8kcuBAYFxHv6rYUJol32pGWOakVS6q4Cimtxcnsfe6ev8pePgimm9hWlQM31ipKWf1Q\\n" +
     "8RaKszmos14UXq582b1YZdX7UbF8WmUMU3J5AHdfE/rxgqzbUfGqAJB7t77DUlFD7L5XYR9+beUC\\n" +
