@@ -24,35 +24,18 @@
 
 package com.cloudogu.scm.mirror;
 
-import com.github.legman.Subscribe;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import sonia.scm.EagerSingleton;
-import sonia.scm.HandlerEventType;
-import sonia.scm.plugin.Extension;
-import sonia.scm.repository.RepositoryEvent;
+import lombok.Getter;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.MirrorCommandResult;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+@Getter
+public class MirrorSyncEvent {
 
-@Extension
-@EagerSingleton
-public class MirrorCleanupHook {
+  private final Repository repository;
+  private final MirrorCommandResult result;
 
-  private static final Logger LOG = LoggerFactory.getLogger(MirrorCleanupHook.class);
-
-  private final Provider<MirrorScheduler> scheduler;
-
-  @Inject
-  MirrorCleanupHook(Provider<MirrorScheduler> scheduler) {
-    this.scheduler = scheduler;
-  }
-
-  @Subscribe
-  public void cleanupSchedules(RepositoryEvent event) {
-    if (event.getEventType() == HandlerEventType.DELETE) {
-      LOG.debug("cleanup schedule for repository {} due to deletion", event.getItem());
-      scheduler.get().cancel(event.getItem());
-    }
+  public MirrorSyncEvent(Repository repository, MirrorCommandResult result) {
+    this.repository = repository;
+    this.result = result;
   }
 }

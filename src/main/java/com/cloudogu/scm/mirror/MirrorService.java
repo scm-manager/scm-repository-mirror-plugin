@@ -26,6 +26,8 @@ package com.cloudogu.scm.mirror;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.shiro.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHandler;
 import sonia.scm.repository.RepositoryManager;
@@ -42,6 +44,8 @@ import static java.util.Collections.singletonList;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 public class MirrorService {
+
+  private static final Logger LOG = LoggerFactory.getLogger(MirrorService.class);
 
   private final RepositoryManager manager;
   private final MirrorConfigurationStore configurationStore;
@@ -60,6 +64,7 @@ public class MirrorService {
     RepositoryPermissions.create().check();
     checkMirrorSupport(repository);
 
+    LOG.debug("creating new repository as mirror");
     String currentUser = SecurityUtils.getSubject().getPrincipal().toString();
     configuration.setManagingUsers(ImmutableList.of(currentUser));
     RepositoryPermission ownerPermission = new RepositoryPermission(
@@ -83,6 +88,7 @@ public class MirrorService {
 
   private Consumer<Repository> createMirrorCallback(MirrorConfiguration configuration) {
     return repository -> {
+      LOG.info("created new repository {} as mirror; initializing", repository);
       configurationStore.setConfiguration(repository, configuration);
       mirrorWorker.startInitialSync(repository, configuration);
     };

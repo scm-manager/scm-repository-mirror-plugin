@@ -24,6 +24,8 @@
 
 package com.cloudogu.scm.mirror;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sonia.scm.Initable;
 import sonia.scm.SCMContextProvider;
 import sonia.scm.repository.Repository;
@@ -39,6 +41,7 @@ public class MirrorConfigurationStore implements Initable {
 
   public static final String DUMMY_PASSWORD = "_DUMMY_";
   private static final String STORE_NAME = "mirror";
+  private static final Logger LOG = LoggerFactory.getLogger(MirrorConfigurationStore.class);
 
   private final ConfigurationStoreFactory storeFactory;
   private final MirrorScheduler scheduler;
@@ -62,6 +65,7 @@ public class MirrorConfigurationStore implements Initable {
 
   public void setConfiguration(Repository repository, MirrorConfiguration configuration) {
     MirrorPermissions.checkMirrorPermission(repository);
+    LOG.debug("setting new configuration for repository {}", repository);
     privilegedMirrorRunner.exceptedFromReadOnly(
       () -> {
         ConfigurationStore<MirrorConfiguration> store = createConfigurationStore(repository);
@@ -77,14 +81,17 @@ public class MirrorConfigurationStore implements Initable {
   private void updateWithExisting(MirrorConfiguration existingConfig, MirrorConfiguration configuration) {
     if (configuration.getUsernamePasswordCredential() != null && existingConfig.getUsernamePasswordCredential() != null) {
       if (DUMMY_PASSWORD.equals(configuration.getUsernamePasswordCredential().getPassword())) {
+        LOG.trace("keeping password for username from existing configuration");
         configuration.getUsernamePasswordCredential().setPassword(existingConfig.getUsernamePasswordCredential().getPassword());
       }
     }
     if (configuration.getCertificateCredential() != null && existingConfig.getCertificateCredential() != null) {
-      if ("_DUMMY_".equals(configuration.getCertificateCredential().getPassword())) {
+      if (DUMMY_PASSWORD.equals(configuration.getCertificateCredential().getPassword())) {
+        LOG.trace("keeping password for certificate from existing configuration");
         configuration.getCertificateCredential().setPassword(existingConfig.getCertificateCredential().getPassword());
       }
       if (configuration.getCertificateCredential().getCertificate() == null) {
+        LOG.trace("keeping certificate from existing configuration");
         configuration.getCertificateCredential().setCertificate(existingConfig.getCertificateCredential().getCertificate());
       }
     }
