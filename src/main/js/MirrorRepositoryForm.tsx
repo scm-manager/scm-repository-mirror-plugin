@@ -132,8 +132,8 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     if (!request.usernamePasswordCredential?.username) {
       delete request.usernamePasswordCredential;
     }
-    if (!request.certificationCredential?.certificate) {
-      delete request.certificationCredential;
+    if (!request.certificateCredential?.certificate) {
+      delete request.certificateCredential;
     }
     onSubmit(request);
   };
@@ -185,7 +185,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
               onChange={(files: FileList) =>
                 readBinaryFileAsBase64String(files[0]).then(base64String =>
                   // @ts-ignore
-                  setValue("certificationCredential.certificate", base64String)
+                  setValue("certificateCredential.certificate", base64String)
                 )
               }
             />
@@ -196,7 +196,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
               type="password"
               helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
               disabled={disabled}
-              {...register("certificationCredential.password")}
+              {...register("certificateCredential.password")}
             />
           </Column>
         </>
