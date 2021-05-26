@@ -22,7 +22,15 @@
  * SOFTWARE.
  */
 
-import { InputField, Level, Select, SelectItem, SubmitButton, Textarea } from "@scm-manager/ui-components";
+import {
+  InputField,
+  Level,
+  Select,
+  SelectItem,
+  SubmitButton,
+  BlobFileInput,
+  Checkbox
+} from "@scm-manager/ui-components";
 import React, { FC, useEffect, useState } from "react";
 import { MirrorConfigurationDto, MirrorRequestDto } from "./types";
 import { useForm } from "react-hook-form";
@@ -30,6 +38,7 @@ import { RepositoryCreation } from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { extensionPoints } from "@scm-manager/ui-extensions";
+import readBinaryFileAsBase64String from "./readBinaryFileAsBase64String";
 
 const Column = styled.div`
   padding: 0 0.75rem;
@@ -39,6 +48,8 @@ const Column = styled.div`
 const Columns = styled.div`
   padding: 0.75rem 0 0;
 `;
+
+type FormType = Omit<MirrorConfigurationDto, "managingUsers">;
 
 type Props = {
   onSubmit: (output: MirrorRequestDto) => void;
@@ -50,7 +61,7 @@ type Props = {
 
 const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, NameForm, InformationForm }) => {
   const [t] = useTranslation("plugins");
-  const { register, handleSubmit, formState, watch } = useForm<MirrorConfigurationDto>({
+  const { register, handleSubmit, formState, watch, setValue } = useForm<FormType>({
     mode: "onChange"
   });
   const [repository, setRepository] = useState<RepositoryCreation>({
@@ -63,6 +74,8 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
   });
   const [valid, setValid] = useState({ namespaceAndName: false, contact: true });
   const watchUrl = watch("url", "");
+  const [showBaseAuthCredentials, setShowBaseAuthCredentials] = useState(false);
+  const [showKeyAuthCredentials, setShowKeyAuthCredentials] = useState(false);
 
   const periodOptions: SelectItem[] = [
     {
@@ -127,40 +140,67 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
 
   const credentialsForm = (
     <>
-      <Column className="column is-half">
-        <InputField
-          label={t("scm-repository-mirror-plugin.form.username.label")}
-          helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
-          disabled={disabled}
-          {...register("usernamePasswordCredential.username")}
-        />
-      </Column>
-      <Column className="column is-half">
-        <InputField
-          label={t("scm-repository-mirror-plugin.form.password.label")}
-          type="password"
-          helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
-          disabled={disabled}
-          {...register("usernamePasswordCredential.password")}
-        />
-      </Column>
       <Column className="column is-full">
-        <Textarea
-          label={t("scm-repository-mirror-plugin.form.certificate.label")}
-          helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
-          disabled={disabled}
-          {...register("certificationCredential.certificate")}
+        <Checkbox
+          label={t("scm-repository-mirror-plugin.form.withBaseAuth.label")}
+          onChange={setShowBaseAuthCredentials}
+          checked={showBaseAuthCredentials}
         />
       </Column>
+      {showBaseAuthCredentials ? (
+        <>
+          <Column className="column is-half">
+            <InputField
+              label={t("scm-repository-mirror-plugin.form.username.label")}
+              helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
+              disabled={disabled}
+              {...register("usernamePasswordCredential.username")}
+            />
+          </Column>
+          <Column className="column is-half">
+            <InputField
+              label={t("scm-repository-mirror-plugin.form.password.label")}
+              type="password"
+              helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
+              disabled={disabled}
+              {...register("usernamePasswordCredential.password")}
+            />
+          </Column>
+        </>
+      ) : null}
       <Column className="column is-full">
-        <InputField
-          label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
-          type="password"
-          helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
-          disabled={disabled}
-          {...register("certificationCredential.password")}
+        <Checkbox
+          label={t("scm-repository-mirror-plugin.form.withKeyAuth.label")}
+          onChange={setShowKeyAuthCredentials}
+          checked={showKeyAuthCredentials}
         />
       </Column>
+      {showKeyAuthCredentials ? (
+        <>
+          <Column className="column is-half">
+            <BlobFileInput
+              label={t("scm-repository-mirror-plugin.form.certificate.label")}
+              helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
+              disabled={disabled}
+              onChange={(files: FileList) =>
+                readBinaryFileAsBase64String(files[0]).then(base64String =>
+                  // @ts-ignore
+                  setValue("certificationCredential.certificate", base64String)
+                )
+              }
+            />
+          </Column>
+          <Column className="column is-half">
+            <InputField
+              label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
+              type="password"
+              helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
+              disabled={disabled}
+              {...register("certificationCredential.password")}
+            />
+          </Column>
+        </>
+      ) : null}
     </>
   );
 
@@ -186,6 +226,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
             })}
           />
         </Column>
+        {credentialsForm}
         <Column className="column is-full">
           <Select
             defaultValue={"60"}
@@ -196,7 +237,6 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
             {...register("synchronizationPeriod")}
           />
         </Column>
-        {credentialsForm}
       </Columns>
       <hr />
       <NameForm

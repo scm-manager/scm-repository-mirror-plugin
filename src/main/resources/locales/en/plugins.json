@@ -10,6 +10,12 @@
       "createButton": "Mirror Repository"
     },
     "form": {
+      "withBaseAuth": {
+        "label": "Use Basic Authentication"
+      },
+      "withKeyAuth": {
+        "label": "Use Key Authentication"
+      },
       "url": {
         "label": "Url",
         "helpText": "The url of the repository that should be mirrored.",

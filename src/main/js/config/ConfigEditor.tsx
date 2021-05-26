@@ -27,15 +27,16 @@ import { useForm } from "react-hook-form";
 import { MirrorConfigurationDto } from "../types";
 import {
   AutocompleteAddEntryToTableField,
+  BlobFileInput,
   InputField,
   MemberNameTagGroup,
   Select,
-  SelectItem,
-  Textarea
+  SelectItem
 } from "@scm-manager/ui-components";
 import styled from "styled-components";
-import { Repository } from "@scm-manager/ui-types";
+import { Repository, SelectValue } from "@scm-manager/ui-types";
 import { useUserSuggestions } from "@scm-manager/ui-api";
+import readBinaryFileAsBase64String from "../readBinaryFileAsBase64String";
 
 const Column = styled.div`
   padding: 0 0.75rem;
@@ -58,14 +59,15 @@ type Props = {
 const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, readOnly: disabled, repository }) => {
   const userSuggestions = useUserSuggestions();
   const [t] = useTranslation("plugins");
-  const { register, formState, watch } = useForm<FormType>({
+  const { register, formState, watch, setValue } = useForm<FormType>({
     mode: "onChange",
     defaultValues: initialConfiguration
   });
   const [managingUsers, setManagingUsers] = useState(initialConfiguration.managingUsers || []);
   const formValue = watch();
 
-  const addManagingUser = (user: string) => setManagingUsers([...managingUsers, user]);
+  const addManagingUser = (selectValue: SelectValue) =>
+    setManagingUsers([...managingUsers, selectValue.value.displayName]);
 
   useEffect(() => {
     const output: MirrorConfigurationDto = { ...formValue, managingUsers };
@@ -134,15 +136,20 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
           {...register("usernamePasswordCredential.password")}
         />
       </Column>
-      <Column className="column is-full">
-        <Textarea
+      <Column className="column is-half">
+        <BlobFileInput
           label={t("scm-repository-mirror-plugin.form.certificate.label")}
           helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
           disabled={disabled}
-          {...register("certificationCredential.certificate")}
+          onChange={(files: FileList) =>
+            readBinaryFileAsBase64String(files[0]).then(base64String =>
+              // @ts-ignore
+              setValue("certificationCredential.certificate", base64String)
+            )
+          }
         />
       </Column>
-      <Column className="column is-full">
+      <Column className="column is-half">
         <InputField
           label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
           type="password"
@@ -175,6 +182,7 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
           })}
         />
       </Column>
+      {credentialsForm}
       <Column className="column is-full">
         <Select
           label={t("scm-repository-mirror-plugin.form.period.label")}
@@ -184,7 +192,6 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
           {...register("synchronizationPeriod")}
         />
       </Column>
-      {credentialsForm}
       <Column className="column is-full">
         <MemberNameTagGroup
           members={managingUsers}

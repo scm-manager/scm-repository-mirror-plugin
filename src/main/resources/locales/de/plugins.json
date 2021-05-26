@@ -10,6 +10,12 @@
       "createButton": "Repository spiegeln"
     },
     "form": {
+      "withBaseAuth": {
+        "label": "Verwende Standard-Authentifizierung"
+      },
+      "withKeyAuth": {
+        "label": "Verwende schlüsselbasierte Authentifizierung"
+      },
       "url": {
         "label": "Url",
         "helpText": "Die URL des Repositories, welches gespiegelt werden sollte.",
