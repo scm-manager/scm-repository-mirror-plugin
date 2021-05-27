@@ -32,6 +32,7 @@ import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
+@SuppressWarnings("java:S2160") // Equals and Hashcode not needed for dto
 public class MirrorRequestDto extends MirrorConfigurationDto {
 
   private String namespace;

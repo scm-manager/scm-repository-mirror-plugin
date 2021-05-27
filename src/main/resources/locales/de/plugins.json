@@ -14,7 +14,7 @@
         "label": "Verwende Standard-Authentifizierung"
       },
       "withKeyAuth": {
-        "label": "Verwende zertifikatsbasierte Authentifizierung (PKCS12)"
+        "label": "Verwende zertifikats-basierte Authentifizierung (PKCS12)"
       },
       "url": {
         "label": "Url",
@@ -42,7 +42,7 @@
       },
       "period": {
         "label": "Aktualisierungsrate",
-        "helpText": "Interval in welchem das gespiegelte Repository aktualisiert werden soll.",
+        "helpText": "Intervall in welchem das gespiegelte Repository aktualisiert werden soll.",
         "options": {
           "fiveMinutes": "5 Minuten",
           "fifteenMinutes": "15 Minuten",
@@ -56,7 +56,7 @@
       },
       "managingUsers": {
         "label": "Notfallkontakte",
-        "helpText": "Diese Benutzer werden benachrichtig, falls das Spiegeln fehlschlägt.",
+        "helpText": "Diese Benutzer werden benachrichtigt, falls das Spiegeln fehlschlägt.",
         "addButton": "Benutzer hinzufügen",
         "autocompletePlaceholder": "Nutzer zum Benachrichtigen hinzufügen"
       }

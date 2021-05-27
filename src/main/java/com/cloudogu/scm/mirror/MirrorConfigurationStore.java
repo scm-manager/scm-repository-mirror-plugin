@@ -79,11 +79,9 @@ public class MirrorConfigurationStore implements Initable {
   }
 
   private void updateWithExisting(MirrorConfiguration existingConfig, MirrorConfiguration configuration) {
-    if (configuration.getUsernamePasswordCredential() != null && existingConfig.getUsernamePasswordCredential() != null) {
-      if (DUMMY_PASSWORD.equals(configuration.getUsernamePasswordCredential().getPassword())) {
-        LOG.trace("keeping password for username from existing configuration");
-        configuration.getUsernamePasswordCredential().setPassword(existingConfig.getUsernamePasswordCredential().getPassword());
-      }
+    if (shouldUpdatePasswordWithExisting(existingConfig, configuration)) {
+      LOG.trace("keeping password for username from existing configuration");
+      configuration.getUsernamePasswordCredential().setPassword(existingConfig.getUsernamePasswordCredential().getPassword());
     }
     if (configuration.getCertificateCredential() != null && existingConfig.getCertificateCredential() != null) {
       if (DUMMY_PASSWORD.equals(configuration.getCertificateCredential().getPassword())) {
@@ -111,6 +109,12 @@ public class MirrorConfigurationStore implements Initable {
   private void init(Repository repository) {
     getConfiguration(repository)
       .ifPresent(configuration -> scheduler.scheduleNow(repository, configuration));
+  }
+
+  private boolean shouldUpdatePasswordWithExisting(MirrorConfiguration existingConfig, MirrorConfiguration configuration) {
+    return configuration.getUsernamePasswordCredential() != null
+      && existingConfig.getUsernamePasswordCredential() != null
+      && DUMMY_PASSWORD.equals(configuration.getUsernamePasswordCredential().getPassword());
   }
 
   private ConfigurationStore<MirrorConfiguration> createConfigurationStore(Repository repository) {

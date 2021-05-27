@@ -43,4 +43,4 @@ configurationBinder.bindRepositorySetting(
   RepositoryConfig
 );
 
-binder.bind<extensionPoints.RepositoryCardFlags>("repository.flags", MirrorRepositoryFlag)
+binder.bind<extensionPoints.RepositoryFlags>("repository.flags", MirrorRepositoryFlag)

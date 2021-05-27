@@ -25,9 +25,17 @@
 package com.cloudogu.scm.mirror.api;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import sonia.scm.repository.Repository;
 
 @Mapper
 public interface MirrorRequestDtoToRepositoryMapper {
+  @Mapping(target = "properties", ignore = true)
+  @Mapping(target = "permissions", ignore = true)
+  @Mapping(target = "lastModified", ignore = true)
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "healthCheckFailures", ignore = true)
+  @Mapping(target = "creationDate", ignore = true)
+  @Mapping(target = "archived", ignore = true)
   Repository map(MirrorRequestDto requestDto);
 }
