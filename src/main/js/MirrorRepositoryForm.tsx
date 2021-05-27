@@ -22,15 +22,21 @@
  * SOFTWARE.
  */
 
-import { InputField, Level, Select, SelectItem, SubmitButton, FileInput, Checkbox } from "@scm-manager/ui-components";
-import React, { ChangeEvent, FC, useEffect, useState } from "react";
+import { Checkbox, InputField, Level, SubmitButton } from "@scm-manager/ui-components";
+import React, { FC, useEffect, useState } from "react";
 import { MirrorConfigurationDto, MirrorRequestDto } from "./types";
-import { useForm } from "react-hook-form";
+import { useController, useForm } from "react-hook-form";
 import { RepositoryCreation } from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { extensionPoints } from "@scm-manager/ui-extensions";
-import readBinaryFileAsBase64String from "./readBinaryFileAsBase64String";
+import {
+  coalesceFormValue,
+  ControlProps,
+  FileInputControl,
+  SynchronizationPeriodControl,
+  UrlControl
+} from "./config/FormControls";
 
 const Column = styled.div`
   padding: 0 0.75rem;
@@ -41,96 +47,15 @@ const Columns = styled.div`
   padding: 0.75rem 0 0;
 `;
 
-type FormType = Omit<MirrorConfigurationDto, "managingUsers">;
-
-type Props = {
-  onSubmit: (output: MirrorRequestDto) => void;
-  disabled?: boolean;
-  InformationForm: extensionPoints.RepositoryCreatorComponentProps["informationForm"];
-  NameForm: extensionPoints.RepositoryCreatorComponentProps["nameForm"];
-  repositoryType: string;
-};
-
-const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, NameForm, InformationForm }) => {
+const CredentialsFormControl: FC<Omit<ControlProps, "isReadonly">> = ({ control }) => {
   const [t] = useTranslation("plugins");
-  const { register, handleSubmit, formState, watch, setValue } = useForm<FormType>({
-    mode: "onChange"
-  });
-  const [repository, setRepository] = useState<RepositoryCreation>({
-    type: "",
-    contact: "",
-    description: "",
-    name: "",
-    namespace: "",
-    contextEntries: {}
-  });
-  const [valid, setValid] = useState({ namespaceAndName: false, contact: true });
-  const watchUrl = watch("url", "");
   const [showBaseAuthCredentials, setShowBaseAuthCredentials] = useState(false);
   const [showKeyAuthCredentials, setShowKeyAuthCredentials] = useState(false);
+  const { field: usernameField } = useController({ control, name: "usernamePasswordCredential.username" });
+  const { field: passwordField } = useController({ control, name: "usernamePasswordCredential.password" });
+  const { field: certificatePasswordField } = useController({ control, name: "certificateCredential.password" });
 
-  const periodOptions: SelectItem[] = [
-    {
-      label: t("scm-repository-mirror-plugin.form.period.options.fiveMinutes"),
-      value: "5"
-    },
-    {
-      label: t("scm-repository-mirror-plugin.form.period.options.fifteenMinutes"),
-      value: "15"
-    },
-    {
-      label: t("scm-repository-mirror-plugin.form.period.options.thirtyMinutes"),
-      value: "30"
-    },
-    {
-      label: t("scm-repository-mirror-plugin.form.period.options.oneHour"),
-      value: "60"
-    },
-    {
-      label: t("scm-repository-mirror-plugin.form.period.options.twoHours"),
-      value: "120"
-    },
-    {
-      label: t("scm-repository-mirror-plugin.form.period.options.fourHours"),
-      value: "240"
-    },
-    {
-      label: t("scm-repository-mirror-plugin.form.period.options.twelveHours"),
-      value: "720"
-    },
-    {
-      label: t("scm-repository-mirror-plugin.form.period.options.oneDay"),
-      value: "1440"
-    }
-  ];
-
-  useEffect(() => {
-    if (!repository.name) {
-      // If the repository name is not fill we set a name suggestion
-      const match = watchUrl.match(/([^\/]+?)(?:.git)?$/);
-      if (match && match[1]) {
-        setRepository({ ...repository, name: match[1] });
-      }
-    }
-  }, [watchUrl]);
-
-  const isValid = () => Object.values(valid).every(v => v) && formState.isValid;
-  const innerOnSubmit = (configFormValue: MirrorConfigurationDto) => {
-    const request: MirrorRequestDto = {
-      ...configFormValue,
-      ...repository,
-      type: repositoryType
-    };
-    if (!request.usernamePasswordCredential?.username) {
-      delete request.usernamePasswordCredential;
-    }
-    if (!request.certificateCredential?.certificate) {
-      delete request.certificateCredential;
-    }
-    onSubmit(request);
-  };
-
-  const credentialsForm = (
+  return (
     <>
       <Column className="column is-full">
         <Checkbox
@@ -145,8 +70,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
             <InputField
               label={t("scm-repository-mirror-plugin.form.username.label")}
               helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
-              disabled={disabled}
-              {...register("usernamePasswordCredential.username")}
+              {...usernameField}
             />
           </Column>
           <Column className="column is-half">
@@ -154,8 +78,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
               label={t("scm-repository-mirror-plugin.form.password.label")}
               type="password"
               helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
-              disabled={disabled}
-              {...register("usernamePasswordCredential.password")}
+              {...passwordField}
             />
           </Column>
         </>
@@ -170,68 +93,72 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
       {showKeyAuthCredentials ? (
         <>
           <Column className="column is-half">
-            <FileInput
-              label={t("scm-repository-mirror-plugin.form.certificate.label")}
-              helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
-              disabled={disabled}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                const file = event.target?.files?.[0];
-                if (file) {
-                  readBinaryFileAsBase64String(file).then(base64String =>
-                    // @ts-ignore
-                    setValue("certificateCredential.certificate", base64String)
-                  );
-                }
-              }}
-            />
+            <FileInputControl control={control} isReadonly={false} />
           </Column>
           <Column className="column is-half">
             <InputField
               label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
               type="password"
               helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
-              disabled={disabled}
-              {...register("certificateCredential.password")}
+              {...certificatePasswordField}
             />
           </Column>
         </>
       ) : null}
     </>
   );
+};
+
+type Props = {
+  onSubmit: (output: MirrorRequestDto) => void;
+  disabled?: boolean;
+  InformationForm: extensionPoints.RepositoryCreatorComponentProps["informationForm"];
+  NameForm: extensionPoints.RepositoryCreatorComponentProps["nameForm"];
+  repositoryType: string;
+};
+
+const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, NameForm, InformationForm }) => {
+  const [t] = useTranslation("plugins");
+  const { handleSubmit, formState, watch, control } = useForm<MirrorConfigurationDto>({
+    mode: "onChange"
+  });
+  const [repository, setRepository] = useState<RepositoryCreation>({
+    type: "",
+    contact: "",
+    description: "",
+    name: "",
+    namespace: "",
+    contextEntries: {}
+  });
+  const [valid, setValid] = useState({ namespaceAndName: false, contact: true });
+  const url = watch("url", "");
+
+  useEffect(() => {
+    if (url && !repository.name) {
+      // If the repository name is not fill we set a name suggestion
+      const match = url.match(/([^\/]+?)(?:.git)?$/);
+      if (match && match[1]) {
+        setRepository({ ...repository, name: match[1] });
+      }
+    }
+  }, [url]);
+
+  const isValid = () => Object.values(valid).every(v => v) && formState.isValid;
+  const innerOnSubmit = (configFormValue: MirrorConfigurationDto) => {
+    const request: MirrorRequestDto = {
+      ...configFormValue,
+      ...repository,
+      type: repositoryType
+    };
+    onSubmit(coalesceFormValue(request));
+  };
 
   return (
     <form onSubmit={handleSubmit(innerOnSubmit)}>
       <Columns className="columns is-multiline">
-        <Column className="column is-full">
-          <InputField
-            label={t("scm-repository-mirror-plugin.form.url.label")}
-            helpText={t("scm-repository-mirror-plugin.form.url.helpText")}
-            errorMessage={formState.errors.url?.message}
-            validationError={!!formState.errors.url}
-            disabled={disabled}
-            {...register("url", {
-              required: {
-                value: true,
-                message: t("scm-repository-mirror-plugin.form.url.errors.required")
-              },
-              pattern: {
-                value: /^[A-Za-z0-9]+:\/\/[^\s$.?#].[^\s]*$/,
-                message: t("scm-repository-mirror-plugin.form.url.errors.invalid")
-              }
-            })}
-          />
-        </Column>
-        {credentialsForm}
-        <Column className="column is-full">
-          <Select
-            defaultValue={"60"}
-            label={t("scm-repository-mirror-plugin.form.period.label")}
-            helpText={t("scm-repository-mirror-plugin.form.period.helpText")}
-            options={periodOptions}
-            disabled={disabled}
-            {...register("synchronizationPeriod")}
-          />
-        </Column>
+        <UrlControl control={control} isReadonly={false} />
+        <CredentialsFormControl control={control} />
+        <SynchronizationPeriodControl control={control} isReadonly={false} />
       </Columns>
       <hr />
       <NameForm
