@@ -14,7 +14,7 @@
         "label": "Use Basic Authentication"
       },
       "withKeyAuth": {
-        "label": "Use Key Authentication"
+        "label": "Use Authentication with Client Certificate (PKCS12)"
       },
       "url": {
         "label": "Url",
@@ -33,7 +33,7 @@
         "helpText": "The password for the provided user."
       },
       "certificate": {
-        "label": "Key",
+        "label": "Certificate with Key (PKCS12)",
         "helpText": "A PKCS12 keystore for securing the connection.",
         "password": {
           "label": "Password",
