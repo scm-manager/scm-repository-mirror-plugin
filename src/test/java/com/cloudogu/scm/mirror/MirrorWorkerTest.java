@@ -24,7 +24,7 @@
 
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.MirrorConfiguration.KeyCredential;
+import com.cloudogu.scm.mirror.MirrorConfiguration.CertificateCredential;
 import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import com.google.common.collect.ImmutableList;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -231,13 +231,13 @@ class MirrorWorkerTest {
       @Test
       void shouldSetKeyCredentialsInCommand() {
         byte[] key = {};
-        MirrorConfiguration configuration = createMirrorConfig(new KeyCredential(key, "hog"));
+        MirrorConfiguration configuration = createMirrorConfig(new CertificateCredential(key, "hog"));
 
         worker.startUpdate(repository, configuration);
 
         verify(mirrorCommandBuilder).setCredentials(argThat(
           credentials -> {
-            assertThat(credentials).extracting("key").containsExactly(key);
+            assertThat(credentials).extracting("certificate").containsExactly(key);
             assertThat(credentials).extracting("password").containsExactly((Object) "hog".toCharArray());
             return true;
           }
@@ -247,7 +247,7 @@ class MirrorWorkerTest {
       @Test
       void shouldRunOnlyOneUpdateAtATime() throws InterruptedException {
         byte[] key = {};
-        MirrorConfiguration configuration = createMirrorConfig(new KeyCredential(key, "hog"));
+        MirrorConfiguration configuration = createMirrorConfig(new CertificateCredential(key, "hog"));
         CountDownLatch startedLatch = new CountDownLatch(1);
         when(mirrorCommandBuilder.update())
           .thenAnswer(invocation -> {
@@ -312,7 +312,7 @@ class MirrorWorkerTest {
     return createMirrorConfig(emptyList(), null, null);
   }
 
-  private MirrorConfiguration createMirrorConfig(KeyCredential cc) {
+  private MirrorConfiguration createMirrorConfig(CertificateCredential cc) {
     return createMirrorConfig(emptyList(), null, cc);
   }
 
@@ -320,7 +320,7 @@ class MirrorWorkerTest {
     return createMirrorConfig(emptyList(), upc, null);
   }
 
-  private MirrorConfiguration createMirrorConfig(List<String> managingUsers, UsernamePasswordCredential upc, KeyCredential cc) {
+  private MirrorConfiguration createMirrorConfig(List<String> managingUsers, UsernamePasswordCredential upc, CertificateCredential cc) {
     return new MirrorConfiguration("https://hog/", 42, managingUsers, upc, cc);
   }
 }

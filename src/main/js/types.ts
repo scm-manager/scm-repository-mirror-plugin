@@ -29,8 +29,8 @@ export type UsernamePasswordCredentialDto = {
   password: string;
 };
 
-export type KeyCredentialDto = {
-  key: string;
+export type CertificateCredentialDto = {
+  certificate: string;
   password: string;
 };
 
@@ -39,7 +39,7 @@ export type MirrorConfigurationDto = {
   synchronizationPeriod: number;
   managingUsers: string[];
   usernamePasswordCredential?: UsernamePasswordCredentialDto;
-  keyCredential?: KeyCredentialDto;
+  certificateCredential?: CertificateCredentialDto;
 };
 
 export type MirrorRequestDto = MirrorConfigurationDto & RepositoryCreation;

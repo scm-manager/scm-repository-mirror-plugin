@@ -35,7 +35,7 @@ abstract class MirrorConfigurationDtoToConfigurationMapper {
   abstract MirrorConfiguration map(MirrorConfigurationDto configurationDto);
 
   abstract MirrorConfiguration.UsernamePasswordCredential map(MirrorConfigurationDto.UsernamePasswordCredentialDto credentialDto);
-  abstract MirrorConfiguration.KeyCredential map(MirrorConfigurationDto.KeyCredentialDto credentialDto);
+  abstract MirrorConfiguration.CertificateCredential map(MirrorConfigurationDto.CertificateCredentialDto credentialDto);
 
   byte[] mapBase64(String base64encoded) {
     return Base64.getDecoder().decode(base64encoded.replace("\n", ""));

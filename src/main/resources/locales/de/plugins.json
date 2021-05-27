@@ -32,7 +32,7 @@
         "label": "Passwort",
         "helpText": "Das Passwort für den angegebenen Benutzer."
       },
-      "key": {
+      "certificate": {
         "label": "Schlüssel",
         "helpText": "Ein PKCS12-Keystore welcher die Verbindung sichert.",
         "password": {

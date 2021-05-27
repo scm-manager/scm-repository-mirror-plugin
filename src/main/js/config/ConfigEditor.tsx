@@ -75,8 +75,8 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
     if (!output.usernamePasswordCredential?.username) {
       delete output.usernamePasswordCredential;
     }
-    if (!output.keyCredential?.key) {
-      delete output.keyCredential;
+    if (!output.certificateCredential?.certificate) {
+      delete output.certificateCredential;
     }
 
     onConfigurationChange(output, formState.isValid);
@@ -138,24 +138,24 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
       </Column>
       <Column className="column is-half">
         <BlobFileInput
-          label={t("scm-repository-mirror-plugin.form.key.label")}
-          helpText={t("scm-repository-mirror-plugin.form.key.helpText")}
+          label={t("scm-repository-mirror-plugin.form.certificate.label")}
+          helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
           disabled={disabled}
           onChange={(files: FileList) =>
             readBinaryFileAsBase64String(files[0]).then(base64String =>
               // @ts-ignore
-              setValue("keyCredential.key", base64String)
+              setValue("certificateCredential.certificate", base64String)
             )
           }
         />
       </Column>
       <Column className="column is-half">
         <InputField
-          label={t("scm-repository-mirror-plugin.form.key.password.label")}
+          label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
           type="password"
-          helpText={t("scm-repository-mirror-plugin.form.key.password.helpText")}
+          helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
           disabled={disabled}
-          {...register("keyCredential.password")}
+          {...register("certificateCredential.password")}
         />
       </Column>
     </>

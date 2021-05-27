@@ -24,7 +24,7 @@
 
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.MirrorConfiguration.KeyCredential;
+import com.cloudogu.scm.mirror.MirrorConfiguration.CertificateCredential;
 import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.github.sdorra.jse.ShiroExtension;
@@ -152,18 +152,18 @@ class MirrorConfigurationStoreTest {
     void shouldOverwriteDummyCredentialsWithExistingCredentials() {
       MirrorConfiguration existingConfiguration = new MirrorConfiguration();
       existingConfiguration.setUsernamePasswordCredential(new UsernamePasswordCredential("dent", "oldUsernamePassword"));
-      existingConfiguration.setKeyCredential(new KeyCredential(new byte[] {1, 2, 3}, "oldCertPassword"));
+      existingConfiguration.setCertificateCredential(new CertificateCredential(new byte[] {1, 2, 3}, "oldCertPassword"));
       mockExistingConfiguration(existingConfiguration);
 
       MirrorConfiguration newConfiguration = new MirrorConfiguration();
       newConfiguration.setUsernamePasswordCredential(new UsernamePasswordCredential("dent", "_DUMMY_"));
-      newConfiguration.setKeyCredential(new KeyCredential(null, "_DUMMY_"));
+      newConfiguration.setCertificateCredential(new CertificateCredential(null, "_DUMMY_"));
 
       store.setConfiguration(REPOSITORY, newConfiguration);
 
       assertThat(newConfiguration.getUsernamePasswordCredential().getPassword()).isEqualTo("oldUsernamePassword");
-      assertThat(newConfiguration.getKeyCredential().getPassword()).isEqualTo("oldCertPassword");
-      assertThat(newConfiguration.getKeyCredential().getKey()).isEqualTo(new byte[] {1, 2, 3});
+      assertThat(newConfiguration.getCertificateCredential().getPassword()).isEqualTo("oldCertPassword");
+      assertThat(newConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
     }
   }
 
