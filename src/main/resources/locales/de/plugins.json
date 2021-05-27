@@ -14,7 +14,7 @@
         "label": "Verwende Standard-Authentifizierung"
       },
       "withKeyAuth": {
-        "label": "Verwende schlüsselbasierte Authentifizierung"
+        "label": "Verwende zertifikatsbasierte Authentifizierung (PKCS12)"
       },
       "url": {
         "label": "Url",
@@ -33,7 +33,7 @@
         "helpText": "Das Passwort für den angegebenen Benutzer."
       },
       "certificate": {
-        "label": "Schlüssel",
+        "label": "Zertifikat mit Schlüssel (PKCS12)",
         "helpText": "Ein PKCS12-Keystore welcher die Verbindung sichert.",
         "password": {
           "label": "Passwort",
@@ -69,6 +69,7 @@
     }
   },
   "notifications": {
+    "mirrorSuccess": "Das Spiegeln des Repository war erfolgreich.",
     "mirrorFailed": "Das Spiegeln des Repository ist fehlgeschlagen."
   }
 }

@@ -126,46 +126,171 @@ class MirrorWorkerTest {
   }
 
   @Nested
-  class ForUpdate {
+  class ForSuccessfulUpdate {
 
     @BeforeEach
     void mockUpdate() {
-      when(statusStore.getStatus(repository)).thenReturn(new MirrorStatus(MirrorStatus.Result.SUCCESS));
-      when(mirrorCommandBuilder.update()).thenReturn(new MirrorCommandResult(false, emptyList(), Duration.ZERO));
+      when(statusStore.getStatus(repository)).thenReturn(new MirrorStatus(MirrorStatus.Result.FAILED));
+      when(mirrorCommandBuilder.update()).thenReturn(new MirrorCommandResult(true, emptyList(), Duration.ZERO));
     }
 
     @Test
-    void shouldSetFailedStatusAndSendNotificationToManagingUsers() {
+    void shouldSetSuccessStatusAndSendNotificationToManagingUsers() {
       MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
 
       worker.startUpdate(repository, configuration);
 
       verify(statusStore).setStatus(
         eq(repository),
-        argThat(status -> status.getResult().equals(MirrorStatus.Result.FAILED)));
+        argThat(status -> status.getResult().equals(MirrorStatus.Result.SUCCESS)));
       verify(notificationSender).send(argThat(n -> {
-          assertThat(n.getMessage()).isEqualTo("mirrorFailed");
-          assertThat(n.getType()).isEqualTo(Type.ERROR);
+          assertThat(n.getMessage()).isEqualTo("mirrorSuccess");
+          assertThat(n.getType()).isEqualTo(Type.SUCCESS);
           assertThat(n.getLink()).isEqualTo("/repo/" + repository.getNamespaceAndName() + "/settings/general");
           return true;
         }),
         eq("trillian")
       );
     }
+  }
 
-    @Test
-    void shouldPostSyncEvent() {
-      MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
+  @Nested
+  class ForFailedUpdate {
 
-      worker.startUpdate(repository, configuration);
+    @BeforeEach
+    void mockUpdate() {
+      when(mirrorCommandBuilder.update()).thenReturn(new MirrorCommandResult(false, emptyList(), Duration.ZERO));
+    }
 
-      verify(eventBus).post(
-        argThat(event -> {
-          MirrorSyncEvent syncEvent = (MirrorSyncEvent) event;
-          assertThat(syncEvent.getResult().isSuccess()).isFalse();
-          assertThat(syncEvent.getRepository()).isSameAs(repository);
-          return true;
-        }));
+    @Nested
+    class AfterSuccess {
+
+      @BeforeEach
+      void mockSuccess() {
+        when(statusStore.getStatus(repository)).thenReturn(new MirrorStatus(MirrorStatus.Result.SUCCESS));
+      }
+
+      @Test
+      void shouldSetFailedStatusAndSendNotificationToManagingUsers() {
+        MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
+
+        worker.startUpdate(repository, configuration);
+
+        verify(statusStore).setStatus(
+          eq(repository),
+          argThat(status -> status.getResult().equals(MirrorStatus.Result.FAILED)));
+        verify(notificationSender).send(argThat(n -> {
+            assertThat(n.getMessage()).isEqualTo("mirrorFailed");
+            assertThat(n.getType()).isEqualTo(Type.ERROR);
+            assertThat(n.getLink()).isEqualTo("/repo/" + repository.getNamespaceAndName() + "/settings/general");
+            return true;
+          }),
+          eq("trillian")
+        );
+      }
+
+      @Test
+      void shouldPostSyncEvent() {
+        MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
+
+        worker.startUpdate(repository, configuration);
+
+        verify(eventBus).post(
+          argThat(event -> {
+            MirrorSyncEvent syncEvent = (MirrorSyncEvent) event;
+            assertThat(syncEvent.getResult().isSuccess()).isFalse();
+            assertThat(syncEvent.getRepository()).isSameAs(repository);
+            return true;
+          }));
+      }
+
+      @Test
+      void shouldSetUrlInCommand() {
+        MirrorConfiguration configuration = createMirrorConfig();
+
+        worker.startUpdate(repository, configuration);
+
+        verify(mirrorCommandBuilder).setSourceUrl("https://hog/");
+      }
+
+      @Test
+      void shouldSetUsernamePasswordCredentialsInCommand() {
+        MirrorConfiguration configuration = createMirrorConfig(new UsernamePasswordCredential("dent", "hog"));
+
+        worker.startUpdate(repository, configuration);
+
+        verify(mirrorCommandBuilder).setCredentials(argThat(
+          credentials -> {
+            assertThat(credentials).extracting("username").containsExactly("dent");
+            assertThat(credentials).extracting("password").containsExactly("hog");
+            return true;
+          }
+        ));
+      }
+
+      @Test
+      void shouldSetKeyCredentialsInCommand() {
+        byte[] key = {};
+        MirrorConfiguration configuration = createMirrorConfig(new CertificateCredential(key, "hog"));
+
+        worker.startUpdate(repository, configuration);
+
+        verify(mirrorCommandBuilder).setCredentials(argThat(
+          credentials -> {
+            assertThat(credentials).extracting("certificate").containsExactly(key);
+            assertThat(credentials).extracting("password").containsExactly((Object) "hog".toCharArray());
+            return true;
+          }
+        ));
+      }
+
+      @Test
+      void shouldRunOnlyOneUpdateAtATime() throws InterruptedException {
+        byte[] key = {};
+        MirrorConfiguration configuration = createMirrorConfig(new CertificateCredential(key, "hog"));
+        CountDownLatch startedLatch = new CountDownLatch(1);
+        when(mirrorCommandBuilder.update())
+          .thenAnswer(invocation -> {
+            startedLatch.await();
+            return new MirrorCommandResult(false, emptyList(), Duration.ZERO);
+          });
+
+        CountDownLatch doneLatch = new CountDownLatch(2);
+        // start two updates in parallel
+        for (int i = 0; i < 2; ++i) {
+          new Thread(() -> {
+            worker.startUpdate(repository, configuration);
+            startedLatch.countDown();
+            doneLatch.countDown();
+          }).start();
+        }
+
+        // make sure both updates have been triggered
+        doneLatch.await();
+
+        // make sure both updates have been run
+        verify(mirrorCommandBuilder).update();
+      }
+
+      @Test
+      void shouldScheduleUpdates() {
+        ArgumentCaptor<Runnable> runnableArgumentCaptor = forClass(Runnable.class);
+        MirrorConfiguration configuration = createMirrorConfig();
+        configuration.setSynchronizationPeriod(42);
+
+        worker.scheduleUpdate(repository, configuration, 23);
+
+        verify(executor).scheduleAtFixedRate(
+          runnableArgumentCaptor.capture(),
+          eq(23L),
+          eq(42L),
+          eq(TimeUnit.MINUTES)
+        );
+
+        runnableArgumentCaptor.getValue().run();
+
+        verify(mirrorCommandBuilder).update();
+      }
     }
 
     @Test
@@ -180,94 +305,6 @@ class MirrorWorkerTest {
         eq(repository),
         argThat(status -> status.getResult().equals(MirrorStatus.Result.FAILED)));
       verify(notificationSender, never()).send(any(), any());
-    }
-
-    @Test
-    void shouldSetUrlInCommand() {
-      MirrorConfiguration configuration = createMirrorConfig();
-
-      worker.startUpdate(repository, configuration);
-
-      verify(mirrorCommandBuilder).setSourceUrl("https://hog/");
-    }
-
-    @Test
-    void shouldSetUsernamePasswordCredentialsInCommand() {
-      MirrorConfiguration configuration = createMirrorConfig(new UsernamePasswordCredential("dent", "hog"));
-
-      worker.startUpdate(repository, configuration);
-
-      verify(mirrorCommandBuilder).setCredentials(argThat(
-        credentials -> {
-          assertThat(credentials).extracting("username").containsExactly("dent");
-          assertThat(credentials).extracting("password").containsExactly("hog");
-          return true;
-        }
-      ));
-    }
-
-    @Test
-    void shouldSetKeyCredentialsInCommand() {
-      byte[] key = {};
-      MirrorConfiguration configuration = createMirrorConfig(new CertificateCredential(key, "hog"));
-
-      worker.startUpdate(repository, configuration);
-
-      verify(mirrorCommandBuilder).setCredentials(argThat(
-        credentials -> {
-          assertThat(credentials).extracting("certificate").containsExactly(key);
-          assertThat(credentials).extracting("password").containsExactly((Object) "hog".toCharArray());
-          return true;
-        }
-      ));
-    }
-
-    @Test
-    void shouldRunOnlyOneUpdateAtATime() throws InterruptedException {
-      byte[] key = {};
-      MirrorConfiguration configuration = createMirrorConfig(new CertificateCredential(key, "hog"));
-      CountDownLatch startedLatch = new CountDownLatch(1);
-      when(mirrorCommandBuilder.update())
-        .thenAnswer(invocation -> {
-          startedLatch.await();
-          return new MirrorCommandResult(false, emptyList(), Duration.ZERO);
-        });
-
-      CountDownLatch doneLatch = new CountDownLatch(2);
-      // start two updates in parallel
-      for (int i = 0; i < 2; ++i) {
-        new Thread(() -> {
-          worker.startUpdate(repository, configuration);
-          startedLatch.countDown();
-          doneLatch.countDown();
-        }).start();
-      }
-
-      // make sure both updates have been triggered
-      doneLatch.await();
-
-      // make sure both updates have been run
-      verify(mirrorCommandBuilder).update();
-    }
-
-    @Test
-    void shouldScheduleUpdates() {
-      ArgumentCaptor<Runnable> runnableArgumentCaptor = forClass(Runnable.class);
-      MirrorConfiguration configuration = createMirrorConfig();
-      configuration.setSynchronizationPeriod(42);
-
-      worker.scheduleUpdate(repository, configuration, 23);
-
-      verify(executor).scheduleAtFixedRate(
-        runnableArgumentCaptor.capture(),
-        eq(23L),
-        eq(42L),
-        eq(TimeUnit.MINUTES)
-      );
-
-      runnableArgumentCaptor.getValue().run();
-
-      verify(mirrorCommandBuilder).update();
     }
   }
 

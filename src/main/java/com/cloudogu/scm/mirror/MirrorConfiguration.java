@@ -28,6 +28,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sonia.scm.xml.XmlCipherByteArrayAdapter;
 import sonia.scm.xml.XmlCipherStringAdapter;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -78,6 +79,7 @@ public class MirrorConfiguration {
   @NoArgsConstructor
   @XmlAccessorType(XmlAccessType.FIELD)
   public static class CertificateCredential {
+    @XmlJavaTypeAdapter(XmlCipherByteArrayAdapter.class)
     private byte[] certificate;
     @XmlJavaTypeAdapter(XmlCipherStringAdapter.class)
     private String password;

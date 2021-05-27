@@ -78,8 +78,8 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
     if (!output.usernamePasswordCredential?.username) {
       delete output.usernamePasswordCredential;
     }
-    if (!output.certificationCredential?.certificate) {
-      delete output.certificationCredential;
+    if (!output.certificateCredential?.certificate) {
+      delete output.certificateCredential;
     }
 
     onConfigurationChange(output, formState.isValid);
@@ -149,7 +149,7 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
             if (file) {
               readBinaryFileAsBase64String(file).then(base64String =>
                 // @ts-ignore
-                setValue("certificationCredential.certificate", base64String)
+                setValue("certificateCredential.certificate", base64String)
               );
             }
           }}
@@ -161,7 +161,7 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
           type="password"
           helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
           disabled={disabled}
-          {...register("certificationCredential.password")}
+          {...register("certificateCredential.password")}
         />
       </Column>
     </>
