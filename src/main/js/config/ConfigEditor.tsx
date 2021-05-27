@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect, useState } from "react";
+import React, { ChangeEvent, FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { MirrorConfigurationDto } from "../types";
 import {
   AutocompleteAddEntryToTableField,
-  BlobFileInput,
+  FileInput,
   InputField,
   MemberNameTagGroup,
   Select,
@@ -47,7 +47,7 @@ const Columns = styled.div`
   padding: 0.75rem 0 0;
 `;
 
-type FormType = Omit<MirrorConfigurationDto, "managingUsers">;
+type FormType = MirrorConfigurationDto;
 
 type Props = {
   onConfigurationChange: (config: MirrorConfigurationDto, valid: boolean) => void;
@@ -59,18 +59,21 @@ type Props = {
 const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, readOnly: disabled, repository }) => {
   const userSuggestions = useUserSuggestions();
   const [t] = useTranslation("plugins");
-  const { register, formState, watch, setValue } = useForm<FormType>({
+  const { register, formState, getValues, setValue } = useForm<FormType>({
     mode: "onChange",
     defaultValues: initialConfiguration
   });
-  const [managingUsers, setManagingUsers] = useState(initialConfiguration.managingUsers || []);
-  const formValue = watch();
+  const formValue = getValues();
 
-  const addManagingUser = (selectValue: SelectValue) =>
-    setManagingUsers([...managingUsers, selectValue.value.displayName]);
+  const addManagingUser = (selectValue: SelectValue) => {
+    if (formValue.managingUsers?.includes(selectValue.value.id)) {
+      return;
+    }
+    setValue("managingUsers", [...(formValue.managingUsers || []), selectValue.value.id]);
+  };
 
   useEffect(() => {
-    const output: MirrorConfigurationDto = { ...formValue, managingUsers };
+    const output: MirrorConfigurationDto = { ...formValue };
 
     if (!output.usernamePasswordCredential?.username) {
       delete output.usernamePasswordCredential;
@@ -80,7 +83,7 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
     }
 
     onConfigurationChange(output, formState.isValid);
-  }, [formValue, formState.isValid, managingUsers]);
+  }, [formValue, formState.isValid]);
 
   const periodOptions: SelectItem[] = [
     {
@@ -137,16 +140,19 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
         />
       </Column>
       <Column className="column is-half">
-        <BlobFileInput
+        <FileInput
           label={t("scm-repository-mirror-plugin.form.certificate.label")}
           helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
           disabled={disabled}
-          onChange={(files: FileList) =>
-            readBinaryFileAsBase64String(files[0]).then(base64String =>
-              // @ts-ignore
-              setValue("certificationCredential.certificate", base64String)
-            )
-          }
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            const file = event.target?.files?.[0];
+            if (file) {
+              readBinaryFileAsBase64String(file).then(base64String =>
+                // @ts-ignore
+                setValue("certificationCredential.certificate", base64String)
+              );
+            }
+          }}
         />
       </Column>
       <Column className="column is-half">
@@ -194,8 +200,8 @@ const ConfigEditor: FC<Props> = ({ initialConfiguration, onConfigurationChange, 
       </Column>
       <Column className="column is-full">
         <MemberNameTagGroup
-          members={managingUsers}
-          memberListChanged={setManagingUsers}
+          members={formValue.managingUsers || []}
+          memberListChanged={newManagingUsers => setValue("managingUsers", newManagingUsers)}
           label={t("scm-repository-mirror-plugin.form.managingUsers.label")}
           helpText={t("scm-repository-mirror-plugin.form.managingUsers.helpText")}
         />

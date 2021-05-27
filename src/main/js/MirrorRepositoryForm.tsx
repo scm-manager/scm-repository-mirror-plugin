@@ -22,16 +22,8 @@
  * SOFTWARE.
  */
 
-import {
-  InputField,
-  Level,
-  Select,
-  SelectItem,
-  SubmitButton,
-  BlobFileInput,
-  Checkbox
-} from "@scm-manager/ui-components";
-import React, { FC, useEffect, useState } from "react";
+import { InputField, Level, Select, SelectItem, SubmitButton, FileInput, Checkbox } from "@scm-manager/ui-components";
+import React, { ChangeEvent, FC, useEffect, useState } from "react";
 import { MirrorConfigurationDto, MirrorRequestDto } from "./types";
 import { useForm } from "react-hook-form";
 import { RepositoryCreation } from "@scm-manager/ui-types";
@@ -178,16 +170,19 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
       {showKeyAuthCredentials ? (
         <>
           <Column className="column is-half">
-            <BlobFileInput
+            <FileInput
               label={t("scm-repository-mirror-plugin.form.certificate.label")}
               helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
               disabled={disabled}
-              onChange={(files: FileList) =>
-                readBinaryFileAsBase64String(files[0]).then(base64String =>
-                  // @ts-ignore
-                  setValue("certificationCredential.certificate", base64String)
-                )
-              }
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                const file = event.target?.files?.[0];
+                if (file) {
+                  readBinaryFileAsBase64String(file).then(base64String =>
+                    // @ts-ignore
+                    setValue("certificationCredential.certificate", base64String)
+                  );
+                }
+              }}
             />
           </Column>
           <Column className="column is-half">
