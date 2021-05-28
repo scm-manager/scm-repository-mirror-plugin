@@ -133,6 +133,7 @@ class MirrorWorker {
         MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
         setCredentials(configuration, mirrorCommand);
         MirrorCommandResult commandResult = callback.apply(mirrorCommand);
+        eventBus.post(new MirrorSyncEvent(repository, commandResult));
         if (commandResult.isSuccess()) {
           LOG.debug("got successful result for sync of {}", repository);
           handleSuccess(repository, configuration, startTime);
@@ -140,7 +141,6 @@ class MirrorWorker {
           LOG.debug("got failure for sync of {}", repository);
           handleFailed(repository, configuration, startTime);
         }
-        eventBus.post(new MirrorSyncEvent(repository, commandResult));
       } catch (Exception e) {
         LOG.error("got exception while syncing {}", repository, e);
         handleFailed(repository, configuration, startTime);
@@ -163,7 +163,7 @@ class MirrorWorker {
   }
 
   private void sendSuccessNotificationWhenFirstSuccess(Repository repository, MirrorConfiguration configuration) {
-    if (getLatestStatus(repository) == MirrorStatus.Result.FAILED) {
+    if (getLatestStatus(repository) == MirrorStatus.Result.FAILED && configuration.getManagingUsers() != null) {
       for (String user : configuration.getManagingUsers()) {
         notificationSender.send(new Notification(Type.SUCCESS, "/repo/" + repository.getNamespaceAndName() + "/settings/general", "mirrorSuccess"), user);
       }
@@ -171,7 +171,7 @@ class MirrorWorker {
   }
 
   private void sendFailureNotificationWhenFirstFailure(Repository repository, MirrorConfiguration configuration) {
-    if (getLatestStatus(repository) == MirrorStatus.Result.SUCCESS) {
+    if (getLatestStatus(repository) == MirrorStatus.Result.SUCCESS && configuration.getManagingUsers() != null) {
       for (String user : configuration.getManagingUsers()) {
         notificationSender.send(new Notification(Type.ERROR, "/repo/" + repository.getNamespaceAndName() + "/settings/general", "mirrorFailed"), user);
       }
