@@ -25,7 +25,6 @@ import React, { FC, useEffect } from "react";
 import { ConfigurationForm } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
 import { MirrorConfigurationDto } from "../types";
-import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
 import {
@@ -45,9 +44,8 @@ type Props = {
 };
 
 const RepositoryConfig: FC<Props> = ({ link }) => {
-  const [t] = useTranslation("plugins");
   const { initialConfiguration, update, isReadonly, ...formProps } = useConfigLink<MirrorConfigurationDto>(link);
-  const { register, formState, handleSubmit, control, reset } = useForm<MirrorConfigurationDto>({
+  const { formState, handleSubmit, control, reset } = useForm<MirrorConfigurationDto>({
     mode: "onChange"
   });
 
