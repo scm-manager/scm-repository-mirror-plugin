@@ -21,8 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect } from "react";
-import { ConfigurationForm } from "@scm-manager/ui-components";
+import React, { FC, useEffect, useState } from "react";
+import { apiClient, Button, ConfigurationForm, ErrorNotification, Subtitle } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
 import { MirrorConfigurationDto } from "../types";
 import { useTranslation } from "react-i18next";
@@ -35,6 +35,7 @@ import {
   SynchronizationPeriodControl,
   UrlControl
 } from "./FormControls";
+import { Link } from "@scm-manager/ui-types";
 
 const Columns = styled.div`
   padding: 0.75rem 0 0;
@@ -42,6 +43,35 @@ const Columns = styled.div`
 
 type Props = {
   link: string;
+};
+
+export const TriggerButton: FC<{ link: string }> = ({ link }) => {
+  const [t] = useTranslation("plugins");
+  const [triggerError, setTriggerError] = useState<Error | undefined>();
+  const [triggerLoading, setTriggerLoading] = useState<boolean>();
+
+  const triggerMirroring = () => {
+    setTriggerLoading(true);
+    apiClient
+      .post(link)
+      .then(() => setTriggerLoading(false))
+      .catch(setTriggerError);
+  };
+
+  return (
+    <>
+      <ErrorNotification error={triggerError} />
+      <Button
+        icon="sync-alt"
+        action={triggerMirroring}
+        label={t("scm-repository-mirror-plugin.form.manualSync")}
+        loading={triggerLoading}
+        disabled={!link}
+        type="button"
+        color="info"
+      />
+    </>
+  );
 };
 
 const RepositoryConfig: FC<Props> = ({ link }) => {
@@ -61,6 +91,9 @@ const RepositoryConfig: FC<Props> = ({ link }) => {
 
   return (
     <ConfigurationForm isValid={formState.isValid} isReadonly={isReadonly} onSubmit={onSubmit} {...formProps}>
+      <TriggerButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />
+      <hr />
+      <Subtitle subtitle={t("scm-repository-mirror-plugin.form.subtitle")} />
       <Columns className="columns is-multiline">
         <UrlControl control={control} isReadonly={isReadonly} />
         <CredentialsInputControl control={control} isReadonly={isReadonly} />

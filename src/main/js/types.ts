@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { RepositoryCreation } from "@scm-manager/ui-types";
+import { HalRepresentation, RepositoryCreation } from "@scm-manager/ui-types";
 
 export type UsernamePasswordCredentialDto = {
   username: string;
@@ -34,7 +34,7 @@ export type CertificateCredentialDto = {
   password: string;
 };
 
-export type MirrorConfigurationDto = {
+export type MirrorConfigurationDto = HalRepresentation & {
   url: string;
   synchronizationPeriod: number;
   managingUsers: string[];
