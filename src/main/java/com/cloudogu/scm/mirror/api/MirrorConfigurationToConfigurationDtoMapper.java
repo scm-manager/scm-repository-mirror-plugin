@@ -67,20 +67,26 @@ public abstract class MirrorConfigurationToConfigurationDtoMapper {
 
   @ObjectFactory
   MirrorConfigurationDto createConfigurationDto(@Context Repository repository) {
-    String configurationUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
-      .method("repository").parameters(repository.getNamespace(), repository.getName())
-      .method("getMirrorConfiguration").parameters()
-      .href();
-    return new MirrorConfigurationDto(createLinks(configurationUrl, repository));
+    return new MirrorConfigurationDto(createLinks(repository));
   }
 
-  private Links createLinks(String configurationUrl, Repository repository) {
-    Links.Builder builder = Links.linkingTo();
+  private Links createLinks(Repository repository) {
+    String configurationUrl = createUrl(repository, "getMirrorConfiguration");
+    String manualSyncUrl = createUrl(repository, "syncMirror");
+
+    Links.Builder builder = Links.linkingTo().self(configurationUrl);
     if (MirrorPermissions.hasRepositoryMirrorPermission(repository)) {
-      builder.self(configurationUrl);
       builder.single(link("update", configurationUrl));
+      builder.single(link("syncMirror", manualSyncUrl));
     }
     return builder.build();
+  }
+
+  private String createUrl(Repository repository, String methodName) {
+    return new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
+      .method("repository").parameters(repository.getNamespace(), repository.getName())
+      .method(methodName).parameters()
+      .href();
   }
 
   @VisibleForTesting

@@ -10,6 +10,7 @@
       "createButton": "Repository spiegeln"
     },
     "form": {
+      "subtitle": "Konfiguration der Spiegelung",
       "withBaseAuth": {
         "label": "Verwende Standard-Authentifizierung"
       },
@@ -59,7 +60,8 @@
         "helpText": "Diese Benutzer werden benachrichtigt, falls das Spiegeln fehlschlägt.",
         "addButton": "Benutzer hinzufügen",
         "autocompletePlaceholder": "Nutzer zum Benachrichtigen hinzufügen"
-      }
+      },
+      "manualSync": "Spiegelung jetzt aktualisieren"
     },
     "flag": {
       "label": "mirror",

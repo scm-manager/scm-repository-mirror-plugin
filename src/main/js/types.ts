@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { RepositoryCreation, HalRepresentation } from "@scm-manager/ui-types";
+import { HalRepresentation, RepositoryCreation } from "@scm-manager/ui-types";
 
 export type UsernamePasswordCredentialDto = {
   username: string;
@@ -40,7 +40,7 @@ export type MirrorVerificationConfigurationDto = {
   allowedGpgKeys?: PublicKey[];
 };
 
-export type MirrorConfigurationDto = MirrorVerificationConfigurationDto & {
+export type MirrorConfigurationDto = HalRepresentation & MirrorVerificationConfigurationDto & {
   url: string;
   synchronizationPeriod: number;
   managingUsers: string[];

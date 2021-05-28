@@ -10,6 +10,7 @@
       "createButton": "Mirror Repository"
     },
     "form": {
+      "subtitle": "Mirror Configuration",
       "withBaseAuth": {
         "label": "Use Basic Authentication"
       },
@@ -59,7 +60,8 @@
         "helpText": "These users will be notified whenever mirroring fails.",
         "addButton": "Add user",
         "autocompletePlaceholder": "Add users to notify"
-      }
+      },
+      "manualSync": "Refresh mirror now"
     },
     "flag": {
       "label": "mirror",
