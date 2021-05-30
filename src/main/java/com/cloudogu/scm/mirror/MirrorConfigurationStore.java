@@ -44,6 +44,7 @@ public class MirrorConfigurationStore implements Initable {
   private static final Logger LOG = LoggerFactory.getLogger(MirrorConfigurationStore.class);
 
   private final ConfigurationStoreFactory storeFactory;
+  private final ConfigurationStore<GlobalMirrorConfiguration> globalStore;
   private final MirrorScheduler scheduler;
   private final RepositoryManager repositoryManager;
   private final AdministrationContext administrationContext;
@@ -56,6 +57,7 @@ public class MirrorConfigurationStore implements Initable {
     this.repositoryManager = repositoryManager;
     this.administrationContext = administrationContext;
     this.privilegedMirrorRunner = privilegedMirrorRunner;
+    this.globalStore = storeFactory.withType(GlobalMirrorConfiguration.class).withName(STORE_NAME).build();
   }
 
   public Optional<MirrorConfiguration> getConfiguration(Repository repository) {
@@ -99,6 +101,14 @@ public class MirrorConfigurationStore implements Initable {
     return createConfigurationStore(repositoryId)
       .getOptional()
       .isPresent();
+  }
+
+  public GlobalMirrorConfiguration getGlobalConfiguration() {
+    return globalStore.getOptional().orElse(new GlobalMirrorConfiguration());
+  }
+
+  public void setGlobalConfiguration(GlobalMirrorConfiguration globalConfig) {
+    globalStore.set(globalConfig);
   }
 
   @Override

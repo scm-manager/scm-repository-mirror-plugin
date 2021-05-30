@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
@@ -87,7 +88,7 @@ class MirrorRootResourceTest {
   @BeforeEach
   void initResource() {
     MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, forUri("/"));
-    dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService));
+    dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService, configurationStore));
   }
 
   @Nested
@@ -200,6 +201,18 @@ class MirrorRootResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(400);
     verify(configurationStore, never()).setConfiguration(any(), any());
+  }
+
+  @Test
+  void shouldRetrieveGlobalConfigurationFromService() throws URISyntaxException {
+    MockHttpRequest request = MockHttpRequest
+      .get("/v2/mirror/configuration");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(204);
+    verify(configurationStore).getGlobalConfiguration();
   }
 
   @Nested

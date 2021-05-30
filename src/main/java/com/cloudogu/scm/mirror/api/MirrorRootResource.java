@@ -24,8 +24,11 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
+import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
+import com.cloudogu.scm.mirror.NotConfiguredForMirrorException;
 import org.mapstruct.factory.Mappers;
 import sonia.scm.api.v2.resources.RepositoryLinkProvider;
 import sonia.scm.repository.Repository;
@@ -34,11 +37,16 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+
+import static org.mapstruct.factory.Mappers.getMapper;
 
 @Path("v2/mirror/")
 public class MirrorRootResource {
@@ -46,16 +54,20 @@ public class MirrorRootResource {
   private final Provider<MirrorResource> mirrorResource;
   private final RepositoryLinkProvider repositoryLinkProvider;
   private final MirrorService mirrorService;
+  private final MirrorConfigurationStore configurationService;
+  private final GlobalMirrorConfigurationDtoToGlobalConfigurationMapper fromDtoMapper = getMapper(GlobalMirrorConfigurationDtoToGlobalConfigurationMapper.class);
+  private final GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper = getMapper(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class);
 
   // TODO check whether we should use the repository mapper from the core here
   private final MirrorRequestDtoToRepositoryMapper requestDtoToRepositoryMapper = Mappers.getMapper(MirrorRequestDtoToRepositoryMapper.class);
   private final MirrorConfigurationDtoToConfigurationMapper requestDtoToRequestMapper = Mappers.getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
 
   @Inject
-  public MirrorRootResource(Provider<MirrorResource> mirrorResource, RepositoryLinkProvider repositoryLinkProvider, MirrorService mirrorService) {
+  public MirrorRootResource(Provider<MirrorResource> mirrorResource, RepositoryLinkProvider repositoryLinkProvider, MirrorService mirrorService, MirrorConfigurationStore configurationService) {
     this.mirrorResource = mirrorResource;
     this.repositoryLinkProvider = repositoryLinkProvider;
     this.mirrorService = mirrorService;
+    this.configurationService = configurationService;
   }
 
   @POST
@@ -71,5 +83,22 @@ public class MirrorRootResource {
   @Path("/repositories/{namespace}/{name}")
   public MirrorResource repository(@PathParam("namespace") String namespace, @PathParam("name") String name) {
     return mirrorResource.get();
+  }
+
+  @GET
+  @Path("/configuration")
+  @Produces("application/json")
+  public GlobalMirrorConfigurationDto getGlobalMirrorConfiguration() {
+    GlobalMirrorConfiguration configuration =
+      configurationService.getGlobalConfiguration();
+    return toDtoMapper.map(configuration);
+  }
+
+  @PUT
+  @Path("/configuration")
+  @Consumes("application/json")
+  public void setGlobalMirrorConfiguration(@Valid GlobalMirrorConfigurationDto configurationDto) {
+    GlobalMirrorConfiguration configuration = fromDtoMapper.map(configurationDto);
+    configurationService.setGlobalConfiguration(configuration);
   }
 }

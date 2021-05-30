@@ -41,4 +41,8 @@ public final class MirrorPermissions {
   public static boolean hasMirrorPermission(Repository repository) {
     return RepositoryPermissions.custom(PERMISSION, repository).isPermitted();
   }
+
+  public static boolean hasGlobalMirrorPermission() {
+    return RepositoryPermissions.custom(PERMISSION).isPermitted();
+  }
 }
