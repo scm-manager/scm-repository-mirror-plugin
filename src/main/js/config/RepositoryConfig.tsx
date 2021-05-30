@@ -29,7 +29,7 @@ import { useForm } from "react-hook-form";
 import styled from "styled-components";
 import {
   coalesceFormValue,
-  CredentialsInputControl,
+  CredentialsControl,
   ManagingUsersControl,
   SynchronizationPeriodControl,
   UrlControl
@@ -61,7 +61,7 @@ const RepositoryConfig: FC<Props> = ({ link }) => {
     <ConfigurationForm isValid={formState.isValid} isReadonly={isReadonly} onSubmit={onSubmit} {...formProps}>
       <Columns className="columns is-multiline">
         <UrlControl control={control} isReadonly={isReadonly} />
-        <CredentialsInputControl control={control} isReadonly={isReadonly} />
+        <CredentialsControl control={control} isReadonly={isReadonly} />
         <SynchronizationPeriodControl control={control} isReadonly={isReadonly} />
         <ManagingUsersControl control={control} isReadonly={isReadonly} />
       </Columns>

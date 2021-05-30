@@ -22,21 +22,15 @@
  * SOFTWARE.
  */
 
-import { Checkbox, InputField, Level, SubmitButton } from "@scm-manager/ui-components";
+import { Level, SubmitButton } from "@scm-manager/ui-components";
 import React, { FC, useEffect, useState } from "react";
 import { MirrorConfigurationDto, MirrorRequestDto } from "./types";
-import { useController, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { RepositoryCreation } from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { extensionPoints } from "@scm-manager/ui-extensions";
-import {
-  coalesceFormValue,
-  ControlProps,
-  FileInputControl,
-  SynchronizationPeriodControl,
-  UrlControl
-} from "./config/FormControls";
+import { coalesceFormValue, CredentialsControl, SynchronizationPeriodControl, UrlControl } from "./config/FormControls";
 
 const Column = styled.div`
   padding: 0 0.75rem;
@@ -46,68 +40,6 @@ const Column = styled.div`
 const Columns = styled.div`
   padding: 0.75rem 0 0;
 `;
-
-const CredentialsFormControl: FC<Omit<ControlProps, "isReadonly">> = ({ control }) => {
-  const [t] = useTranslation("plugins");
-  const [showBaseAuthCredentials, setShowBaseAuthCredentials] = useState(false);
-  const [showKeyAuthCredentials, setShowKeyAuthCredentials] = useState(false);
-  const { field: usernameField } = useController({ control, name: "usernamePasswordCredential.username" });
-  const { field: passwordField } = useController({ control, name: "usernamePasswordCredential.password" });
-  const { field: certificatePasswordField } = useController({ control, name: "certificateCredential.password" });
-
-  return (
-    <>
-      <Column className="column is-full">
-        <Checkbox
-          label={t("scm-repository-mirror-plugin.form.withBaseAuth.label")}
-          onChange={setShowBaseAuthCredentials}
-          checked={showBaseAuthCredentials}
-        />
-      </Column>
-      {showBaseAuthCredentials ? (
-        <>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.username.label")}
-              helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
-              {...usernameField}
-            />
-          </Column>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.password.label")}
-              type="password"
-              helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
-              {...passwordField}
-            />
-          </Column>
-        </>
-      ) : null}
-      <Column className="column is-full">
-        <Checkbox
-          label={t("scm-repository-mirror-plugin.form.withKeyAuth.label")}
-          onChange={setShowKeyAuthCredentials}
-          checked={showKeyAuthCredentials}
-        />
-      </Column>
-      {showKeyAuthCredentials ? (
-        <>
-          <Column className="column is-half">
-            <FileInputControl control={control} isReadonly={false} />
-          </Column>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
-              type="password"
-              helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
-              {...certificatePasswordField}
-            />
-          </Column>
-        </>
-      ) : null}
-    </>
-  );
-};
 
 type Props = {
   onSubmit: (output: MirrorRequestDto) => void;
@@ -157,7 +89,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     <form onSubmit={handleSubmit(innerOnSubmit)}>
       <Columns className="columns is-multiline">
         <UrlControl control={control} isReadonly={false} />
-        <CredentialsFormControl control={control} />
+        <CredentialsControl control={control} isReadonly={false} />
         <SynchronizationPeriodControl control={control} isReadonly={false} />
       </Columns>
       <hr />
