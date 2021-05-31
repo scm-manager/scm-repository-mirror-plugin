@@ -8,7 +8,6 @@ import lombok.Setter;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.List;
 
 @Getter
 @Setter
@@ -16,9 +15,8 @@ import java.util.List;
 @NoArgsConstructor
 @XmlRootElement(name = "global-mirror-configuration")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class GlobalMirrorConfiguration {
+public class GlobalMirrorConfiguration extends MirrorVerificationConfiguration {
 
   private boolean httpsOnly = false;
-  private List<String> branchesAndTagsPatterns;
 
 }

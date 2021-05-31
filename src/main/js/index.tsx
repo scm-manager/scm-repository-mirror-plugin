@@ -27,6 +27,7 @@ import { ConfigurationBinder as configurationBinder } from "@scm-manager/ui-comp
 import MirrorRepositoryCreator from "./MirrorRepositoryCreator";
 import RepositoryConfig from "./config/RepositoryConfig";
 import MirrorRepositoryFlag from "./MirrorRepositoryFlag";
+import GlobalConfig from "./config/GlobalConfig";
 
 binder.bind<extensionPoints.RepositoryCreator>("repos.creator", {
   subtitle: "scm-repository-mirror-plugin.create.subtitle",
@@ -43,4 +44,11 @@ configurationBinder.bindRepositorySetting(
   RepositoryConfig
 );
 
-binder.bind<extensionPoints.RepositoryFlags>("repository.flags", MirrorRepositoryFlag)
+configurationBinder.bindGlobal(
+  "/mirror",
+  "scm-repository-mirror-plugin.settings.navLink",
+  "mirrorConfiguration",
+  GlobalConfig
+);
+
+binder.bind<extensionPoints.RepositoryFlags>("repository.flags", MirrorRepositoryFlag);

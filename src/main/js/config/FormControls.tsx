@@ -1,5 +1,5 @@
-import { Control, useController } from "react-hook-form";
-import { MirrorConfigurationDto } from "../types";
+import { Control, useController, useForm } from "react-hook-form";
+import { GlobalConfigurationDto, MirrorConfigurationDto, MirrorGpgVerificationType, PublicKey } from "../types";
 import React, { ChangeEvent, FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SelectValue } from "@scm-manager/ui-types";
@@ -10,7 +10,11 @@ import {
   InputField,
   MemberNameTagGroup,
   Select,
-  SelectItem
+  SelectItem,
+  Icon,
+  Textarea,
+  SubmitButton,
+  Level
 } from "@scm-manager/ui-components";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import readBinaryFileAsBase64String from "../readBinaryFileAsBase64String";
@@ -21,9 +25,10 @@ const Column = styled.div`
   margin-bottom: 0.5rem;
 `;
 
-export type ControlProps = { control: Control<MirrorConfigurationDto>; isReadonly: boolean };
+export type MirrorConfigControlProps = { control: Control<MirrorConfigurationDto>; isReadonly: boolean };
+export type GlobalMirrorConfigControlProps = { control: Control<GlobalConfigurationDto>; isReadonly: boolean };
 
-export const ManagingUsersControl: FC<ControlProps> = ({ control, isReadonly }) => {
+export const ManagingUsersControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
   const userSuggestions = useUserSuggestions();
   const { field } = useController({ control, name: "managingUsers" });
   const [t] = useTranslation("plugins");
@@ -54,7 +59,7 @@ export const ManagingUsersControl: FC<ControlProps> = ({ control, isReadonly }) 
   );
 };
 
-export const FileInputControl: FC<ControlProps> = ({ control, isReadonly }) => {
+export const FileInputControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
   const { field } = useController({ control, name: "certificateCredential.certificate" });
   const [t] = useTranslation("plugins");
 
@@ -74,7 +79,7 @@ export const FileInputControl: FC<ControlProps> = ({ control, isReadonly }) => {
   );
 };
 
-export const CredentialsControl: FC<ControlProps> = ({ control, isReadonly }) => {
+export const CredentialsControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const [showBaseAuthCredentials, setShowBaseAuthCredentials] = useState(false);
   const [showKeyAuthCredentials, setShowKeyAuthCredentials] = useState(false);
@@ -174,7 +179,7 @@ export const createPeriodOptions: (t: (key: string) => string) => SelectItem[] =
   }
 ];
 
-export const SynchronizationPeriodControl: FC<ControlProps> = ({ control, isReadonly }) => {
+export const SynchronizationPeriodControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field } = useController({ control, name: "synchronizationPeriod", defaultValue: 60 });
 
@@ -191,7 +196,7 @@ export const SynchronizationPeriodControl: FC<ControlProps> = ({ control, isRead
   );
 };
 
-export const UrlControl: FC<ControlProps> = ({ control, isReadonly }) => {
+export const UrlControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field, fieldState } = useController({
     control,
@@ -233,4 +238,99 @@ export const coalesceFormValue = <T extends MirrorConfigurationDto>(value: T): T
   }
 
   return output as T;
+};
+
+const Columns = styled.div`
+  padding: 0.75rem 0 0;
+`;
+
+export const PublicKeysControl: FC<GlobalMirrorConfigControlProps> = ({ control, isReadonly }) => {
+  const [t] = useTranslation("plugins");
+  const { field } = useController({ control, name: "allowedGpgKeys", defaultValue: 0 });
+  const { register, handleSubmit, reset } = useForm<PublicKey>();
+
+  const deleteKey = (keyId: string) => field.onChange(field.value?.filter(key => key.id === keyId) || []);
+  const addNewKey = (key: PublicKey) => {
+    field.onChange([...(field.value || []), key]);
+    reset();
+  };
+
+  return (
+    <>
+      <table className="card-table table is-hoverable is-fullwidth">
+        <tr>
+          <th>{t("scm-repository-mirror-plugin.form.keyList.displayName")}</th>
+          <th className="is-hidden-mobile">{t("scm-repository-mirror-plugin.form.keyList.raw")}</th>
+          <th />
+        </tr>
+        {field.value?.map(({ id, raw, displayName }, index) => (
+          <tr key={index}>
+            <td>{displayName}</td>
+            <td>{raw}</td>
+            <td>
+              <span className="icon" onClick={() => deleteKey(id)}>
+                <Icon name="trash" title={t("scm-repository-mirror-plugin.form.keyList.delete")} color="inherit" />
+              </span>
+            </td>
+          </tr>
+        ))}
+      </table>
+      {isReadonly ? null : (
+        <form onSubmit={handleSubmit(addNewKey)}>
+          <Columns>
+            <Column>
+              <InputField
+                label={t("scm-repository-mirror-plugin.form.keyList.new.displayName.label")}
+                helpText={t("scm-repository-mirror-plugin.form.keyList.new.displayName.helpText")}
+                {...register("displayName")}
+              />
+              <Textarea
+                label={t("scm-repository-mirror-plugin.form.keyList.new.raw.label")}
+                helpText={t("scm-repository-mirror-plugin.form.keyList.new.raw.helpText")}
+                {...register("raw")}
+              />
+            </Column>
+          </Columns>
+          <Level right={<SubmitButton label={t("scm-repository-mirror-plugin.form.keyList.new.submit")} />} />
+        </form>
+      )}
+    </>
+  );
+};
+
+export const createGpgVerificationTypeOptions: (t: (key: string) => string) => SelectItem[] = t => [
+  {
+    label: t("scm-repository-mirror-plugin.form.gpgVerificationType.options.none"),
+    value: String(MirrorGpgVerificationType.NONE)
+  },
+  {
+    label: t("scm-repository-mirror-plugin.form.gpgVerificationType.options.signature"),
+    value: String(MirrorGpgVerificationType.SIGNATURE)
+  },
+  {
+    label: t("scm-repository-mirror-plugin.form.gpgVerificationType.options.scmUserSignature"),
+    value: String(MirrorGpgVerificationType.SCM_USER_SIGNATURE)
+  },
+  {
+    label: t("scm-repository-mirror-plugin.form.gpgVerificationType.options.keyList"),
+    value: String(MirrorGpgVerificationType.KEY_LIST)
+  }
+];
+
+export const GpgVerificationControl: FC<GlobalMirrorConfigControlProps> = ({ control, isReadonly }) => {
+  const [t] = useTranslation("plugins");
+  const { field: verificationTypeField } = useController({ control, name: "gpgVerificationType", defaultValue: 0 });
+  const showKeyList = verificationTypeField.value === MirrorGpgVerificationType.KEY_LIST;
+  return (
+    <>
+      <Select
+        label={t("scm-repository-mirror-plugin.form.gpgVerificationType.label")}
+        helpText={t("scm-repository-mirror-plugin.form.gpgVerificationType.helpText")}
+        disabled={isReadonly}
+        options={createGpgVerificationTypeOptions(t)}
+        {...verificationTypeField}
+      />
+      {showKeyList ? <PublicKeysControl control={control} isReadonly={isReadonly} /> : null}
+    </>
+  );
 };

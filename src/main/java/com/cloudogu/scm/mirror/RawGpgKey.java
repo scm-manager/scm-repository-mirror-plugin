@@ -25,63 +25,24 @@
 package com.cloudogu.scm.mirror;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import sonia.scm.xml.XmlCipherByteArrayAdapter;
-import sonia.scm.xml.XmlCipherStringAdapter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.List;
 
 @Getter
-@Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@XmlRootElement(name = "mirror-configuration")
+@AllArgsConstructor
 @XmlAccessorType(XmlAccessType.FIELD)
-public class MirrorConfiguration extends MirrorVerificationConfiguration {
+@XmlRootElement
+@EqualsAndHashCode
+public class RawGpgKey {
 
-  private String url;
-  private int synchronizationPeriod;
-  private List<String> managingUsers;
+  private String id;
+  private String displayName;
+  private String raw;
 
-  private UsernamePasswordCredential usernamePasswordCredential;
-  private CertificateCredential certificateCredential;
-
-  @Getter
-  @Setter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  @XmlAccessorType(XmlAccessType.FIELD)
-  public static class UsernamePasswordCredential implements sonia.scm.repository.api.UsernamePasswordCredential {
-    private String username;
-    @XmlJavaTypeAdapter(XmlCipherStringAdapter.class)
-    private String password;
-
-    @Override
-    public String username() {
-      return username;
-    }
-
-    @Override
-    public char[] password() {
-      return password.toCharArray();
-    }
-  }
-
-  @Getter
-  @Setter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  @XmlAccessorType(XmlAccessType.FIELD)
-  public static class CertificateCredential {
-    @XmlJavaTypeAdapter(XmlCipherByteArrayAdapter.class)
-    private byte[] certificate;
-    @XmlJavaTypeAdapter(XmlCipherStringAdapter.class)
-    private String password;
-  }
 }
