@@ -32,7 +32,7 @@ type Props = {
 };
 
 type MirrorStatus = {
-  result: "SUCCESS" | "FAILED" | "NOT_YET_RUN";
+  result: "SUCCESS" | "FAILED" | "REJECTED_UPDATES" | "NOT_YET_RUN";
 };
 
 const MirrorRepositoryFlag: FC<Props> = ({ repository }) => {
@@ -43,6 +43,12 @@ const MirrorRepositoryFlag: FC<Props> = ({ repository }) => {
     case "SUCCESS":
       return (
         <RepositoryFlag color={"success"} title={t("scm-repository-mirror-plugin.flag.success")}>
+          {t("scm-repository-mirror-plugin.flag.label")}
+        </RepositoryFlag>
+      );
+    case "REJECTED_UPDATES":
+      return (
+        <RepositoryFlag color={"warning"} title={t("scm-repository-mirror-plugin.flag.rejectedUpdates")}>
           {t("scm-repository-mirror-plugin.flag.label")}
         </RepositoryFlag>
       );
