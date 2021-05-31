@@ -64,12 +64,14 @@
     "flag": {
       "label": "mirror",
       "success": "Letzte Synchronisation erfolgreich",
+      "rejectedUpdates": "Letzte Synchronisation teilweise fehlgeschlagen",
       "failed": "Letzte Synchronisation fehlgeschlagen",
       "notYetRun": "Noch nicht synchronisiert"
     }
   },
   "notifications": {
     "mirrorSuccess": "Das Spiegeln des Repository war erfolgreich.",
+    "mirrorUpdatesRejected": "Das Spiegeln des Repository ist teilweise fehlgeschlagen.",
     "mirrorFailed": "Das Spiegeln des Repository ist fehlgeschlagen."
   }
 }
