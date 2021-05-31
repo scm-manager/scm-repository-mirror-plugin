@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryTestData;
@@ -164,6 +165,18 @@ class MirrorConfigurationStoreTest {
       assertThat(newConfiguration.getUsernamePasswordCredential().getPassword()).isEqualTo("oldUsernamePassword");
       assertThat(newConfiguration.getCertificateCredential().getPassword()).isEqualTo("oldCertPassword");
       assertThat(newConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
+    }
+
+    @Test
+    void shouldNotChangeUrl() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      existingConfiguration.setUrl("http://hog.net/");
+      mockExistingConfiguration(existingConfiguration);
+
+      MirrorConfiguration newConfiguration = new MirrorConfiguration();
+      newConfiguration.setUrl("http://magrathea.com/");
+
+      assertThrows(ScmConstraintViolationException.class, () -> store.setConfiguration(REPOSITORY, newConfiguration));
     }
   }
 

@@ -18,7 +18,7 @@
       },
       "url": {
         "label": "Url",
-        "helpText": "The url of the repository that should be mirrored.",
+        "helpText": "The url of the repository that should be mirrored. This url cannot be changed once the mirror has been created.",
         "errors": {
           "required": "The URL is required",
           "invalid": "The URL is invalid"

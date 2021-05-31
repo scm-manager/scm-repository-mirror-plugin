@@ -60,7 +60,7 @@ const RepositoryConfig: FC<Props> = ({ link }) => {
   return (
     <ConfigurationForm isValid={formState.isValid} isReadonly={isReadonly} onSubmit={onSubmit} {...formProps}>
       <Columns className="columns is-multiline">
-        <UrlControl control={control} isReadonly={isReadonly} />
+        <UrlControl control={control} isReadonly={true} />
         <CredentialsControl control={control} isReadonly={isReadonly} />
         <SynchronizationPeriodControl control={control} isReadonly={isReadonly} />
         <ManagingUsersControl control={control} isReadonly={isReadonly} />
