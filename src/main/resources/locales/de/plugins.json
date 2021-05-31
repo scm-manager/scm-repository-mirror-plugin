@@ -18,7 +18,7 @@
       },
       "url": {
         "label": "Url",
-        "helpText": "Die URL des Repositories, welches gespiegelt werden sollte.",
+        "helpText": "Die URL des Repositories, welches gespiegelt werden sollte. Nach der Erstellung kann diese URL nicht mehr geändert werden.",
         "errors": {
           "required": "Die URL ist erforderlich",
           "invalid": "Die URL ist inkorrekt"

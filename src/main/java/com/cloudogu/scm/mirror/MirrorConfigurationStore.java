@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror;
 
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.Initable;
@@ -36,6 +37,8 @@ import sonia.scm.web.security.AdministrationContext;
 
 import javax.inject.Inject;
 import java.util.Optional;
+
+import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 public class MirrorConfigurationStore implements Initable {
 
@@ -81,6 +84,13 @@ public class MirrorConfigurationStore implements Initable {
   }
 
   private void updateWithExisting(MirrorConfiguration existingConfig, MirrorConfiguration configuration) {
+    if (Strings.isNullOrEmpty(configuration.getUrl())) {
+      configuration.setUrl(existingConfig.getUrl());
+    } else {
+      doThrow()
+        .violation("url must not be changed", "url")
+        .when(!existingConfig.getUrl().equals(configuration.getUrl()));
+    }
     if (shouldUpdatePasswordWithExisting(existingConfig, configuration)) {
       LOG.trace("keeping password for username from existing configuration");
       configuration.getUsernamePasswordCredential().setPassword(existingConfig.getUsernamePasswordCredential().getPassword());
