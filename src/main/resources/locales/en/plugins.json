@@ -71,5 +71,31 @@
   "notifications": {
     "mirrorSuccess": "Repository mirroring succeeded.",
     "mirrorFailed": "Repository mirroring has failed."
+  },
+  "permissions": {
+    "configuration": {
+      "read,write": {
+        "mirror": {
+          "displayName": "Modify global mirror configuration",
+          "description": "May modify the global mirror configuration"
+        }
+      }
+    },
+    "repository": {
+      "mirror": {
+        "*": {
+          "displayName": "Modify repository specific mirror configuration",
+          "description": "May modify the repository specific mirror configuration for all repositories (if not disabled globally)"
+        }
+      }
+    }
+  },
+  "verbs": {
+    "repository": {
+      "mirror": {
+        "displayName": "configure mirror",
+        "description": "May modify the repository specific mirror configurations (if not disabled globally)"
+      }
+    }
   }
 }
