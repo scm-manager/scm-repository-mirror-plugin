@@ -73,6 +73,7 @@ class MirrorConfigurationToConfigurationDtoMapperTest {
     input.setAllowedGpgKeys(ImmutableList.of(new RawGpgKey("foo", "bar")));
 
     final MirrorConfigurationDto output = mapper.map(input, repository);
+
     assertThat(output.getUrl()).isEqualTo("https://foo.bar");
     assertThat(output.getManagingUsers()).contains("freddy", "bernard", "harold");
     assertThat(output.getSynchronizationPeriod()).isEqualTo(42);

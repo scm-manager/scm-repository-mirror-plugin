@@ -29,7 +29,7 @@ import org.mapstruct.Mapper;
 
 import java.util.Base64;
 
-@Mapper
+@Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
 abstract class MirrorConfigurationDtoToConfigurationMapper {
 
   abstract MirrorConfiguration map(MirrorConfigurationDto configurationDto);

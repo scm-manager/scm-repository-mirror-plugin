@@ -25,6 +25,7 @@
 package com.cloudogu.scm.mirror.api;
 
 import de.otto.edison.hal.Links;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -59,6 +60,8 @@ public class MirrorConfigurationDto extends MirrorVerificationConfigurationDto {
 
   @Getter
   @Setter
+  @AllArgsConstructor
+  @NoArgsConstructor
   static class UsernamePasswordCredentialDto {
     @NotBlank
     private String username;
@@ -68,6 +71,8 @@ public class MirrorConfigurationDto extends MirrorVerificationConfigurationDto {
 
   @Getter
   @Setter
+  @AllArgsConstructor
+  @NoArgsConstructor
   static class CertificateCredentialDto {
     @NotBlank
     private String certificate;

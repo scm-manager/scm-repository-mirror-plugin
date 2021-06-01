@@ -37,7 +37,7 @@ import javax.inject.Provider;
 
 import static de.otto.edison.hal.Link.link;
 
-@Mapper
+@Mapper( uses = RawGpgKeyToKeyDtoMapper.class)
 public abstract class GlobalMirrorConfigurationToGlobalConfigurationDtoMapper {
 
   @Inject

@@ -62,6 +62,7 @@ class GlobalMirrorConfigurationToGlobalConfigurationDtoMapperTest {
     input.setAllowedGpgKeys(ImmutableList.of(new RawGpgKey("foo", "bar")));
 
     final GlobalMirrorConfigurationDto output = mapper.map(input);
+
     assertThat(output.isHttpsOnly()).isTrue();
     assertThat(output.getBranchesAndTagsPatterns()).contains("default", "feature/*");
     assertThat(output.getGpgVerificationType()).isEqualTo(MirrorGpgVerificationType.KEY_LIST);
@@ -73,7 +74,9 @@ class GlobalMirrorConfigurationToGlobalConfigurationDtoMapperTest {
   @Test
   void shouldAppendUpdateLink() {
     GlobalMirrorConfiguration input = new GlobalMirrorConfiguration();
+
     final GlobalMirrorConfigurationDto output = mapper.map(input);
+
     assertThat(output.getLinks().getLinkBy("update"))
       .hasValueSatisfying(link -> assertThat(link.getHref()).isEqualTo("/v2/mirror/configuration"));
   }
@@ -81,7 +84,9 @@ class GlobalMirrorConfigurationToGlobalConfigurationDtoMapperTest {
   @Test
   void shouldNotAppendUpdateLink() {
     GlobalMirrorConfiguration input = new GlobalMirrorConfiguration();
+
     final GlobalMirrorConfigurationDto output = mapper.map(input);
+
     assertThat(output.getLinks().getLinkBy("update")).isNotPresent();
   }
 }
