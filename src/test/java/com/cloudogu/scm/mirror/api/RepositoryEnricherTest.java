@@ -56,11 +56,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-@ExtendWith(ShiroExtension.class)
-@SubjectAware(
-  value = "trillian"
-)
+@SubjectAware("trillian")
+@ExtendWith({MockitoExtension.class, ShiroExtension.class})
 class RepositoryEnricherTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
@@ -149,6 +146,17 @@ class RepositoryEnricherTest {
       enricher.enrich(context, appender);
 
       verify(appender).appendLink("mirrorConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
+    }
+
+    @Test
+    void shouldAppendLogLinks() {
+      HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
+      when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
+      when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
+
+      enricher.enrich(context, appender);
+
+      verify(appender).appendLink("mirrorLogs", "/v2/mirror/repositories/hitchhiker/HeartOfGold/logs");
     }
   }
 }
