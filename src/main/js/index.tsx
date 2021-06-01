@@ -30,6 +30,7 @@ import MirrorRepositoryFlag from "./MirrorRepositoryFlag";
 import GlobalConfig from "./config/GlobalConfig";
 import { Repository } from "@scm-manager/ui-types";
 import LogRoute from "./LogRoute";
+import LogNavLink from "./LogNavLink";
 
 binder.bind<extensionPoints.RepositoryCreator>("repos.creator", {
   subtitle: "scm-repository-mirror-plugin.create.subtitle",
@@ -64,3 +65,5 @@ const logPredicate = ({ repository }: PredicateProps) => {
 };
 
 binder.bind("repository.route", LogRoute, logPredicate);
+binder.bind("repository.navigation", LogNavLink, logPredicate);
+

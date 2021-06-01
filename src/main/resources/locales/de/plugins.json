@@ -71,7 +71,8 @@
       "notYetRun": "Noch nicht synchronisiert"
     },
     "logs": {
-      "subtitle": "Mirror log",
+      "navLink": "Synchronisation Protokoll",
+      "subtitle": "Synchronisation Protokoll",
       "success": {
         "label": "erfolgreich",
         "title": "Synchronisation erfolgreich"
