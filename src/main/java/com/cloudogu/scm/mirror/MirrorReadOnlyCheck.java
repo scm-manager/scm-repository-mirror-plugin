@@ -29,10 +29,15 @@ import sonia.scm.repository.ReadOnlyCheck;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Collection;
+
+import static java.util.Arrays.asList;
 
 @Extension
 @Singleton
 class MirrorReadOnlyCheck implements ReadOnlyCheck, PrivilegedMirrorRunner {
+
+  private static final Collection<String> ALLOWED_PERMISSIONS = asList("delete", "modify", "permissionWrite");
 
   private final MirrorConfigurationStore configurationStore;
   private final ThreadLocal<Boolean> excepted = ThreadLocal.withInitial(() -> false);
@@ -54,7 +59,7 @@ class MirrorReadOnlyCheck implements ReadOnlyCheck, PrivilegedMirrorRunner {
 
   @Override
   public boolean isReadOnly(String permission, String repositoryId) {
-    return !"delete".equals(permission) && isReadOnly(repositoryId);
+    return !ALLOWED_PERMISSIONS.contains(permission) && isReadOnly(repositoryId);
   }
 
   @Override
