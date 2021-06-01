@@ -78,4 +78,22 @@ class MirrorReadOnlyCheckTest {
 
     assertThat(readOnly).isFalse();
   }
+
+  @Test
+  void shouldBeModifiableEvenWithConfiguration() {
+    lenient().when(configurationStore.hasConfiguration("mirror")).thenReturn(true);
+
+    boolean readOnly = check.isReadOnly("modify", "mirror");
+
+    assertThat(readOnly).isFalse();
+  }
+
+  @Test
+  void shouldBePermissionWritableEvenWithConfiguration() {
+    lenient().when(configurationStore.hasConfiguration("mirror")).thenReturn(true);
+
+    boolean readOnly = check.isReadOnly("permissionWrite", "mirror");
+
+    assertThat(readOnly).isFalse();
+  }
 }
