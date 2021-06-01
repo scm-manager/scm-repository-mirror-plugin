@@ -25,7 +25,10 @@
 package com.cloudogu.scm.mirror;
 
 import com.github.legman.Subscribe;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import lombok.Getter;
+import sonia.scm.collect.EvictingQueue;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
@@ -35,12 +38,14 @@ import javax.inject.Singleton;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 
 @Singleton
 public class LogStore {
+
+  @VisibleForTesting
+  static final int ENTRY_LIMIT = 20;
 
   private static final String STORE_NAME = "mirrorSyncLog";
   private static final String STORE_ENTRY = "main";
@@ -62,7 +67,7 @@ public class LogStore {
 
   public List<LogEntry> get(Repository repository) {
     MirrorPermissions.checkMirrorPermission(repository);
-    return Collections.unmodifiableList(entries(store(repository)).getEntries());
+    return ImmutableList.copyOf(entries(store(repository)).getEntries()).reverse();
   }
 
   private DataStore<LogEntries> store(Repository repository) {
@@ -78,9 +83,9 @@ public class LogStore {
   @XmlAccessorType(XmlAccessType.FIELD)
   public static class LogEntries {
 
-    private List<LogEntry> entries = new ArrayList<>();
+    private Queue<LogEntry> entries = EvictingQueue.create(ENTRY_LIMIT);
 
-    private LogEntries() {
+    LogEntries() {
     }
 
     void add(LogEntry entry) {
