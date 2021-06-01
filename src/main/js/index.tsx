@@ -28,6 +28,8 @@ import MirrorRepositoryCreator from "./MirrorRepositoryCreator";
 import RepositoryConfig from "./config/RepositoryConfig";
 import MirrorRepositoryFlag from "./MirrorRepositoryFlag";
 import GlobalConfig from "./config/GlobalConfig";
+import { Repository } from "@scm-manager/ui-types";
+import LogRoute from "./LogRoute";
 
 binder.bind<extensionPoints.RepositoryCreator>("repos.creator", {
   subtitle: "scm-repository-mirror-plugin.create.subtitle",
@@ -52,3 +54,13 @@ configurationBinder.bindGlobal(
 );
 
 binder.bind<extensionPoints.RepositoryFlags>("repository.flags", MirrorRepositoryFlag);
+
+type PredicateProps = {
+  repository: Repository;
+};
+
+const logPredicate = ({ repository }: PredicateProps) => {
+  return !!repository._links["mirrorLogs"];
+};
+
+binder.bind("repository.route", LogRoute, logPredicate);

@@ -69,6 +69,19 @@
       "rejectedUpdates": "Letzte Synchronisation teilweise fehlgeschlagen",
       "failed": "Letzte Synchronisation fehlgeschlagen",
       "notYetRun": "Noch nicht synchronisiert"
+    },
+    "logs": {
+      "subtitle": "Mirror log",
+      "success": {
+        "label": "erfolgreich",
+        "title": "Synchronisation erfolgreich"
+      },
+      "failed": {
+        "label": "fehlgeschlagen",
+        "title": "Synchronisation fehlgeschlagen"
+      },
+      "finishedAt": "<0/> beendet",
+      "duration": "dauerte <0/>"
     }
   },
   "notifications": {
