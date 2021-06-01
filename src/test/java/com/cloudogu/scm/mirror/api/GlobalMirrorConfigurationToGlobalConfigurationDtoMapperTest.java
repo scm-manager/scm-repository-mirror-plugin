@@ -52,7 +52,7 @@ class GlobalMirrorConfigurationToGlobalConfigurationDtoMapperTest {
     mapper.setScmPathInfoStore(Providers.of(scmPathInfoStore));
   }
 
-  @SubjectAware(permissions = "configureMirror:read")
+  @SubjectAware(permissions = "configuration:read,write:mirror")
   @Test
   void shouldMapToDto() {
     GlobalMirrorConfiguration input = new GlobalMirrorConfiguration();
@@ -70,7 +70,7 @@ class GlobalMirrorConfigurationToGlobalConfigurationDtoMapperTest {
     assertThat(output.getAllowedGpgKeys().get(0).getRaw()).isEqualTo("bar");
   }
 
-  @SubjectAware(permissions = "configureMirror:read,write")
+  @SubjectAware(permissions = "configuration:read,write:mirror")
   @Test
   void shouldAppendUpdateLink() {
     GlobalMirrorConfiguration input = new GlobalMirrorConfiguration();

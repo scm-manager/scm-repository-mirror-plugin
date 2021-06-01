@@ -107,7 +107,7 @@ class MirrorConfigurationStoreTest {
   @Nested
   @SubjectAware(
     value = "trillian",
-    permissions = "repository:configureMirror:42"
+    permissions = "repository:mirror:42"
   )
   class WithPermission {
 

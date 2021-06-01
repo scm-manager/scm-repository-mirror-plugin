@@ -59,7 +59,7 @@ class MirrorConfigurationToConfigurationDtoMapperTest {
     repository.setId("42");
   }
 
-  @SubjectAware(permissions = "repository:readMirrorConfig:42")
+  @SubjectAware(permissions = "repository:mirror:42")
   @Test
   void shouldMapToDto() {
     MirrorConfiguration input = new MirrorConfiguration();
@@ -89,7 +89,7 @@ class MirrorConfigurationToConfigurationDtoMapperTest {
     assertThat(output.getAllowedGpgKeys().get(0).getRaw()).isEqualTo("bar");
   }
 
-  @SubjectAware(permissions = { "repository:readMirrorConfig:42", "repository:writeMirrorConfig:42" })
+  @SubjectAware(permissions = "repository:mirror:42")
   @Test
   void shouldAppendUpdateLink() {
     MirrorConfiguration input = new MirrorConfiguration();

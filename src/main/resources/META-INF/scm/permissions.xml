@@ -23,8 +23,11 @@
     SOFTWARE.
 
 -->
-<repository-permissions>
-  <verbs>
-    <verb read-only="true">mirror</verb>
-  </verbs>
-</repository-permissions>
+<permissions>
+  <permission>
+    <value>configuration:read,write:mirror</value>
+  </permission>
+  <permission>
+    <value>repository:mirror:*</value>
+  </permission>
+</permissions>

@@ -55,11 +55,9 @@ public abstract class GlobalMirrorConfigurationToGlobalConfigurationDtoMapper {
 
   private Links createLinks(String configurationUrl) {
     Links.Builder builder = Links.linkingTo();
-    if (MirrorPermissions.hasGlobalMirrorReadPermission()) {
+    if (MirrorPermissions.hasGlobalMirrorPermission()) {
       builder.self(configurationUrl);
-      if (MirrorPermissions.hasGlobalMirrorWritePermission()) {
-        builder.single(link("update", configurationUrl));
-      }
+      builder.single(link("update", configurationUrl));
     }
     return builder.build();
   }

@@ -42,7 +42,7 @@ import javax.inject.Provider;
 
 import static de.otto.edison.hal.Link.link;
 
-@Mapper( uses = RawGpgKeyToKeyDtoMapper.class)
+@Mapper(uses = RawGpgKeyToKeyDtoMapper.class)
 abstract class MirrorConfigurationToConfigurationDtoMapper {
 
   @Inject
@@ -52,6 +52,7 @@ abstract class MirrorConfigurationToConfigurationDtoMapper {
 
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
   abstract MirrorConfigurationDto.UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
+
   @Mapping(target = "certificate", expression = "java(null)")
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
   abstract MirrorConfigurationDto.CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
@@ -67,12 +68,9 @@ abstract class MirrorConfigurationToConfigurationDtoMapper {
 
   private Links createLinks(String configurationUrl, Repository repository) {
     Links.Builder builder = Links.linkingTo();
-    if (MirrorPermissions.hasMirrorReadPermission(repository)) {
+    if (MirrorPermissions.hasRepositoryMirrorPermission(repository)) {
       builder.self(configurationUrl);
-
-      if (MirrorPermissions.hasMirrorWritePermission(repository)) {
-        builder.single(link("update", configurationUrl));
-      }
+      builder.single(link("update", configurationUrl));
     }
     return builder.build();
   }
