@@ -71,5 +71,31 @@
   "notifications": {
     "mirrorSuccess": "Das Spiegeln des Repository war erfolgreich.",
     "mirrorFailed": "Das Spiegeln des Repository ist fehlgeschlagen."
+  },
+  "permissions": {
+    "configuration": {
+      "read,write": {
+        "mirror": {
+          "displayName": "Globale Spiegel Konfiguration ändern",
+          "description": "Darf die globale Spiegel Konfiguration verändern"
+        }
+      }
+    },
+    "repository": {
+      "mirror": {
+        "*": {
+          "displayName": "Repository-spezifische Spiegel Konfiguration ändern",
+          "description": "Darf die repository-spezifischen Spiegel Konfiguration verändern (falls nicht global deaktiviert)"
+        }
+      }
+    }
+  },
+  "verbs": {
+    "repository": {
+      "mirror": {
+        "displayName": "Spiegel Konfiguration ändern",
+        "description": "Darf die Spiegel Konfiguration verändern (falls nicht global deaktiviert)"
+      }
+    }
   }
 }
