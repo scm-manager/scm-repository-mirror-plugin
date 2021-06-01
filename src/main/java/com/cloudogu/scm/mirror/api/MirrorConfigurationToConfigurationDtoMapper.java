@@ -48,6 +48,7 @@ abstract class MirrorConfigurationToConfigurationDtoMapper {
   @Inject
   Provider<ScmPathInfoStore> scmPathInfoStore;
 
+  @Mapping(ignore = true, target = "attributes")
   abstract MirrorConfigurationDto map(MirrorConfiguration configuration, @Context Repository repository);
 
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)

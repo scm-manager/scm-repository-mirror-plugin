@@ -40,13 +40,10 @@ import java.util.List;
 @NoArgsConstructor
 public class MirrorVerificationConfigurationDto extends HalRepresentation {
 
-  @NotNull
-  private List<String> branchesAndTagsPatterns;
+  private String branchesAndTagsPatterns;
 
   @NotNull
-  @IntRange(from = 0, to = 3)
   private MirrorGpgVerificationType gpgVerificationType;
-
   private List<RawGpgKeyDto> allowedGpgKeys;
 
   MirrorVerificationConfigurationDto(Links links) {

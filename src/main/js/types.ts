@@ -35,7 +35,7 @@ export type CertificateCredentialDto = {
 };
 
 export type MirrorVerificationConfigurationDto = {
-  branchesAndTagsPatterns: string[];
+  branchesAndTagsPatterns: string;
   gpgVerificationType: MirrorGpgVerificationType;
   allowedGpgKeys?: PublicKey[];
 };

@@ -55,7 +55,11 @@ const RepositoryConfig: FC<Props> = ({ link }) => {
     }
   }, [initialConfiguration]);
 
-  const onSubmit = handleSubmit(formValue => update(coalesceFormValue(formValue)));
+  const onSubmit = handleSubmit(formValue =>
+    // Because the url field is disabled (sets url to undefined) but the dto expects the url to be present in the request,
+    // we have to manually set the url to the initial configuration
+    update(coalesceFormValue({ ...formValue, url: initialConfiguration.url }))
+  );
 
   return (
     <ConfigurationForm isValid={formState.isValid} isReadonly={isReadonly} onSubmit={onSubmit} {...formProps}>

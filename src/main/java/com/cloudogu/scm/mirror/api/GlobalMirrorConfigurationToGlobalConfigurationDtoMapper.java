@@ -28,6 +28,7 @@ import com.cloudogu.scm.mirror.MirrorPermissions;
 import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
@@ -43,12 +44,14 @@ public abstract class GlobalMirrorConfigurationToGlobalConfigurationDtoMapper {
   @Inject
   Provider<ScmPathInfoStore> scmPathInfoStore;
 
+  @Mapping(ignore = true, target = "attributes")
   abstract GlobalMirrorConfigurationDto map(GlobalMirrorConfiguration configuration);
 
   @ObjectFactory
   GlobalMirrorConfigurationDto createGlobalConfigurationDto() {
     String configurationUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class)
-      .method("getGlobalMirrorConfiguration").parameters()
+      .method("getGlobalMirrorConfiguration")
+      .parameters()
       .href();
     return new GlobalMirrorConfigurationDto(createLinks(configurationUrl));
   }

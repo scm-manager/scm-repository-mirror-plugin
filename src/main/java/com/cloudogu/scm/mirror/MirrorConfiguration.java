@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -83,5 +84,9 @@ public class MirrorConfiguration extends MirrorVerificationConfiguration {
     private byte[] certificate;
     @XmlJavaTypeAdapter(XmlCipherStringAdapter.class)
     private String password;
+  }
+
+  public List<String> getManagingUsers() {
+    return managingUsers != null ? managingUsers : Collections.emptyList();
   }
 }

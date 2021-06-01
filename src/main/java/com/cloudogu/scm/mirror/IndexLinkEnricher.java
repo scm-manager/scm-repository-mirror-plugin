@@ -23,34 +23,39 @@
  */
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.api.RawGpgKeyDto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import sonia.scm.util.Util;
+import com.cloudogu.scm.mirror.api.MirrorRootResource;
+import sonia.scm.api.v2.resources.Enrich;
+import sonia.scm.api.v2.resources.HalAppender;
+import sonia.scm.api.v2.resources.HalEnricher;
+import sonia.scm.api.v2.resources.HalEnricherContext;
+import sonia.scm.api.v2.resources.Index;
+import sonia.scm.api.v2.resources.LinkBuilder;
+import sonia.scm.api.v2.resources.ScmPathInfoStore;
+import sonia.scm.plugin.Extension;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import java.util.Collections;
-import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Provider;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@XmlAccessorType(XmlAccessType.FIELD)
-public class MirrorVerificationConfiguration {
+@Extension
+@Enrich(Index.class)
+public class IndexLinkEnricher implements HalEnricher {
 
-  private List<String> branchesAndTagsPatterns;
-  private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
-  private List<RawGpgKey> allowedGpgKeys;
+  private final Provider<ScmPathInfoStore> scmPathInfoStore;
 
-  public List<String> getBranchesAndTagsPatterns() {
-    return branchesAndTagsPatterns != null ? branchesAndTagsPatterns : Collections.emptyList();
+  @Inject
+  public IndexLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore) {
+    this.scmPathInfoStore = scmPathInfoStore;
   }
 
-  public List<RawGpgKey> getAllowedGpgKeys() {
-    return allowedGpgKeys != null ? allowedGpgKeys : Collections.emptyList();
+  @Override
+  public void enrich(HalEnricherContext context, HalAppender appender) {
+    if (MirrorPermissions.hasGlobalMirrorPermission()) {
+      String globalConfigUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class)
+        .method("getGlobalMirrorConfiguration")
+        .parameters()
+        .href();
+
+      appender.appendLink("mirrorConfiguration", globalConfigUrl);
+    }
   }
 }
