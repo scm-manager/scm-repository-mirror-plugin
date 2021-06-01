@@ -24,18 +24,21 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.LogEntry;
+import com.cloudogu.scm.mirror.LogStore;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
 import com.cloudogu.scm.mirror.NotConfiguredForMirrorException;
+import de.otto.edison.hal.Embedded;
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
 import sonia.scm.NotFoundException;
-import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -44,6 +47,10 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.mapstruct.factory.Mappers.getMapper;
 
@@ -52,18 +59,22 @@ public class MirrorResource {
   private final MirrorConfigurationStore configurationService;
   private final MirrorService mirrorService;
   private final RepositoryManager repositoryManager;
+  private final LogStore logStore;
 
   private final MirrorConfigurationDtoToConfigurationMapper fromDtoMapper = getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
   private final MirrorConfigurationToConfigurationDtoMapper toDtoMapper;
+  private final LogEntryMapper logEntryMapper = getMapper(LogEntryMapper.class);
 
   @Inject
   public MirrorResource(MirrorConfigurationStore configurationService,
                         MirrorService mirrorService,
                         RepositoryManager repositoryManager,
-                        MirrorConfigurationToConfigurationDtoMapper toDtoMapper) {
+                        MirrorConfigurationToConfigurationDtoMapper toDtoMapper,
+                        LogStore logStore) {
     this.configurationService = configurationService;
     this.mirrorService = mirrorService;
     this.repositoryManager = repositoryManager;
+    this.logStore = logStore;
     this.toDtoMapper = toDtoMapper;
   }
 
@@ -91,6 +102,20 @@ public class MirrorResource {
   @Path("/sync")
   public void syncMirror(@PathParam("namespace") String namespace, @PathParam("name") String name) {
     mirrorService.updateMirror(loadRepository(namespace, name));
+  }
+
+  @GET
+  @Path("/logs")
+  @Produces("application/json")
+  public HalRepresentation getLogs(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name) {
+    Repository repository = loadRepository(namespace, name);
+    List<LogEntry> entries = logStore.get(repository);
+    List<LogEntryDto> dtos = entries.stream().map(logEntryMapper::map).collect(Collectors.toList());
+
+    Links links = Links.linkingTo().self(uriInfo.getAbsolutePath().toASCIIString()).build();
+    Embedded embedded = Embedded.embedded("entries", dtos);
+
+    return new HalRepresentation(links, embedded);
   }
 
   private Repository loadRepository(String namespace, String name) {
