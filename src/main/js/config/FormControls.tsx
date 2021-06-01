@@ -22,16 +22,16 @@
  * SOFTWARE.
  */
 
-import {Control, useController, useForm} from "react-hook-form";
+import { Control, useController, useForm } from "react-hook-form";
 import {
   MirrorConfigurationDto,
   mirrorGpgVerificationTypes,
   MirrorVerificationConfigurationDto,
   PublicKey
 } from "../types";
-import React, {ChangeEvent, FC, useState} from "react";
-import {useTranslation} from "react-i18next";
-import {SelectValue} from "@scm-manager/ui-types";
+import React, { ChangeEvent, FC, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { SelectValue } from "@scm-manager/ui-types";
 import {
   AutocompleteAddEntryToTableField,
   Checkbox,
@@ -45,7 +45,7 @@ import {
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
-import {useUserSuggestions} from "@scm-manager/ui-api";
+import { useUserSuggestions } from "@scm-manager/ui-api";
 import readBinaryFileAsBase64String from "../readBinaryFileAsBase64String";
 import styled from "styled-components";
 
@@ -55,7 +55,7 @@ const Column = styled.div`
 `;
 
 export type MirrorConfigControlProps = { control: Control<MirrorConfigurationDto>; isReadonly: boolean };
-export type GlobalMirrorConfigControlProps = {
+export type MirrorVerificationConfigControlProps = {
   control: Control<MirrorVerificationConfigurationDto>;
   isReadonly: boolean;
 };
@@ -276,13 +276,13 @@ const Columns = styled.div`
   padding: 0.75rem 0 0;
 `;
 
-export const PublicKeysControl: FC<GlobalMirrorConfigControlProps> = ({ control, isReadonly }) => {
+export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
-  const { field } = useController({ control, name: "allowedGpgKeys", defaultValue: 0 });
+  const { field } = useController({ control, name: "allowedGpgKeys" });
   const { register, handleSubmit, reset } = useForm<PublicKey>();
 
   const deleteKey = (displayName: string) =>
-    field.onChange(field.value?.filter(key => key.displayName === displayName) || []);
+    field.onChange(field.value?.filter(key => key.displayName !== displayName) || []);
   const addNewKey = (key: PublicKey) => {
     field.onChange([...(field.value || []), key]);
     reset();
@@ -301,15 +301,22 @@ export const PublicKeysControl: FC<GlobalMirrorConfigControlProps> = ({ control,
             <td>{displayName}</td>
             <td>{raw}</td>
             <td>
-              <span className="icon" onClick={() => deleteKey(displayName)}>
-                <Icon name="trash" title={t("scm-repository-mirror-plugin.form.keyList.delete")} color="inherit" />
-              </span>
+              <button onClick={() => deleteKey(displayName)}>
+                <span className="icon">
+                  <Icon name="trash" title={t("scm-repository-mirror-plugin.form.keyList.delete")} color="inherit" />
+                </span>
+              </button>
             </td>
           </tr>
         ))}
       </table>
+      {field.value?.length === 0 ? (
+        <div className="notification is-primary">
+          {t("scm-repository-mirror-plugin.form.keyList.emptyNotification")}
+        </div>
+      ) : null}
       {isReadonly ? null : (
-        <form onSubmit={handleSubmit(addNewKey)}>
+        <>
           <Columns>
             <Column>
               <InputField
@@ -324,8 +331,15 @@ export const PublicKeysControl: FC<GlobalMirrorConfigControlProps> = ({ control,
               />
             </Column>
           </Columns>
-          <Level right={<SubmitButton label={t("scm-repository-mirror-plugin.form.keyList.new.submit")} />} />
-        </form>
+          <Level
+            right={
+              <SubmitButton
+                action={handleSubmit(addNewKey)}
+                label={t("scm-repository-mirror-plugin.form.keyList.new.submit")}
+              />
+            }
+          />
+        </>
       )}
     </>
   );
@@ -339,9 +353,9 @@ export const createGpgVerificationTypeOptions: (t: (key: string) => string) => S
     value: mirrorGpgVerificationType
   }));
 
-export const GpgVerificationControl: FC<GlobalMirrorConfigControlProps> = ({ control, isReadonly }) => {
+export const GpgVerificationControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
-  const { field: verificationTypeField } = useController({ control, name: "gpgVerificationType", defaultValue: 0 });
+  const { field: verificationTypeField } = useController({ control, name: "gpgVerificationType" });
   const showKeyList = verificationTypeField.value === "KEY_LIST";
   return (
     <>

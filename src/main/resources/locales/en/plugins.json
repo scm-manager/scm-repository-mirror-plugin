@@ -61,7 +61,42 @@
         "addButton": "Add user",
         "autocompletePlaceholder": "Add users to notify"
       },
-      "manualSync": "Refresh mirror now"
+      "manualSync": "Refresh mirror now",
+      "keyList": {
+        "displayName": "Display Name",
+        "raw": "Raw",
+        "delete": "Delete",
+        "emptyNotification": "No keys defined yet",
+        "new": {
+          "displayName": {
+            "label": "Display Name",
+            "helpText": "A descriptive name for the key."
+          },
+          "raw": {
+            "label": "Raw",
+            "helpText": "The raw key. Simply copy & paste it into this field."
+          },
+          "submit": "Add Key"
+        }
+      },
+      "gpgVerificationType": {
+        "options": {
+          "none": "None",
+          "signature": "Any Signature",
+          "scm_user_signature": "SCM User Signature",
+          "key_list": "Pre-defined Key List"
+        },
+        "label": "GPG Verification Type",
+        "helpText": "Define if or how signatures on commits should be validated."
+      },
+      "httpsOnly": {
+        "label": "HTTPS Only",
+        "helpText": "Only allow https for mirror connections. Disables the use of unsecured http connections."
+      },
+      "branchesAndTagsPatterns": {
+        "label": "Branches and Tags",
+        "helpText": "Comma-separated glob patterns describing which branches and/or tags should be mirrored. If left blank, all branches and tags will be mirrored."
+      }
     },
     "flag": {
       "label": "mirror",

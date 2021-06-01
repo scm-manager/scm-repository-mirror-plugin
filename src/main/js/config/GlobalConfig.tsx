@@ -56,11 +56,13 @@ const GlobalConfig: FC<Props> = ({ link }) => {
     >
       <Checkbox
         label={t("scm-repository-mirror-plugin.form.httpsOnly.label")}
+        helpText={t("scm-repository-mirror-plugin.form.httpsOnly.helpText")}
         disabled={isReadonly}
         {...register("httpsOnly")}
       />
       <InputField
         label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
+        helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
         disabled={isReadonly}
         {...register("branchesAndTagsPatterns")}
       />

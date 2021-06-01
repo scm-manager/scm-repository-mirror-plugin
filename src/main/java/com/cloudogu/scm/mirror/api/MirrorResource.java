@@ -54,17 +54,17 @@ public class MirrorResource {
   private final RepositoryManager repositoryManager;
 
   private final MirrorConfigurationDtoToConfigurationMapper fromDtoMapper = getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
-  private final MirrorConfigurationToConfigurationDtoMapper toDtoMapper = getMapper(MirrorConfigurationToConfigurationDtoMapper.class);
+  private final MirrorConfigurationToConfigurationDtoMapper toDtoMapper;
 
   @Inject
   public MirrorResource(MirrorConfigurationStore configurationService,
                         MirrorService mirrorService,
                         RepositoryManager repositoryManager,
-                        Provider<ScmPathInfoStore> scmPathInfoStore) {
+                        MirrorConfigurationToConfigurationDtoMapper toDtoMapper) {
     this.configurationService = configurationService;
     this.mirrorService = mirrorService;
     this.repositoryManager = repositoryManager;
-    toDtoMapper.scmPathInfoStore = scmPathInfoStore;
+    this.toDtoMapper = toDtoMapper;
   }
 
   @GET
