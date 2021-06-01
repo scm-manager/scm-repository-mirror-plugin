@@ -183,7 +183,7 @@ class MirrorWorker {
   }
 
   private Notification buildNotification(Repository repository, Type error, String mirrorFailed) {
-    return new Notification(error, "/repo/" + repository.getNamespaceAndName() + "/settings/general", mirrorFailed);
+    return new Notification(error, "/repo/" + repository.getNamespaceAndName() + "/mirror-logs", mirrorFailed);
   }
 
   private MirrorStatus.Result getLatestStatus(Repository repository) {
