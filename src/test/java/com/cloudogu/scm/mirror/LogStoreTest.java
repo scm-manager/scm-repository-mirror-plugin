@@ -25,6 +25,7 @@
 package com.cloudogu.scm.mirror;
 
 import com.github.legman.EventBus;
+import com.google.common.collect.Iterables;
 import org.apache.shiro.authz.AuthorizationException;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
@@ -70,7 +71,6 @@ class LogStoreTest {
   @Test
   @SubjectAware(value = "trillian", permissions = "repository:configureMirror:42")
   void shouldStoreLogs() {
-
     MirrorCommandResult result = result(true, 42, "awesome sync");
     MirrorSyncEvent event = new MirrorSyncEvent(heartOfGold, result);
 
@@ -92,6 +92,23 @@ class LogStoreTest {
     heartOfGold.setId("42");
 
     assertThrows(AuthorizationException.class, () -> logStore.get(heartOfGold));
+  }
+
+  @Test
+  @SubjectAware(value = "trillian", permissions = "repository:configureMirror:42")
+  void shouldLimitStoreEntries() {
+    for (int i=0; i<LogStore.ENTRY_LIMIT + 5; i++) {
+      MirrorCommandResult result = result(false, 21, "sync " + i);
+      MirrorSyncEvent event = new MirrorSyncEvent(heartOfGold, result);
+      eventBus.post(event);
+    }
+
+    List<LogEntry> entries = logStore.get(heartOfGold);
+    assertThat(entries).hasSize(LogStore.ENTRY_LIMIT);
+    LogEntry first = entries.get(0);
+    assertThat(first.getLog()).containsOnly("sync 24");
+    LogEntry last = Iterables.getLast(entries);
+    assertThat(last.getLog()).containsOnly("sync 5");
   }
 
   private MirrorCommandResult result(boolean success, long duration, String... logs) {
