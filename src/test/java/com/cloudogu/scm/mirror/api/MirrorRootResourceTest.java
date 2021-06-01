@@ -83,11 +83,13 @@ class MirrorRootResourceTest {
   private RepositoryManager repositoryManager;
   @Mock
   private MirrorConfigurationStore configurationStore;
+  @Mock
+  private GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper;
 
   @BeforeEach
   void initResource() {
     MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, forUri("/"));
-    dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService, configurationStore));
+    dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService, configurationStore, toDtoMapper));
   }
 
   @Nested

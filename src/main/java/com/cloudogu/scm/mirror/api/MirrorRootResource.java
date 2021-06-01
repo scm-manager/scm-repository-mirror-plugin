@@ -28,7 +28,6 @@ import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
-import com.cloudogu.scm.mirror.NotConfiguredForMirrorException;
 import org.mapstruct.factory.Mappers;
 import sonia.scm.api.v2.resources.RepositoryLinkProvider;
 import sonia.scm.repository.Repository;
@@ -56,18 +55,19 @@ public class MirrorRootResource {
   private final MirrorService mirrorService;
   private final MirrorConfigurationStore configurationService;
   private final GlobalMirrorConfigurationDtoToGlobalConfigurationMapper fromDtoMapper = getMapper(GlobalMirrorConfigurationDtoToGlobalConfigurationMapper.class);
-  private final GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper = getMapper(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class);
+  private final GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper;
 
   // TODO check whether we should use the repository mapper from the core here
   private final MirrorRequestDtoToRepositoryMapper requestDtoToRepositoryMapper = Mappers.getMapper(MirrorRequestDtoToRepositoryMapper.class);
   private final MirrorConfigurationDtoToConfigurationMapper requestDtoToRequestMapper = Mappers.getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
 
   @Inject
-  public MirrorRootResource(Provider<MirrorResource> mirrorResource, RepositoryLinkProvider repositoryLinkProvider, MirrorService mirrorService, MirrorConfigurationStore configurationService) {
+  public MirrorRootResource(Provider<MirrorResource> mirrorResource, RepositoryLinkProvider repositoryLinkProvider, MirrorService mirrorService, MirrorConfigurationStore configurationService, GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper) {
     this.mirrorResource = mirrorResource;
     this.repositoryLinkProvider = repositoryLinkProvider;
     this.mirrorService = mirrorService;
     this.configurationService = configurationService;
+    this.toDtoMapper = toDtoMapper;
   }
 
   @POST

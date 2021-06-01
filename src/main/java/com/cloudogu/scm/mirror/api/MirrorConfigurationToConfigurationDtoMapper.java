@@ -45,7 +45,7 @@ import java.util.List;
 import static de.otto.edison.hal.Link.link;
 
 @Mapper(uses = RawGpgKeyToKeyDtoMapper.class)
-abstract class MirrorConfigurationToConfigurationDtoMapper {
+public abstract class MirrorConfigurationToConfigurationDtoMapper {
 
   @Inject
   Provider<ScmPathInfoStore> scmPathInfoStore;
