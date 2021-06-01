@@ -27,6 +27,7 @@ package com.cloudogu.scm.mirror.api;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorPermissions;
+import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -41,7 +42,7 @@ import javax.inject.Provider;
 
 import static de.otto.edison.hal.Link.link;
 
-@Mapper
+@Mapper( uses = RawGpgKeyToKeyDtoMapper.class)
 abstract class MirrorConfigurationToConfigurationDtoMapper {
 
   @Inject
@@ -65,10 +66,19 @@ abstract class MirrorConfigurationToConfigurationDtoMapper {
   }
 
   private Links createLinks(String configurationUrl, Repository repository) {
-    Links.Builder builder = Links.linkingTo().self(configurationUrl);
-    if (MirrorPermissions.hasMirrorPermission(repository)) {
-      builder.single(link("update", configurationUrl));
+    Links.Builder builder = Links.linkingTo();
+    if (MirrorPermissions.hasMirrorReadPermission(repository)) {
+      builder.self(configurationUrl);
+
+      if (MirrorPermissions.hasMirrorWritePermission(repository)) {
+        builder.single(link("update", configurationUrl));
+      }
     }
     return builder.build();
+  }
+
+  @VisibleForTesting
+  void setScmPathInfoStore(Provider<ScmPathInfoStore> scmPathInfoStore) {
+    this.scmPathInfoStore = scmPathInfoStore;
   }
 }

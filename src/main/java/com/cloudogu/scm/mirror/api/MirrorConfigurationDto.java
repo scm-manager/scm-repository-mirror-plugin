@@ -24,7 +24,6 @@
 
 package com.cloudogu.scm.mirror.api;
 
-import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,7 +39,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @SuppressWarnings("java:S2160") // Equals and Hashcode not needed for dto
-public class MirrorConfigurationDto extends HalRepresentation {
+public class MirrorConfigurationDto extends MirrorVerificationConfigurationDto {
 
   @NotBlank
   private String url;

@@ -21,43 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror.api;
 
-import { RepositoryCreation, HalRepresentation } from "@scm-manager/ui-types";
+import com.cloudogu.scm.mirror.MirrorGpgVerificationType;
+import com.cloudogu.scm.mirror.RawGpgKey;
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.checkerframework.common.value.qual.IntRange;
 
-export type UsernamePasswordCredentialDto = {
-  username: string;
-  password: string;
-};
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
-export type CertificateCredentialDto = {
-  certificate: string;
-  password: string;
-};
+@Getter
+@Setter
+@NoArgsConstructor
+public class MirrorVerificationConfigurationDto extends HalRepresentation {
 
-export type MirrorVerificationConfigurationDto = {
-  branchesAndTagsPatterns: string[];
-  gpgVerificationType: MirrorGpgVerificationType;
-  allowedGpgKeys?: PublicKey[];
-};
+  @NotNull
+  private List<String> branchesAndTagsPatterns;
 
-export type MirrorConfigurationDto = MirrorVerificationConfigurationDto & {
-  url: string;
-  synchronizationPeriod: number;
-  managingUsers: string[];
-  usernamePasswordCredential?: UsernamePasswordCredentialDto;
-  certificateCredential?: CertificateCredentialDto;
-};
+  @NotNull
+  @IntRange(from = 0, to = 3)
+  private MirrorGpgVerificationType gpgVerificationType;
 
-export type MirrorRequestDto = MirrorConfigurationDto & RepositoryCreation;
+  private List<RawGpgKeyDto> allowedGpgKeys;
 
-export type GlobalConfigurationDto = MirrorVerificationConfigurationDto & {
-  httpsOnly: boolean;
-};
+  MirrorVerificationConfigurationDto(Links links) {
+    super(links);
+  }
 
-export const mirrorGpgVerificationTypes = ["NONE", "SIGNATURE", "SCM_USER_SIGNATURE", "KEY_LIST"] as const;
-export type MirrorGpgVerificationType = typeof mirrorGpgVerificationTypes[number];
-
-export type PublicKey = HalRepresentation & {
-  displayName: string;
-  raw: string;
-};
+}

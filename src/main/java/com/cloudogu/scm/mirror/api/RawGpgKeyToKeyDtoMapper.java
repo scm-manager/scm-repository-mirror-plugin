@@ -21,43 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror.api;
 
-import { RepositoryCreation, HalRepresentation } from "@scm-manager/ui-types";
+import com.cloudogu.scm.mirror.RawGpgKey;
+import org.mapstruct.Mapper;
 
-export type UsernamePasswordCredentialDto = {
-  username: string;
-  password: string;
-};
-
-export type CertificateCredentialDto = {
-  certificate: string;
-  password: string;
-};
-
-export type MirrorVerificationConfigurationDto = {
-  branchesAndTagsPatterns: string[];
-  gpgVerificationType: MirrorGpgVerificationType;
-  allowedGpgKeys?: PublicKey[];
-};
-
-export type MirrorConfigurationDto = MirrorVerificationConfigurationDto & {
-  url: string;
-  synchronizationPeriod: number;
-  managingUsers: string[];
-  usernamePasswordCredential?: UsernamePasswordCredentialDto;
-  certificateCredential?: CertificateCredentialDto;
-};
-
-export type MirrorRequestDto = MirrorConfigurationDto & RepositoryCreation;
-
-export type GlobalConfigurationDto = MirrorVerificationConfigurationDto & {
-  httpsOnly: boolean;
-};
-
-export const mirrorGpgVerificationTypes = ["NONE", "SIGNATURE", "SCM_USER_SIGNATURE", "KEY_LIST"] as const;
-export type MirrorGpgVerificationType = typeof mirrorGpgVerificationTypes[number];
-
-export type PublicKey = HalRepresentation & {
-  displayName: string;
-  raw: string;
-};
+@Mapper
+public abstract class RawGpgKeyToKeyDtoMapper {
+  abstract RawGpgKeyDto map(RawGpgKey key);
+}

@@ -64,12 +64,12 @@ public class MirrorConfigurationStore implements Initable {
   }
 
   public Optional<MirrorConfiguration> getConfiguration(Repository repository) {
-    MirrorPermissions.checkMirrorPermission(repository);
+    MirrorPermissions.checkMirrorWritePermission(repository);
     return createConfigurationStore(repository).getOptional();
   }
 
   public void setConfiguration(Repository repository, MirrorConfiguration configuration) {
-    MirrorPermissions.checkMirrorPermission(repository);
+    MirrorPermissions.checkMirrorWritePermission(repository);
     LOG.debug("setting new configuration for repository {}", repository);
     privilegedMirrorRunner.exceptedFromReadOnly(
       () -> {

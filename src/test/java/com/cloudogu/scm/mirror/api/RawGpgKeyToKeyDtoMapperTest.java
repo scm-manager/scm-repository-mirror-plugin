@@ -21,43 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror.api;
 
-import { RepositoryCreation, HalRepresentation } from "@scm-manager/ui-types";
+import com.cloudogu.scm.mirror.RawGpgKey;
+import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
-export type UsernamePasswordCredentialDto = {
-  username: string;
-  password: string;
-};
+import static org.assertj.core.api.Assertions.assertThat;
 
-export type CertificateCredentialDto = {
-  certificate: string;
-  password: string;
-};
+class RawGpgKeyToKeyDtoMapperTest {
 
-export type MirrorVerificationConfigurationDto = {
-  branchesAndTagsPatterns: string[];
-  gpgVerificationType: MirrorGpgVerificationType;
-  allowedGpgKeys?: PublicKey[];
-};
+  private RawGpgKeyToKeyDtoMapper mapper = Mappers.getMapper(RawGpgKeyToKeyDtoMapper.class);
 
-export type MirrorConfigurationDto = MirrorVerificationConfigurationDto & {
-  url: string;
-  synchronizationPeriod: number;
-  managingUsers: string[];
-  usernamePasswordCredential?: UsernamePasswordCredentialDto;
-  certificateCredential?: CertificateCredentialDto;
-};
+  @Test
+  void shouldMapRawGpgKeyToDto() {
+    RawGpgKey input = new RawGpgKey("foo", "bar");
+    final RawGpgKeyDto output = mapper.map(input);
+    assertThat(output.getDisplayName()).isEqualTo("foo");
+    assertThat(output.getRaw()).isEqualTo("bar");
+  }
 
-export type MirrorRequestDto = MirrorConfigurationDto & RepositoryCreation;
-
-export type GlobalConfigurationDto = MirrorVerificationConfigurationDto & {
-  httpsOnly: boolean;
-};
-
-export const mirrorGpgVerificationTypes = ["NONE", "SIGNATURE", "SCM_USER_SIGNATURE", "KEY_LIST"] as const;
-export type MirrorGpgVerificationType = typeof mirrorGpgVerificationTypes[number];
-
-export type PublicKey = HalRepresentation & {
-  displayName: string;
-  raw: string;
-};
+}

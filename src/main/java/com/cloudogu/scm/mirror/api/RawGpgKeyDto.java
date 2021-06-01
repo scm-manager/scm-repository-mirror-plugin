@@ -22,42 +22,20 @@
  * SOFTWARE.
  */
 
-import { RepositoryCreation, HalRepresentation } from "@scm-manager/ui-types";
+package com.cloudogu.scm.mirror.api;
 
-export type UsernamePasswordCredentialDto = {
-  username: string;
-  password: string;
-};
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-export type CertificateCredentialDto = {
-  certificate: string;
-  password: string;
-};
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class RawGpgKeyDto {
 
-export type MirrorVerificationConfigurationDto = {
-  branchesAndTagsPatterns: string[];
-  gpgVerificationType: MirrorGpgVerificationType;
-  allowedGpgKeys?: PublicKey[];
-};
+  private String displayName;
+  private String raw;
 
-export type MirrorConfigurationDto = MirrorVerificationConfigurationDto & {
-  url: string;
-  synchronizationPeriod: number;
-  managingUsers: string[];
-  usernamePasswordCredential?: UsernamePasswordCredentialDto;
-  certificateCredential?: CertificateCredentialDto;
-};
-
-export type MirrorRequestDto = MirrorConfigurationDto & RepositoryCreation;
-
-export type GlobalConfigurationDto = MirrorVerificationConfigurationDto & {
-  httpsOnly: boolean;
-};
-
-export const mirrorGpgVerificationTypes = ["NONE", "SIGNATURE", "SCM_USER_SIGNATURE", "KEY_LIST"] as const;
-export type MirrorGpgVerificationType = typeof mirrorGpgVerificationTypes[number];
-
-export type PublicKey = HalRepresentation & {
-  displayName: string;
-  raw: string;
-};
+}

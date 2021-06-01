@@ -24,25 +24,36 @@
 
 package com.cloudogu.scm.mirror;
 
+import org.apache.shiro.SecurityUtils;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 
 public final class MirrorPermissions {
 
   public static final String PERMISSION = "configureMirror";
+  public static final String READ_REPO_MIRROR_CONFIG_PERMISSION = "readMirrorConfig";
+  public static final String WRITE_REPO_MIRROR_CONFIG_PERMISSION = "writeMirrorConfig";
 
   private MirrorPermissions() {
   }
 
-  static void checkMirrorPermission(Repository repository) {
-    RepositoryPermissions.custom(PERMISSION, repository).check();
+  static void checkMirrorWritePermission(Repository repository) {
+    RepositoryPermissions.custom(WRITE_REPO_MIRROR_CONFIG_PERMISSION, repository).check();
   }
 
-  public static boolean hasMirrorPermission(Repository repository) {
-    return RepositoryPermissions.custom(PERMISSION, repository).isPermitted();
+  public static boolean hasMirrorWritePermission(Repository repository) {
+    return RepositoryPermissions.custom(WRITE_REPO_MIRROR_CONFIG_PERMISSION, repository).isPermitted();
   }
 
-  public static boolean hasGlobalMirrorPermission() {
-    return RepositoryPermissions.custom(PERMISSION).isPermitted();
+  public static boolean hasMirrorReadPermission(Repository repository) {
+    return RepositoryPermissions.custom(READ_REPO_MIRROR_CONFIG_PERMISSION, repository).isPermitted();
+  }
+
+  public static boolean hasGlobalMirrorWritePermission() {
+    return SecurityUtils.getSubject().isPermitted(PERMISSION + ":write");
+  }
+
+  public static boolean hasGlobalMirrorReadPermission() {
+    return SecurityUtils.getSubject().isPermitted(PERMISSION + ":read");
   }
 }
