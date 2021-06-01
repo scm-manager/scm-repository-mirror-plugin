@@ -36,6 +36,8 @@ import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import java.util.List;
+
 import static de.otto.edison.hal.Link.link;
 
 @Mapper( uses = RawGpgKeyToKeyDtoMapper.class)
@@ -46,6 +48,11 @@ public abstract class GlobalMirrorConfigurationToGlobalConfigurationDtoMapper {
 
   @Mapping(ignore = true, target = "attributes")
   abstract GlobalMirrorConfigurationDto map(GlobalMirrorConfiguration configuration);
+
+  @Mapping(target = "branchesAndTagsPatterns")
+  String map(List<String> value) {
+    return String.join(",", value);
+  }
 
   @ObjectFactory
   GlobalMirrorConfigurationDto createGlobalConfigurationDto() {

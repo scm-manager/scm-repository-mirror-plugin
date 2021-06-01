@@ -26,8 +26,11 @@ package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 @Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
 abstract class MirrorConfigurationDtoToConfigurationMapper {
@@ -36,6 +39,11 @@ abstract class MirrorConfigurationDtoToConfigurationMapper {
 
   abstract MirrorConfiguration.UsernamePasswordCredential map(MirrorConfigurationDto.UsernamePasswordCredentialDto credentialDto);
   abstract MirrorConfiguration.CertificateCredential map(MirrorConfigurationDto.CertificateCredentialDto credentialDto);
+
+  @Mapping(target = "branchesAndTagsPatterns")
+  List<String> map(String value) {
+    return Arrays.asList(value.split(","));
+  }
 
   byte[] mapBase64(String base64encoded) {
     return Base64.getDecoder().decode(base64encoded.replace("\n", ""));

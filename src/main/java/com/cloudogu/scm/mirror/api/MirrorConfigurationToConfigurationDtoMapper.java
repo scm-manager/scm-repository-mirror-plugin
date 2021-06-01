@@ -40,6 +40,8 @@ import sonia.scm.repository.Repository;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import java.util.List;
+
 import static de.otto.edison.hal.Link.link;
 
 @Mapper(uses = RawGpgKeyToKeyDtoMapper.class)
@@ -50,6 +52,11 @@ abstract class MirrorConfigurationToConfigurationDtoMapper {
 
   @Mapping(ignore = true, target = "attributes")
   abstract MirrorConfigurationDto map(MirrorConfiguration configuration, @Context Repository repository);
+
+  @Mapping(target = "branchesAndTagsPatterns")
+  String map(List<String> value) {
+    return String.join(",", value);
+  }
 
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
   abstract MirrorConfigurationDto.UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);

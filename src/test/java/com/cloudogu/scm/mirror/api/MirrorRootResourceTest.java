@@ -24,7 +24,6 @@
 
 package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
