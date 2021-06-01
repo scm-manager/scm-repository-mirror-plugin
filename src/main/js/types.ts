@@ -22,8 +22,7 @@
  * SOFTWARE.
  */
 
-import { HalRepresentation, HalRepresentationWithEmbedded, RepositoryCreation } from "@scm-manager/ui-types";
-import {Embedded} from "@scm-manager/ui-types/src/hal";
+import { HalRepresentation, HalRepresentationWithEmbedded, Embedded, RepositoryCreation } from "@scm-manager/ui-types";
 
 export type UsernamePasswordCredentialDto = {
   username: string;
@@ -68,10 +67,10 @@ export type LogEntry = HalRepresentation & {
   duration: number;
   finishedAt: string;
   log: string[];
-}
+};
 
 type EmbeddedLogEntries = Embedded & {
-  entries: LogEntry[]
-}
+  entries: LogEntry[];
+};
 
 export type LogCollection = HalRepresentationWithEmbedded<EmbeddedLogEntries>;

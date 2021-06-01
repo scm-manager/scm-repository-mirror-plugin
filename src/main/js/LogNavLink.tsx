@@ -24,13 +24,13 @@
 
 import React, { FC } from "react";
 import { SecondaryNavigationItem } from "@scm-manager/ui-components";
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   url: string;
 };
 
-const LogNavLink:FC<Props> = ({ url }) => {
+const LogNavLink: FC<Props> = ({ url }) => {
   const [t] = useTranslation("plugins");
   return (
     <SecondaryNavigationItem
