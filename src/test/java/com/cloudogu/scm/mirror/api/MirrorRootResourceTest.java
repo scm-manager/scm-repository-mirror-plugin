@@ -24,10 +24,13 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.LogEntry;
+import com.cloudogu.scm.mirror.LogStore;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
 import org.jboss.resteasy.mock.MockHttpRequest;
@@ -44,6 +47,7 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryTestData;
+import sonia.scm.repository.api.MirrorCommandResult;
 import sonia.scm.web.JsonMockHttpRequest;
 import sonia.scm.web.JsonMockHttpResponse;
 import sonia.scm.web.RestDispatcher;
@@ -51,6 +55,9 @@ import sonia.scm.web.RestDispatcher;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 import static com.google.common.io.Resources.getResource;
@@ -69,8 +76,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.web.MockScmPathInfoStore.forUri;
 
-@ExtendWith(MockitoExtension.class)
-@ExtendWith(ShiroExtension.class)
+@ExtendWith({MockitoExtension.class, ShiroExtension.class})
 class MirrorRootResourceTest {
 
   private final RestDispatcher dispatcher = new RestDispatcher();
@@ -84,13 +90,15 @@ class MirrorRootResourceTest {
   @Mock
   private MirrorConfigurationStore configurationStore;
   @Mock
+  private LogStore logStore;
+  @Mock
   private GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper;
   @Mock
   private MirrorConfigurationToConfigurationDtoMapper configurationToConfigurationDtoMapper;
 
   @BeforeEach
   void initResource() {
-    MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, configurationToConfigurationDtoMapper);
+    MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, configurationToConfigurationDtoMapper, logStore);
     dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService, configurationStore, toDtoMapper));
   }
 
@@ -336,6 +344,56 @@ class MirrorRootResourceTest {
           .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
       }
     }
+  }
+
+  @Nested
+  class LogTests {
+
+    private final Repository repository = RepositoryTestData.createHeartOfGold();
+
+    @BeforeEach
+    void setUpManager() {
+      doReturn(repository).when(repositoryManager).get(repository.getNamespaceAndName());
+    }
+
+    @Test
+    void shouldReturnLogs() throws URISyntaxException {
+      LogEntry entry = log(false, 21L, "not so awesome");
+      when(logStore.get(repository)).thenReturn(Collections.singletonList(entry));
+
+      MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/logs");
+      JsonMockHttpResponse response = new JsonMockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(200);
+      JsonNode json = response.getContentAsJson();
+
+      JsonNode jsonEntry = json.get("_embedded").get("entries").get(0);
+      assertThat(jsonEntry.get("success").asBoolean()).isFalse();
+      assertThat(jsonEntry.get("duration").asLong()).isEqualTo(21L);
+      assertThat(jsonEntry.get("log").get(0).asText()).isEqualTo("not so awesome");
+      assertThat(jsonEntry.get("finishedAt").asText()).isNotNull();
+    }
+
+    @Test
+    void shouldReturnSelfLink() throws URISyntaxException {
+      MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/logs");
+      JsonMockHttpResponse response = new JsonMockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(200);
+      JsonNode json = response.getContentAsJson();
+      assertThat(
+        json.get("_links").get("self").get("href").asText()
+      ).isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/logs");
+    }
+
+    private LogEntry log(boolean success, long duration, String... logs) {
+      return new LogEntry(new MirrorCommandResult(success, Arrays.asList(logs), Duration.ofMillis(duration)));
+    }
+
   }
 
   @BeforeAll
