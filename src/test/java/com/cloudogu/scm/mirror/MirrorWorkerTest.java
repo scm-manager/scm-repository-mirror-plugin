@@ -174,7 +174,7 @@ class MirrorWorkerTest {
         verify(notificationSender).send(argThat(n -> {
             assertThat(n.getMessage()).isEqualTo("mirrorSuccess");
             assertThat(n.getType()).isEqualTo(Type.SUCCESS);
-            assertThat(n.getLink()).isEqualTo("/repo/" + repository.getNamespaceAndName() + "/settings/general");
+            assertThat(n.getLink()).isEqualTo("/repo/" + repository.getNamespaceAndName() + "/mirror-logs");
             return true;
           }),
           eq("trillian")
@@ -206,7 +206,7 @@ class MirrorWorkerTest {
           verify(notificationSender).send(argThat(n -> {
               assertThat(n.getMessage()).isEqualTo("mirrorFailed");
               assertThat(n.getType()).isEqualTo(Type.ERROR);
-              assertThat(n.getLink()).isEqualTo("/repo/" + repository.getNamespaceAndName() + "/settings/general");
+              assertThat(n.getLink()).isEqualTo("/repo/" + repository.getNamespaceAndName() + "/mirror-logs");
               return true;
             }),
             eq("trillian")
