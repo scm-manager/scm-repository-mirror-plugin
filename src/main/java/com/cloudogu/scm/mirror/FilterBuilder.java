@@ -22,36 +22,16 @@
  * SOFTWARE.
  */
 
-package com.cloudogu.scm.mirror.api;
+package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.MirrorConfiguration;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import sonia.scm.repository.api.MirrorFilter;
+import sonia.scm.security.PublicKey;
 
-import java.util.Base64;
 import java.util.List;
 
-import static java.util.Collections.emptyList;
+class FilterBuilder {
 
-@Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
-abstract class MirrorConfigurationDtoToConfigurationMapper {
-
-  abstract MirrorConfiguration map(MirrorConfigurationDto configurationDto);
-
-  abstract MirrorConfiguration.UsernamePasswordCredential map(MirrorConfigurationDto.UsernamePasswordCredentialDto credentialDto);
-  abstract MirrorConfiguration.CertificateCredential map(MirrorConfigurationDto.CertificateCredentialDto credentialDto);
-
-  @Mapping(target = "branchesAndTagsPatterns")
-  List<String> map(String value) {
-    if (Strings.isNullOrEmpty(value)) {
-      return emptyList();
-    }
-    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
-  }
-
-  byte[] mapBase64(String base64encoded) {
-    return Base64.getDecoder().decode(base64encoded.replace("\n", ""));
+  MirrorFilter createFilter(MirrorConfiguration configuration, List<PublicKey> keys) {
+    return new ConfigurableFilter(configuration, keys);
   }
 }

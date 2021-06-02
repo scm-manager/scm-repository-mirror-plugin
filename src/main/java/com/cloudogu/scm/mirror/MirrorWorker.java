@@ -34,19 +34,13 @@ import sonia.scm.notifications.Notification;
 import sonia.scm.notifications.NotificationSender;
 import sonia.scm.notifications.Type;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.Credential;
 import sonia.scm.repository.api.MirrorCommandBuilder;
 import sonia.scm.repository.api.MirrorCommandResult;
-import sonia.scm.repository.api.Pkcs12ClientCertificateCredential;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -61,37 +55,39 @@ class MirrorWorker {
 
   private static final Logger LOG = LoggerFactory.getLogger(MirrorWorker.class);
 
-  private final RepositoryServiceFactory repositoryServiceFactory;
   private final ScheduledExecutorService executor;
   private final MirrorStatusStore statusStore;
   private final Provider<PrivilegedMirrorRunner> privilegedMirrorRunner;
   private final NotificationSender notificationSender;
   private final ScmEventBus eventBus;
+  private final MirrorCommandCaller mirrorCommandCaller;
 
   private final Set<String> runningSynchronizations = Collections.synchronizedSet(new HashSet<>());
 
   @Inject
-  MirrorWorker(RepositoryServiceFactory repositoryServiceFactory,
-               MeterRegistry registry,
+  MirrorWorker(MeterRegistry registry,
                MirrorStatusStore statusStore,
                Provider<PrivilegedMirrorRunner> privilegedMirrorRunner,
-               NotificationSender notificationSender, ScmEventBus eventBus) {
-    this(repositoryServiceFactory, registry, Executors.newScheduledThreadPool(4), statusStore, privilegedMirrorRunner, notificationSender, eventBus);
+               NotificationSender notificationSender,
+               ScmEventBus eventBus,
+               MirrorCommandCaller mirrorCommandCaller) {
+    this(registry, Executors.newScheduledThreadPool(4), statusStore, privilegedMirrorRunner, notificationSender, eventBus, mirrorCommandCaller);
   }
 
   @VisibleForTesting
-  MirrorWorker(RepositoryServiceFactory repositoryServiceFactory,
-               MeterRegistry registry,
+  MirrorWorker(MeterRegistry registry,
                ScheduledExecutorService executor,
                MirrorStatusStore statusStore,
                Provider<PrivilegedMirrorRunner> privilegedMirrorRunner,
-               NotificationSender notificationSender, ScmEventBus eventBus) {
-    this.repositoryServiceFactory = repositoryServiceFactory;
+               NotificationSender notificationSender,
+               ScmEventBus eventBus,
+               MirrorCommandCaller mirrorCommandCaller) {
     this.executor = executor;
     this.statusStore = statusStore;
     this.privilegedMirrorRunner = privilegedMirrorRunner;
     this.notificationSender = notificationSender;
     this.eventBus = eventBus;
+    this.mirrorCommandCaller = mirrorCommandCaller;
     Metrics.executor(registry, executor, "mirror", "fixed");
   }
 
@@ -143,15 +139,10 @@ class MirrorWorker {
     LOG.debug("running sync for mirror {}", repository);
     if (runningSynchronizations.add(repository.getId())) {
       Instant startTime = Instant.now();
-      try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
-        LOG.debug("using url {}", configuration.getUrl());
-        MirrorCommandBuilder mirrorCommand =
-          repositoryService.getMirrorCommand()
-            .setSourceUrl(configuration.getUrl());
-        setCredentials(configuration, mirrorCommand);
-        MirrorCommandResult commandResult = callback.apply(mirrorCommand);
-        eventBus.post(new MirrorSyncEvent(repository, commandResult));
+      try {
+        MirrorCommandResult commandResult = mirrorCommandCaller.call(repository, configuration, callback);
         LOG.debug("got result {} for sync of {}", commandResult.getResult(), repository);
+        eventBus.post(new MirrorSyncEvent(repository, commandResult));
         handleResult(repository, configuration, startTime, commandResult.getResult());
       } catch (Exception e) {
         LOG.error("got exception while syncing {}", repository, e);
@@ -195,18 +186,6 @@ class MirrorWorker {
     }
   }
 
-  private void setCredentials(MirrorConfiguration configuration, MirrorCommandBuilder mirrorCommand) {
-    Collection<Credential> credentials = new ArrayList<>();
-    if (configuration.getUsernamePasswordCredential() != null) {
-      LOG.debug("using username/password credential for sync");
-      credentials.add(configuration.getUsernamePasswordCredential());
-    }
-    if (configuration.getCertificateCredential() != null) {
-      LOG.debug("using certificate credential for sync");
-      credentials.add(new Pkcs12ClientCertificateCredential(configuration.getCertificateCredential().getCertificate(), configuration.getCertificateCredential().getPassword().toCharArray()));
-    }
-    mirrorCommand.setCredentials(credentials);
-  }
 
   interface CancelableSchedule {
     void cancel();
