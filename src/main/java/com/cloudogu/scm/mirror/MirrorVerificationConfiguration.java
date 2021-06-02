@@ -43,6 +43,7 @@ public class MirrorVerificationConfiguration {
   private List<String> branchesAndTagsPatterns;
   private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
   private List<RawGpgKey> allowedGpgKeys;
+  private boolean fastForwardOnly = false;
 
   public List<String> getBranchesAndTagsPatterns() {
     return branchesAndTagsPatterns != null ? branchesAndTagsPatterns : Collections.emptyList();

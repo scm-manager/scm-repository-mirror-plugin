@@ -28,15 +28,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @SuppressWarnings("java:S2160") // equals not needed here
 public class GlobalMirrorConfigurationDto extends MirrorVerificationConfigurationDto {
 
-  @NotNull
   private boolean httpsOnly;
 
   GlobalMirrorConfigurationDto(Links links) {

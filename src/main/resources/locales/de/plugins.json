@@ -104,7 +104,11 @@
         "label": "Branches und Tags",
         "helpText": "Komma-separierte Liste mit glob Patterns die besagt, welche Branches und Tags gespiegelt werden sollen. Bei einer leeren Liste werden alle Branches bzw. Tags gespiegelt."
       },
-      "verificationFilters": "Filter"
+      "verificationFilters": "Filter",
+      "fastForwardOnly": {
+        "label": "Nur Fast-Forward",
+        "helpText": "Es werden nur Änderungen an Branches übernommen, die durch einen Fast-Forward entstanden sind."
+      }
     },
     "flag": {
       "label": "Spiegel",

@@ -71,6 +71,7 @@ class MirrorConfigurationToConfigurationDtoMapperTest {
     input.setBranchesAndTagsPatterns(ImmutableList.of("default", "feature/*"));
     input.setGpgVerificationType(MirrorGpgVerificationType.KEY_LIST);
     input.setAllowedGpgKeys(ImmutableList.of(new RawGpgKey("foo", "bar")));
+    input.setFastForwardOnly(true);
 
     final MirrorConfigurationDto output = mapper.map(input, repository);
 
@@ -87,6 +88,7 @@ class MirrorConfigurationToConfigurationDtoMapperTest {
     assertThat(output.getGpgVerificationType()).isEqualTo(MirrorGpgVerificationType.KEY_LIST);
     assertThat(output.getAllowedGpgKeys().get(0).getDisplayName()).isEqualTo("foo");
     assertThat(output.getAllowedGpgKeys().get(0).getRaw()).isEqualTo("bar");
+    assertThat(output.isFastForwardOnly()).isTrue();
   }
 
   @SubjectAware(permissions = "repository:mirror:42")

@@ -38,15 +38,17 @@ export type MirrorVerificationConfigurationDto = {
   branchesAndTagsPatterns: string;
   gpgVerificationType: MirrorGpgVerificationType;
   allowedGpgKeys?: PublicKey[];
+  fastForwardOnly?: boolean;
 };
 
-export type MirrorConfigurationDto = HalRepresentation & MirrorVerificationConfigurationDto & {
-  url: string;
-  synchronizationPeriod: number;
-  managingUsers: string[];
-  usernamePasswordCredential?: UsernamePasswordCredentialDto;
-  certificateCredential?: CertificateCredentialDto;
-};
+export type MirrorConfigurationDto = HalRepresentation &
+  MirrorVerificationConfigurationDto & {
+    url: string;
+    synchronizationPeriod: number;
+    managingUsers: string[];
+    usernamePasswordCredential?: UsernamePasswordCredentialDto;
+    certificateCredential?: CertificateCredentialDto;
+  };
 
 export type MirrorRequestDto = MirrorConfigurationDto & RepositoryCreation;
 

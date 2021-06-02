@@ -44,6 +44,7 @@ public class MirrorVerificationConfigurationDto extends HalRepresentation {
   @NotNull
   private MirrorGpgVerificationType gpgVerificationType;
   private List<RawGpgKeyDto> allowedGpgKeys;
+  private boolean fastForwardOnly;
 
   MirrorVerificationConfigurationDto(Links links) {
     super(links);

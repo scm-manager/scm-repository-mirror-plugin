@@ -42,6 +42,7 @@ class GlobalMirrorConfigurationDtoToGlobalConfigurationMapperTest {
     input.setBranchesAndTagsPatterns("default, feature/*, ,,");
     input.setGpgVerificationType(MirrorGpgVerificationType.KEY_LIST);
     input.setAllowedGpgKeys(ImmutableList.of(new RawGpgKeyDto("foo", "bar")));
+    input.setFastForwardOnly(true);
 
     final GlobalMirrorConfiguration output = mapper.map(input);
 
@@ -50,6 +51,7 @@ class GlobalMirrorConfigurationDtoToGlobalConfigurationMapperTest {
     assertThat(output.getGpgVerificationType()).isEqualTo(MirrorGpgVerificationType.KEY_LIST);
     assertThat(output.getAllowedGpgKeys().get(0).getDisplayName()).isEqualTo("foo");
     assertThat(output.getAllowedGpgKeys().get(0).getRaw()).isEqualTo("bar");
+    assertThat(output.isFastForwardOnly()).isTrue();
   }
 
 }

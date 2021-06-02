@@ -104,7 +104,11 @@
         "label": "Branches and Tags",
         "helpText": "Comma-separated glob patterns describing which branches and/or tags should be mirrored. If left blank, all branches and tags will be mirrored."
       },
-      "verificationFilters": "Filters"
+      "verificationFilters": "Filters",
+      "fastForwardOnly": {
+        "label": "Fast-Forward Only",
+        "helpText": "Only apply changes to branches, which resulted from a fast-forward."
+      }
     },
     "flag": {
       "label": "mirror",

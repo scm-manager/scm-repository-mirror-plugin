@@ -25,6 +25,7 @@ import React, { FC, useEffect, useState } from "react";
 import {
   apiClient,
   Button,
+  Checkbox,
   ConfigurationForm,
   ErrorNotification,
   InputField,
@@ -114,6 +115,12 @@ const RepositoryConfig: FC<Props> = ({ link }) => {
       </Columns>
       <hr />
       <h4 className="subtitle is-4">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h4>
+      <Checkbox
+        label={t("scm-repository-mirror-plugin.form.fastForwardOnly.label")}
+        helpText={t("scm-repository-mirror-plugin.form.fastForwardOnly.helpText")}
+        disabled={isReadonly}
+        {...register("fastForwardOnly")}
+      />
       <InputField
         label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
         helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
