@@ -75,8 +75,8 @@ class MirrorFailedEmailNotificationHookTest {
     hook.handleEvent(
       new MirrorStatusChangedEvent(
         REPOSITORY,
-        createStatusResult(FAILED),
-        createStatusResult(OK)
+        createStatusResult(MirrorStatus.Result.FAILED),
+        createStatusResult(MirrorStatus.Result.SUCCESS)
       )
     );
 
@@ -92,8 +92,8 @@ class MirrorFailedEmailNotificationHookTest {
     hook.handleEvent(
       new MirrorStatusChangedEvent(
         REPOSITORY,
-        createStatusResult(OK),
-        createStatusResult(FAILED)
+        createStatusResult(MirrorStatus.Result.SUCCESS),
+        createStatusResult(MirrorStatus.Result.FAILED)
       )
     );
 
@@ -109,8 +109,8 @@ class MirrorFailedEmailNotificationHookTest {
     hook.handleEvent(
       new MirrorStatusChangedEvent(
         REPOSITORY,
-        createStatusResult(FAILED),
-        createStatusResult(FAILED)
+        createStatusResult(MirrorStatus.Result.FAILED),
+        createStatusResult(MirrorStatus.Result.FAILED)
       )
     );
 
@@ -123,7 +123,7 @@ class MirrorFailedEmailNotificationHookTest {
     when(configurationStore.getConfiguration(REPOSITORY)).thenReturn(Optional.of(mirrorConfig));
   }
 
-  private MirrorStatus.Result createStatusResult(MirrorCommandResult.ResultType result) {
+  private MirrorStatus.Result createStatusResult(MirrorStatus.Result result) {
     return MirrorStatus.create(result, Instant.now()).getResult();
   }
 }

@@ -58,7 +58,7 @@ class MirrorStatusChangedHookTest {
   void shouldNotSendEvent() {
     when(store.getStatus(repository)).thenReturn(new MirrorStatus(MirrorStatus.Result.SUCCESS));
 
-    hook.handleEvent(new MirrorSyncEvent(repository, new MirrorCommandResult(MirrorCommandResult.ResultType.OK, Collections.emptyList(), Duration.ZERO)));
+    hook.handleEvent(new MirrorSyncEvent(repository, null, new MirrorStatus(MirrorStatus.Result.SUCCESS)));
 
     verify(scmEventBus, never()).post(any(MirrorStatusChangedEvent.class));
   }
@@ -67,7 +67,7 @@ class MirrorStatusChangedHookTest {
   void shouldSendEventForSuccessfulMirror() {
     when(store.getStatus(repository)).thenReturn(new MirrorStatus(MirrorStatus.Result.FAILED));
 
-    hook.handleEvent(new MirrorSyncEvent(repository, new MirrorCommandResult(MirrorCommandResult.ResultType.OK, Collections.emptyList(), Duration.ZERO)));
+    hook.handleEvent(new MirrorSyncEvent(repository, null, new MirrorStatus(MirrorStatus.Result.SUCCESS)));
 
     verify(scmEventBus).post(any(MirrorStatusChangedEvent.class));
   }
@@ -76,7 +76,7 @@ class MirrorStatusChangedHookTest {
   void shouldSendEventForFailedMirror() {
     when(store.getStatus(repository)).thenReturn(new MirrorStatus(MirrorStatus.Result.SUCCESS));
 
-    hook.handleEvent(new MirrorSyncEvent(repository, new MirrorCommandResult(MirrorCommandResult.ResultType.FAILED, Collections.emptyList(), Duration.ZERO)));
+    hook.handleEvent(new MirrorSyncEvent(repository, null, new MirrorStatus(MirrorStatus.Result.FAILED)));
 
     verify(scmEventBus).post(any(MirrorStatusChangedEvent.class));
   }

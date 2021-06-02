@@ -27,7 +27,6 @@ package com.cloudogu.scm.mirror;
 import com.cloudogu.scm.mirror.MirrorConfiguration.CertificateCredential;
 import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import com.google.common.collect.ImmutableList;
-import com.google.inject.util.Providers;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -70,6 +69,7 @@ import static sonia.scm.repository.api.MirrorCommandResult.ResultType.FAILED;
 import static sonia.scm.repository.api.MirrorCommandResult.ResultType.OK;
 import static sonia.scm.repository.api.MirrorCommandResult.ResultType.REJECTED_UPDATES;
 
+@SuppressWarnings("UnstableApiUsage")
 @ExtendWith(MockitoExtension.class)
 class MirrorWorkerTest {
 
@@ -127,10 +127,14 @@ class MirrorWorkerTest {
   @Nested
   class ForRepository {
 
+    @Mock
+    private ConfigurableFilter appliedFilter;
+
+
     @BeforeEach
     void supportMirrorCommand() {
       when(mirrorCommandCaller.call(eq(repository), any(), any()))
-        .thenAnswer(invocation -> invocation.getArgument(2, Function.class).apply(mirrorCommandBuilder));
+        .thenAnswer(invocation -> new MirrorCommandCaller.CallResult(invocation.getArgument(2, Function.class).apply(mirrorCommandBuilder), appliedFilter));
     }
 
     @Test
@@ -217,7 +221,7 @@ class MirrorWorkerTest {
           verify(eventBus).post(
             argThat(event -> {
               MirrorSyncEvent syncEvent = (MirrorSyncEvent) event;
-              assertThat(syncEvent.getResult().getResult()).isEqualTo(FAILED);
+              assertThat(syncEvent.getStatus().getResult()).isEqualTo(MirrorStatus.Result.FAILED);
               assertThat(syncEvent.getRepository()).isSameAs(repository);
               return true;
             }));
@@ -289,7 +293,8 @@ class MirrorWorkerTest {
       @Test
       void shouldSetRejectedStatusButNotSendNotificationToManagingUsers() {
         mockResultFor(mirrorCommandBuilder.update(), REJECTED_UPDATES);
-        mockLastStatus(MirrorStatus.Result.REJECTED_UPDATES);
+        mockLastStatus(MirrorStatus.Result.FAILED_UPDATES);
+        when(appliedFilter.hadIssues()).thenReturn(true);
 
         MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
 
@@ -297,7 +302,7 @@ class MirrorWorkerTest {
 
         verify(statusStore).setStatus(
           eq(repository),
-          argThat(status -> status.getResult().equals(MirrorStatus.Result.REJECTED_UPDATES)));
+          argThat(status -> status.getResult().equals(MirrorStatus.Result.FAILED_UPDATES)));
         verify(notificationSender, never()).send(any(), any());
       }
 

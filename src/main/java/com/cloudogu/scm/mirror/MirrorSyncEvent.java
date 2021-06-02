@@ -31,13 +31,16 @@ import sonia.scm.repository.api.MirrorCommandResult;
 
 @Event
 @Getter
+@SuppressWarnings("UnstableApiUsage")
 public class MirrorSyncEvent {
 
   private final Repository repository;
   private final MirrorCommandResult result;
+  private final MirrorStatus status;
 
-  public MirrorSyncEvent(Repository repository, MirrorCommandResult result) {
+  public MirrorSyncEvent(Repository repository, MirrorCommandResult result, MirrorStatus status) {
     this.repository = repository;
     this.result = result;
+    this.status = status;
   }
 }

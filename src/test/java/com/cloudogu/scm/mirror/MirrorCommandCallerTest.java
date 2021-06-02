@@ -51,6 +51,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("UnstableApiUsage")
 class MirrorCommandCallerTest {
 
   @Mock
@@ -79,7 +80,7 @@ class MirrorCommandCallerTest {
   void shouldSetFilterForConfiguration() {
     MirrorConfiguration configuration = createMirrorConfig();
 
-    MirrorFilter expectedFilter = new MirrorFilter() {};
+    ConfigurableFilter expectedFilter = mock(ConfigurableFilter.class);
     when(filterBuilder.createFilter(configuration, emptyList())).thenReturn(expectedFilter);
 
     invokeCaller(configuration, null);
@@ -94,13 +95,13 @@ class MirrorCommandCallerTest {
   void shouldReturnResultFromCallback() {
     MirrorConfiguration configuration = createMirrorConfig();
 
-    MirrorFilter expectedFilter = new MirrorFilter() {};
+    ConfigurableFilter expectedFilter = mock(ConfigurableFilter.class);
     when(filterBuilder.createFilter(configuration, emptyList())).thenReturn(expectedFilter);
 
     Object mockedResult = new Object();
-    Object actualResult = invokeCaller(configuration, mockedResult);
+    MirrorCommandCaller.CallResult<Object> actualResult = invokeCaller(configuration, mockedResult);
 
-    assertThat(actualResult).isSameAs(mockedResult);
+    assertThat(actualResult.getResultFromCallback()).isSameAs(mockedResult);
   }
 
   @Test
@@ -159,7 +160,7 @@ class MirrorCommandCallerTest {
     }));
   }
 
-  private Object invokeCaller(MirrorConfiguration configuration, Object mockedResult) {
+  private MirrorCommandCaller.CallResult<Object> invokeCaller(MirrorConfiguration configuration, Object mockedResult) {
     return caller.call(repository, configuration, mirrorCommandBuilder1 -> mockedResult);
   }
 

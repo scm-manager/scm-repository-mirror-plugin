@@ -37,6 +37,7 @@ import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static sonia.scm.repository.SignatureStatus.NOT_FOUND;
 
+@SuppressWarnings("UnstableApiUsage")
 class ConfigurableFilterTest {
 
   @Test
@@ -46,7 +47,7 @@ class ConfigurableFilterTest {
 
     MirrorFilter.Filter filter = new ConfigurableFilter(configuration, emptyList()).getFilter(null);
 
-    assertThat(filter.acceptBranch(branch("feature/hog", new Signature("dent", "gpg", NOT_FOUND, null, emptySet())))).isTrue();
+    assertThat(filter.acceptBranch(branch("feature/hog", new Signature("dent", "gpg", NOT_FOUND, null, emptySet()))).isAccepted()).isTrue();
   }
 
   private MirrorFilter.BranchUpdate branch(String name, Signature signature) {

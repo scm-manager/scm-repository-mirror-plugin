@@ -40,6 +40,7 @@ import sonia.scm.repository.api.MirrorCommandResult;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
@@ -50,7 +51,13 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import static com.cloudogu.scm.mirror.MirrorStatus.Result.FAILED;
+import static com.cloudogu.scm.mirror.MirrorStatus.Result.FAILED_UPDATES;
+import static com.cloudogu.scm.mirror.MirrorStatus.Result.SUCCESS;
+import static java.util.Collections.singletonList;
+
 @Singleton
+@SuppressWarnings("UnstableApiUsage")
 class MirrorWorker {
 
   private static final Logger LOG = LoggerFactory.getLogger(MirrorWorker.class);
@@ -139,13 +146,15 @@ class MirrorWorker {
     if (runningSynchronizations.add(repository.getId())) {
       Instant startTime = Instant.now();
       try {
-        MirrorCommandResult commandResult = mirrorCommandCaller.call(repository, configuration, callback);
+        MirrorCommandCaller.CallResult<MirrorCommandResult> callResult = mirrorCommandCaller.call(repository, configuration, callback);
+        MirrorCommandResult commandResult = callResult.getResultFromCallback();
+        ConfigurableFilter appliedFilter = callResult.getAppliedFilter();
         LOG.debug("got result {} for sync of {}", commandResult.getResult(), repository);
-        eventBus.post(new MirrorSyncEvent(repository, commandResult));
-        handleResult(repository, configuration, startTime, commandResult.getResult());
+        handleResult(repository, configuration, startTime, commandResult, appliedFilter);
       } catch (Exception e) {
         LOG.error("got exception while syncing {}", repository, e);
-        handleResult(repository, configuration, startTime, MirrorCommandResult.ResultType.FAILED);
+        MirrorCommandResult errorResult = new MirrorCommandResult(MirrorCommandResult.ResultType.FAILED, singletonList(e.getMessage()), Duration.ZERO);
+        handleResult(repository, configuration, startTime, errorResult, null);
       } finally {
         runningSynchronizations.remove(repository.getId());
       }
@@ -154,10 +163,34 @@ class MirrorWorker {
     }
   }
 
-  private void handleResult(Repository repository, MirrorConfiguration configuration, Instant startTime, MirrorCommandResult.ResultType result) {
-    MirrorStatus status = MirrorStatus.create(result, startTime);
+  private void handleResult(Repository repository, MirrorConfiguration configuration, Instant startTime, MirrorCommandResult result, ConfigurableFilter appliedFilter) {
+    MirrorStatus status = MirrorStatus.create(getFor(result.getResult(), appliedFilter), startTime);
+    eventBus.post(new MirrorSyncEvent(repository, result, status));
     sendNotificationWhenChanged(repository, configuration, status.getResult());
     statusStore.setStatus(repository, status);
+  }
+
+  static MirrorStatus.Result getFor(MirrorCommandResult.ResultType type, ConfigurableFilter appliedFilter) {
+    switch (type) {
+      case OK:
+        return SUCCESS;
+      case FAILED:
+        return FAILED;
+      case REJECTED_UPDATES:
+        return checkFilter(appliedFilter);
+      default:
+        LOG.warn("got unknown return type: {}", type);
+        // If we do not know the result, we better prepare for the worst
+        return FAILED;
+    }
+  }
+
+  private static MirrorStatus.Result checkFilter(ConfigurableFilter appliedFilter) {
+    if (appliedFilter.hadIssues()) {
+      return FAILED_UPDATES;
+    } else {
+      return SUCCESS;
+    }
   }
 
   private void sendNotificationWhenChanged(Repository repository, MirrorConfiguration configuration, MirrorStatus.Result status) {

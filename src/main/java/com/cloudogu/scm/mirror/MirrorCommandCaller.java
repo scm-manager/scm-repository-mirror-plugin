@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 
+@SuppressWarnings("UnstableApiUsage")
 class MirrorCommandCaller {
 
   private static final Logger LOG = LoggerFactory.getLogger(MirrorCommandCaller.class);
@@ -61,7 +62,9 @@ class MirrorCommandCaller {
     this.publicKeyParser = publicKeyParser;
   }
 
-  <T> T call(Repository repository, MirrorConfiguration configuration, Function<MirrorCommandBuilder, T> callback) {
+  <T> CallResult<T> call(Repository repository, MirrorConfiguration configuration, Function<MirrorCommandBuilder, T> callback) {
+    ConfigurableFilter filter;
+    T result;
     try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
       LOG.debug("using url {}", configuration.getUrl());
 
@@ -71,10 +74,12 @@ class MirrorCommandCaller {
         repositoryService.getMirrorCommand()
           .setSourceUrl(configuration.getUrl());
       mirrorCommand.setPublicKeys(keys);
-      mirrorCommand.setFilter(filterBuilder.createFilter(configuration, keys));
+      filter = filterBuilder.createFilter(configuration, keys);
+      mirrorCommand.setFilter(filter);
       setCredentials(configuration, mirrorCommand);
-      return callback.apply(mirrorCommand);
+      result = callback.apply(mirrorCommand);
     }
+    return new CallResult<>(result, filter);
   }
 
   private List<PublicKey> convertKeys(MirrorConfiguration configuration) {
@@ -99,5 +104,23 @@ class MirrorCommandCaller {
       credentials.add(new Pkcs12ClientCertificateCredential(configuration.getCertificateCredential().getCertificate(), configuration.getCertificateCredential().getPassword().toCharArray()));
     }
     mirrorCommand.setCredentials(credentials);
+  }
+
+  static class CallResult<T> {
+    private final T resultFromCallback;
+    private final ConfigurableFilter appliedFilter;
+
+    CallResult(T resultFromCallback, ConfigurableFilter appliedFilter) {
+      this.resultFromCallback = resultFromCallback;
+      this.appliedFilter = appliedFilter;
+    }
+
+    public T getResultFromCallback() {
+      return resultFromCallback;
+    }
+
+    public ConfigurableFilter getAppliedFilter() {
+      return appliedFilter;
+    }
   }
 }

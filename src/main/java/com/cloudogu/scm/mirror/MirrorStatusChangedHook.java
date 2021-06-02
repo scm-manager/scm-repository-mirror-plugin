@@ -48,7 +48,7 @@ public class MirrorStatusChangedHook {
   public void handleEvent(MirrorSyncEvent event) {
     MirrorStatus status = mirrorStatusStore.getStatus(event.getRepository());
     MirrorStatus.Result previousResult = status.getResult();
-    MirrorStatus.Result newResult = MirrorStatus.Result.getFor(event.getResult().getResult());
+    MirrorStatus.Result newResult = event.getStatus().getResult();
     if (previousResult != newResult) {
       scmEventBus.post(new MirrorStatusChangedEvent(event.getRepository(), previousResult, newResult));
     }

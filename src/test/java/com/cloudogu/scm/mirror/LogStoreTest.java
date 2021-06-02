@@ -47,6 +47,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(ShiroExtension.class)
+@SuppressWarnings("UnstableApiUsage")
 class LogStoreTest {
 
   private LogStore logStore;
@@ -73,7 +74,8 @@ class LogStoreTest {
   @SubjectAware(value = "trillian", permissions = "repository:mirror:42")
   void shouldStoreLogs() {
     MirrorCommandResult result = result(ResultType.OK, 42, "awesome sync");
-    MirrorSyncEvent event = new MirrorSyncEvent(heartOfGold, result);
+    MirrorStatus status = null;
+    MirrorSyncEvent event = new MirrorSyncEvent(heartOfGold, result, status);
 
     eventBus.post(event);
 
@@ -100,7 +102,8 @@ class LogStoreTest {
   void shouldLimitStoreEntries() {
     for (int i=0; i<LogStore.ENTRY_LIMIT + 5; i++) {
       MirrorCommandResult result = result(ResultType.FAILED, 21, "sync " + i);
-      MirrorSyncEvent event = new MirrorSyncEvent(heartOfGold, result);
+      MirrorStatus status = null;
+      MirrorSyncEvent event = new MirrorSyncEvent(heartOfGold, result, status);
       eventBus.post(event);
     }
 

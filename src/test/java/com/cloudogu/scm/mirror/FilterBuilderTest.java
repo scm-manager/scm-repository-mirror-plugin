@@ -34,6 +34,8 @@ import sonia.scm.repository.Tag;
 import sonia.scm.repository.api.MirrorFilter;
 import sonia.scm.security.PublicKey;
 
+import static com.cloudogu.scm.mirror.ConfigurableFilter.MESSAGE_NO_VALID_SIGNATURE;
+import static com.cloudogu.scm.mirror.ConfigurableFilter.MESSAGE_PATTERN_NOT_MATCHED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -45,6 +47,7 @@ import static sonia.scm.repository.SignatureStatus.INVALID;
 import static sonia.scm.repository.SignatureStatus.NOT_FOUND;
 import static sonia.scm.repository.SignatureStatus.VERIFIED;
 
+@SuppressWarnings("UnstableApiUsage")
 class FilterBuilderTest {
 
   private final FilterBuilder filterBuilder = new FilterBuilder();
@@ -57,8 +60,8 @@ class FilterBuilderTest {
     MirrorFilter mirrorFilter = filterBuilder.createFilter(configuration, emptyList());
 
     MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
-    assertThat(filter.acceptBranch(mock(MirrorFilter.BranchUpdate.class))).isTrue();
-    assertThat(filter.acceptTag(mock(MirrorFilter.TagUpdate.class))).isTrue();
+    assertThat(filter.acceptBranch(mock(MirrorFilter.BranchUpdate.class)).isAccepted()).isTrue();
+    assertThat(filter.acceptTag(mock(MirrorFilter.TagUpdate.class)).isAccepted()).isTrue();
   }
 
   @Nested
@@ -80,7 +83,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -90,7 +94,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -100,7 +105,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -110,7 +116,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -120,7 +127,7 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isTrue();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isTrue();
     }
 
     @Test
@@ -130,7 +137,7 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isTrue();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isTrue();
     }
 
     @Test
@@ -140,7 +147,7 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isTrue();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isTrue();
     }
 
     @Test
@@ -150,7 +157,7 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isTrue();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isTrue();
     }
   }
 
@@ -173,7 +180,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -183,7 +191,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -193,7 +202,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -203,7 +213,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -213,7 +224,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -223,7 +235,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -233,7 +246,7 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isTrue();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isTrue();
     }
 
     @Test
@@ -243,7 +256,7 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isTrue();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isTrue();
     }
   }
 
@@ -268,7 +281,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -278,7 +292,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -288,7 +303,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -298,7 +314,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -308,7 +325,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -318,7 +336,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -328,7 +347,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -338,7 +358,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_VALID_SIGNATURE);
     }
 
     @Test
@@ -348,7 +369,7 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isTrue();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isTrue();
     }
 
     @Test
@@ -358,7 +379,7 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isTrue();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isTrue();
     }
   }
 
@@ -382,7 +403,7 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isTrue();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isTrue();
     }
 
     @Test
@@ -392,7 +413,7 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isTrue();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isTrue();
     }
 
     @Test
@@ -402,7 +423,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptBranch(branchUpdate)).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_PATTERN_NOT_MATCHED);
     }
 
     @Test
@@ -412,7 +434,8 @@ class FilterBuilderTest {
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
-      assertThat(filter.acceptTag(tagUpdate)).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_PATTERN_NOT_MATCHED);
     }
   }
 

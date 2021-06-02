@@ -36,10 +36,16 @@ import java.util.List;
 
 import static com.cloudogu.scm.mirror.MirrorGpgVerificationType.NONE;
 
+@SuppressWarnings("UnstableApiUsage")
 class ConfigurableFilter implements MirrorFilter {
+
+  public static final String MESSAGE_PATTERN_NOT_MATCHED = "does not match configured patterns";
+  public static final String MESSAGE_NO_VALID_SIGNATURE = "no valid signature";
 
   private final MirrorConfiguration configuration;
   private final Collection<String> keysIds;
+
+  private boolean issuesFound = false;
 
   public ConfigurableFilter(MirrorConfiguration configuration, List<PublicKey> keys) {
     this.configuration = configuration;
@@ -50,18 +56,34 @@ class ConfigurableFilter implements MirrorFilter {
   public Filter getFilter(FilterContext context) {
     return new Filter() {
       @Override
-      public boolean acceptBranch(BranchUpdate branch) {
-        return matchesPattern(branch.getBranchName()) &&
-          (configuration.getGpgVerificationType() == NONE || hasAcceptedSignature(branch.getChangeset().getSignatures()));
+      public Result acceptBranch(BranchUpdate branch) {
+        if (!matchesPattern(branch.getBranchName())) {
+          return Result.reject(MESSAGE_PATTERN_NOT_MATCHED);
+        }
+        if (configuration.getGpgVerificationType() == NONE) {
+          return Result.accept();
+        }
+        return checkForAcceptedSignature(branch.getChangeset().getSignatures());
       }
 
       @Override
-      public boolean acceptTag(TagUpdate tag) {
-        return matchesPattern(tag.getTagName()) &&
-          (configuration.getGpgVerificationType() == NONE || hasAcceptedSignature(tag.getTag().getSignatures()));
+      public Result acceptTag(TagUpdate tag) {
+        if (!matchesPattern(tag.getTagName())) {
+          return Result.reject(MESSAGE_PATTERN_NOT_MATCHED);
+        }
+        if (configuration.getGpgVerificationType() == NONE) {
+          return Result.accept();
+        }
+        return checkForAcceptedSignature(tag.getTag().getSignatures());
       }
 
-      private boolean hasAcceptedSignature(List<Signature> signatures) {
+      private Result checkForAcceptedSignature(List<Signature> signatures) {
+        boolean result = hasAcceptedSignatureX(signatures);
+        issuesFound |= !result;
+        return result? Result.accept(): Result.reject(MESSAGE_NO_VALID_SIGNATURE);
+      }
+
+      private boolean hasAcceptedSignatureX(List<Signature> signatures) {
         switch (configuration.getGpgVerificationType()) {
           case NONE:
             return true;
@@ -102,5 +124,9 @@ class ConfigurableFilter implements MirrorFilter {
       allKeys.addAll(key.getSubkeys());
     });
     return allKeys;
+  }
+
+  public boolean hadIssues() {
+    return issuesFound;
   }
 }

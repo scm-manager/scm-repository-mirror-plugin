@@ -24,14 +24,13 @@
 
 package com.cloudogu.scm.mirror;
 
-import sonia.scm.repository.api.MirrorFilter;
 import sonia.scm.security.PublicKey;
 
 import java.util.List;
 
 class FilterBuilder {
 
-  MirrorFilter createFilter(MirrorConfiguration configuration, List<PublicKey> keys) {
+  ConfigurableFilter createFilter(MirrorConfiguration configuration, List<PublicKey> keys) {
     return new ConfigurableFilter(configuration, keys);
   }
 }

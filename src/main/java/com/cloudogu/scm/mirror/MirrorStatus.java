@@ -30,7 +30,6 @@ import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.notifications.Type;
-import sonia.scm.repository.api.MirrorCommandResult.ResultType;
 import sonia.scm.xml.XmlInstantAdapter;
 
 import javax.annotation.Nullable;
@@ -65,8 +64,8 @@ public class MirrorStatus {
     return status;
   }
 
-  public static MirrorStatus create(ResultType type, Instant startTime) {
-    MirrorStatus status = new MirrorStatus(Result.getFor(type));
+  public static MirrorStatus create(Result type, Instant startTime) {
+    MirrorStatus status = new MirrorStatus(type);
     return withBaseValues(status, startTime);
   }
 
@@ -78,7 +77,7 @@ public class MirrorStatus {
 
   public enum Result {
     SUCCESS("mirrorSuccess", Type.SUCCESS),
-    REJECTED_UPDATES("mirrorUpdatesRejected", Type.WARNING),
+    FAILED_UPDATES("mirrorUpdatesRejected", Type.WARNING),
     FAILED("mirrorFailed", Type.ERROR),
     NOT_YET_RUN("notYetRun", Type.INFO);
 
@@ -88,21 +87,6 @@ public class MirrorStatus {
     Result(String notificationKey, Type notificationType) {
       this.notificationKey = notificationKey;
       this.notificationType = notificationType;
-    }
-
-    static Result getFor(ResultType type) {
-      switch (type) {
-        case REJECTED_UPDATES:
-          return REJECTED_UPDATES;
-        case OK:
-          return SUCCESS;
-        case FAILED:
-          return FAILED;
-        default:
-          LOG.warn("got unknown return type: {}", type);
-          // If we do not know the result, we better prepare for the worst
-          return FAILED;
-      }
     }
 
     public String getNotificationKey() {
