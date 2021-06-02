@@ -31,6 +31,7 @@ import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
 import com.fasterxml.jackson.databind.JsonNode;
+import de.otto.edison.hal.Links;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
 import org.jboss.resteasy.mock.MockHttpRequest;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.api.v2.resources.RepositoryLinkProvider;
@@ -75,6 +77,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static sonia.scm.web.MockScmPathInfoStore.forUri;
 
 @ExtendWith({MockitoExtension.class, ShiroExtension.class})
 class MirrorRootResourceTest {
@@ -91,14 +94,15 @@ class MirrorRootResourceTest {
   private MirrorConfigurationStore configurationStore;
   @Mock
   private LogStore logStore;
-  @Mock
-  private GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper;
-  @Mock
-  private MirrorConfigurationToConfigurationDtoMapper configurationToConfigurationDtoMapper;
+
+  private final GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper = Mappers.getMapper(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class);
+  private final MirrorConfigurationToConfigurationDtoMapper configurationToConfigurationDtoMapper = Mappers.getMapper(MirrorConfigurationToConfigurationDtoMapper.class);
 
   @BeforeEach
   void initResource() {
     MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, configurationToConfigurationDtoMapper, logStore);
+    configurationToConfigurationDtoMapper.setScmPathInfoStore(forUri("/"));
+    toDtoMapper.setScmPathInfoStore(forUri("/"));
     dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService, configurationStore, toDtoMapper));
   }
 
@@ -116,7 +120,7 @@ class MirrorRootResourceTest {
     @Test
     void shouldExecuteBasicRequest() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42}");
+        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'gpgVerificationType':'NONE'}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -161,7 +165,7 @@ class MirrorRootResourceTest {
     @Test
     void shouldConfigureCertificateAuth() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'certificateCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'}}");
+        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'gpgVerificationType':'NONE', 'certificateCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -261,7 +265,7 @@ class MirrorRootResourceTest {
     void shouldSetUsernamePasswordCredentialInConfiguration() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest
         .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
-        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'dent', 'password':'hg2g'}}");
+        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'dent', 'password':'hg2g'}, 'gpgVerificationType':'NONE'}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -325,13 +329,17 @@ class MirrorRootResourceTest {
       @Test
       @SubjectAware(
         value = "trillian",
-        permissions = "repository:configureMirror:*"
+        permissions = "repository:mirror:*"
       )
       void shouldCreateUpdateLinkWithPermission() throws URISyntaxException {
         MirrorConfiguration existingConfiguration =
           new MirrorConfiguration("http://hog/", 42, emptyList(), null, null);
         when(configurationStore.getConfiguration(repository))
           .thenReturn(Optional.of(existingConfiguration));
+        MirrorConfigurationDto mirrorConfigurationDto = new MirrorConfigurationDto(new Links.Builder().build());
+        mirrorConfigurationDto.setUrl("http://hog/");
+        mirrorConfigurationDto.setSynchronizationPeriod(42);
+        mirrorConfigurationDto.setAllowedGpgKeys(emptyList());
 
         MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
         JsonMockHttpResponse response = new JsonMockHttpResponse();
