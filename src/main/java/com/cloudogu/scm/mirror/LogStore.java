@@ -66,7 +66,7 @@ public class LogStore {
   }
 
   public List<LogEntry> get(Repository repository) {
-    MirrorPermissions.checkMirrorPermission(repository);
+    MirrorPermissions.checkRepositoryMirrorPermission(repository);
     return ImmutableList.copyOf(entries(store(repository)).getEntries()).reverse();
   }
 

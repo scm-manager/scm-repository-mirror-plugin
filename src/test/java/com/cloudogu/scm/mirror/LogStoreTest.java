@@ -69,7 +69,7 @@ class LogStoreTest {
   }
 
   @Test
-  @SubjectAware(value = "trillian", permissions = "repository:configureMirror:42")
+  @SubjectAware(value = "trillian", permissions = "repository:mirror:42")
   void shouldStoreLogs() {
     MirrorCommandResult result = result(true, 42, "awesome sync");
     MirrorSyncEvent event = new MirrorSyncEvent(heartOfGold, result);
@@ -95,7 +95,7 @@ class LogStoreTest {
   }
 
   @Test
-  @SubjectAware(value = "trillian", permissions = "repository:configureMirror:42")
+  @SubjectAware(value = "trillian", permissions = "repository:mirror:42")
   void shouldLimitStoreEntries() {
     for (int i=0; i<LogStore.ENTRY_LIMIT + 5; i++) {
       MirrorCommandResult result = result(false, 21, "sync " + i);
