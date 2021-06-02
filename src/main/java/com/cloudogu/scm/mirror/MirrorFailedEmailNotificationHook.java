@@ -63,7 +63,7 @@ public class MirrorFailedEmailNotificationHook {
   private static final Category CATEGORY = new Category("scm-manager-core");
   static final Topic TOPIC_MIRROR_FAILED = new Topic(CATEGORY, MIRROR_FAILED_EVENT_DISPLAY_NAME);
   protected static final String MIRROR_TEMPLATE_PATH = "com/cloudogu/mail/emailnotification/mirror_failed.mustache";
-  private static final String SCM_REPOSITORY_URL_PATTERN = "{0}/repo/{1}/{2}/settings/general/";
+  private static final String SCM_REPOSITORY_URL_PATTERN = "{0}/repo/{1}/{2}/mirror-logs/";
 
   private static final String SUBJECT_PATTERN = "{0}/{1} {2}";
 
