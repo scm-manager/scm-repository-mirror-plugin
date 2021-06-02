@@ -21,29 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror;
+
+import com.github.legman.Subscribe;
+import sonia.scm.EagerSingleton;
+import sonia.scm.event.ScmEventBus;
+import sonia.scm.plugin.Extension;
+
+import javax.inject.Inject;
+
+@EagerSingleton
+@Extension
+public class MirrorStatusChangedHook {
+
+  private final MirrorStatusStore mirrorStatusStore;
+  private final ScmEventBus scmEventBus;
+
+  @Inject
+  public MirrorStatusChangedHook(MirrorStatusStore mirrorStatusStore, ScmEventBus scmEventBus) {
+    this.mirrorStatusStore = mirrorStatusStore;
+    this.scmEventBus = scmEventBus;
+  }
 
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
-
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
-
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
-
-  author = "SCM-Team"
-  category = "Workflow"
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  @Subscribe(async = false)
+  public void handleEvent(MirrorSyncEvent event) {
+    MirrorStatus status = mirrorStatusStore.getStatus(event.getRepository());
+    MirrorStatus.Result previousResult = status.getResult();
+    MirrorStatus.Result newResult = MirrorStatus.Result.getFor(event.getResult().getResult());
+    if (previousResult != newResult) {
+      scmEventBus.post(new MirrorStatusChangedEvent(event.getRepository(), previousResult, newResult));
+    }
   }
 }

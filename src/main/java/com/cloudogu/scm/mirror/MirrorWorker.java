@@ -142,8 +142,8 @@ class MirrorWorker {
       try {
         MirrorCommandResult commandResult = mirrorCommandCaller.call(repository, configuration, callback);
         LOG.debug("got result {} for sync of {}", commandResult.getResult(), repository);
-        handleResult(repository, configuration, startTime, commandResult.getResult());
         eventBus.post(new MirrorSyncEvent(repository, commandResult));
+        handleResult(repository, configuration, startTime, commandResult.getResult());
       } catch (Exception e) {
         LOG.error("got exception while syncing {}", repository, e);
         handleResult(repository, configuration, startTime, MirrorCommandResult.ResultType.FAILED);
