@@ -46,6 +46,7 @@ import sonia.scm.web.security.PrivilegedAction;
 
 import java.util.Optional;
 
+import static com.google.inject.util.Providers.of;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -83,7 +84,7 @@ class MirrorConfigurationStoreTest {
   @BeforeEach
   void createService() {
     storeFactory = new InMemoryConfigurationStoreFactory();
-    store = new MirrorConfigurationStore(storeFactory, scheduler, repositoryManager, administrationContext, privilegedMirrorRunner);
+    store = new MirrorConfigurationStore(storeFactory, scheduler, repositoryManager, administrationContext, of(privilegedMirrorRunner));
   }
 
   @BeforeAll
