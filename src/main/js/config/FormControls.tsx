@@ -22,14 +22,14 @@
  * SOFTWARE.
  */
 
-import { Control, useController, useForm } from "react-hook-form";
+import { Control, useController, useForm, useWatch } from "react-hook-form";
 import {
   MirrorConfigurationDto,
   mirrorGpgVerificationTypes,
   MirrorVerificationConfigurationDto,
   PublicKey
 } from "../types";
-import React, { ChangeEvent, FC } from "react";
+import React, { ChangeEvent, FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { SelectValue } from "@scm-manager/ui-types";
 import {
@@ -261,15 +261,18 @@ export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ co
     rules: {
       validate: v => v?.length > 0
     },
-    defaultValue: [],
     shouldUnregister: true
   });
   const { register, handleSubmit, reset, formState } = useForm<PublicKey>({
-    mode: "onChange",
-    reValidateMode: "onChange"
+    mode: "onChange"
   });
+  const gpgVerificationType = useWatch({ control, name: "gpgVerificationType" });
   const { isValid } = formState;
   const { value } = field;
+
+  useEffect(() => {
+    field.onChange(field.value);
+  }, [gpgVerificationType, field]);
 
   const deleteKey = (displayName: string) =>
     field.onChange(value?.filter(key => key.displayName !== displayName) || []);
