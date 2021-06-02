@@ -69,6 +69,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     contextEntries: {}
   });
   const [valid, setValid] = useState({ namespaceAndName: false, contact: true });
+  const { isValid: isFormValid } = formState;
   const url = watch("url", "");
 
   useEffect(() => {
@@ -81,7 +82,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     }
   }, [url]);
 
-  const isValid = () => Object.values(valid).every(v => v) && formState.isValid;
+  const isValid = () => Object.values(valid).every(v => v) && isFormValid;
   const innerOnSubmit = (configFormValue: MirrorConfigurationDto) => {
     const request: MirrorRequestDto = {
       ...configFormValue,

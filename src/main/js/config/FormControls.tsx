@@ -278,20 +278,33 @@ const VerticalAlignCell = styled.td`
 
 export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
-  const { field } = useController({ control, name: "allowedGpgKeys" });
-  const { register, handleSubmit, reset, formState } = useForm<PublicKey>();
+  const { field } = useController({
+    control,
+    name: "allowedGpgKeys",
+    rules: {
+      validate: v => v?.length > 0
+    },
+    defaultValue: [],
+    shouldUnregister: true
+  });
+  const { register, handleSubmit, reset, formState } = useForm<PublicKey>({
+    mode: "onChange",
+    reValidateMode: "onChange"
+  });
+  const { isValid } = formState;
+  const { value } = field;
 
   const deleteKey = (displayName: string) =>
-    field.onChange(field.value?.filter(key => key.displayName !== displayName) || []);
+    field.onChange(value?.filter(key => key.displayName !== displayName) || []);
   const addNewKey = (key: PublicKey) => {
-    field.onChange([...(field.value || []), key]);
+    field.onChange([...(value || []), key]);
     reset();
   };
 
   return (
     <>
-      {!field.value || field.value.length === 0 ? (
-        <div className="notification is-primary">
+      {!value || value.length === 0 ? (
+        <div className="notification is-warning">
           {t("scm-repository-mirror-plugin.form.keyList.emptyNotification")}
         </div>
       ) : (
@@ -300,7 +313,7 @@ export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ co
             <th>{t("scm-repository-mirror-plugin.form.keyList.displayName")}</th>
             <th />
           </tr>
-          {field.value?.map(({ raw, displayName }, index) => (
+          {value.map(({ raw, displayName }, index) => (
             <tr key={index}>
               <VerticalAlignCell>{displayName}</VerticalAlignCell>
               <td className="has-text-right">
@@ -335,7 +348,7 @@ export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ co
             right={
               <Button
                 action={handleSubmit(addNewKey)}
-                disabled={!formState.isValid}
+                disabled={!isValid}
                 label={t("scm-repository-mirror-plugin.form.keyList.new.submit")}
               />
             }
@@ -356,8 +369,13 @@ export const createGpgVerificationTypeOptions: (t: (key: string) => string) => S
 
 export const GpgVerificationControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
-  const { field: verificationTypeField } = useController({ control, name: "gpgVerificationType", defaultValue: "NONE" });
-  const showKeyList = verificationTypeField.value === "KEY_LIST";
+  const { field: verificationTypeField } = useController({
+    control,
+    name: "gpgVerificationType",
+    defaultValue: "NONE"
+  });
+  const { value } = verificationTypeField;
+  const showKeyList = value === "KEY_LIST";
   return (
     <>
       <Select

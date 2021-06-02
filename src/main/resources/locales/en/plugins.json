@@ -66,7 +66,7 @@
       "keyList": {
         "displayName": "Display Name",
         "delete": "Delete",
-        "emptyNotification": "No keys defined yet",
+        "emptyNotification": "No keys defined yet, please add at least one",
         "new": {
           "title": "New Key",
           "displayName": {
