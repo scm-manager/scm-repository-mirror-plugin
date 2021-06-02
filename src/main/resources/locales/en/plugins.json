@@ -1,7 +1,8 @@
 {
   "scm-repository-mirror-plugin": {
     "settings": {
-      "navLink": "Mirror"
+      "navLink": "Mirror",
+      "title": "Global Mirror Configuration"
     },
     "create": {
       "subtitle": "Mirror existing repository"
@@ -64,10 +65,10 @@
       "manualSync": "Refresh mirror now",
       "keyList": {
         "displayName": "Display Name",
-        "raw": "Raw",
         "delete": "Delete",
         "emptyNotification": "No keys defined yet",
         "new": {
+          "title": "New Key",
           "displayName": {
             "label": "Display Name",
             "helpText": "A descriptive name for the key."
@@ -96,7 +97,8 @@
       "branchesAndTagsPatterns": {
         "label": "Branches and Tags",
         "helpText": "Comma-separated glob patterns describing which branches and/or tags should be mirrored. If left blank, all branches and tags will be mirrored."
-      }
+      },
+      "verificationFilters": "Filters"
     },
     "flag": {
       "label": "mirror",

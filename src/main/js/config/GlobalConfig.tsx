@@ -23,7 +23,7 @@
  */
 
 import React, { FC, useEffect } from "react";
-import { Checkbox, ConfigurationForm, InputField } from "@scm-manager/ui-components";
+import { Checkbox, ConfigurationForm, InputField, Title } from "@scm-manager/ui-components";
 import { GlobalConfigurationDto } from "../types";
 import { useForm } from "react-hook-form";
 import { useConfigLink } from "@scm-manager/ui-api";
@@ -54,6 +54,7 @@ const GlobalConfig: FC<Props> = ({ link }) => {
       onSubmit={handleSubmit(update)}
       {...formProps}
     >
+      <Title title={t("scm-repository-mirror-plugin.settings.title")} />
       <Checkbox
         label={t("scm-repository-mirror-plugin.form.httpsOnly.label")}
         helpText={t("scm-repository-mirror-plugin.form.httpsOnly.helpText")}

@@ -45,7 +45,7 @@ class MirrorConfigurationDtoToConfigurationMapperTest {
     input.setSynchronizationPeriod(42);
     input.setUsernamePasswordCredential(new MirrorConfigurationDto.UsernamePasswordCredentialDto("trillian", "secretpassword"));
     input.setCertificateCredential(new MirrorConfigurationDto.CertificateCredentialDto("aGVsbG8=", "evenmoresecretpassword"));
-    input.setBranchesAndTagsPatterns("default,feature/*");
+    input.setBranchesAndTagsPatterns("default, feature/*, ,,,");
     input.setGpgVerificationType(MirrorGpgVerificationType.KEY_LIST);
     input.setAllowedGpgKeys(ImmutableList.of(new RawGpgKeyDto("foo", "bar")));
 
