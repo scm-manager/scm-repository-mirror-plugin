@@ -23,32 +23,34 @@
  */
 package com.cloudogu.scm.mirror;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.github.legman.Subscribe;
+import sonia.scm.EagerSingleton;
+import sonia.scm.event.ScmEventBus;
+import sonia.scm.plugin.Extension;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import java.util.Collections;
-import java.util.List;
+import javax.inject.Inject;
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@XmlAccessorType(XmlAccessType.FIELD)
-public class MirrorVerificationConfiguration {
+@EagerSingleton
+@Extension
+public class MirrorStatusChangedHook {
 
-  private List<String> branchesAndTagsPatterns;
-  private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
-  private List<RawGpgKey> allowedGpgKeys;
+  private final MirrorStatusStore mirrorStatusStore;
+  private final ScmEventBus scmEventBus;
 
-  public List<String> getBranchesAndTagsPatterns() {
-    return branchesAndTagsPatterns != null ? branchesAndTagsPatterns : Collections.emptyList();
+  @Inject
+  public MirrorStatusChangedHook(MirrorStatusStore mirrorStatusStore, ScmEventBus scmEventBus) {
+    this.mirrorStatusStore = mirrorStatusStore;
+    this.scmEventBus = scmEventBus;
   }
 
-  public List<RawGpgKey> getAllowedGpgKeys() {
-    return allowedGpgKeys != null ? allowedGpgKeys : Collections.emptyList();
+
+  @Subscribe(async = false)
+  public void handleEvent(MirrorSyncEvent event) {
+    MirrorStatus status = mirrorStatusStore.getStatus(event.getRepository());
+    MirrorStatus.Result previousResult = status.getResult();
+    MirrorStatus.Result newResult = MirrorStatus.Result.getFor(event.getResult().getResult());
+    if (previousResult != newResult) {
+      scmEventBus.post(new MirrorStatusChangedEvent(event.getRepository(), previousResult, newResult));
+    }
   }
 }

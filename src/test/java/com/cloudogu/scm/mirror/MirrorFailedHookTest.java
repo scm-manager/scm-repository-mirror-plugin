@@ -1,3 +1,26 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.cloudogu.scm.mirror;
 
 import com.google.common.collect.ImmutableList;
@@ -26,6 +49,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static sonia.scm.repository.api.MirrorCommandResult.ResultType.FAILED;
+import static sonia.scm.repository.api.MirrorCommandResult.ResultType.OK;
 
 @ExtendWith(MockitoExtension.class)
 class MirrorFailedHookTest {
@@ -34,8 +59,6 @@ class MirrorFailedHookTest {
 
   @Mock
   private Provider<MirrorConfigurationStore> configStoreProvider;
-  @Mock
-  private MirrorStatusStore statusStore;
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private MailService mailService;
   @Mock
@@ -51,7 +74,13 @@ class MirrorFailedHookTest {
 
   @Test
   void shouldOnlySendMailOnFailedMirror() {
-    hook.handleEvent(new MirrorSyncEvent(REPOSITORY, new MirrorCommandResult(true, emptyList(), Duration.ZERO)));
+    hook.handleEvent(
+      new MirrorStatusChangedEvent(
+        REPOSITORY,
+        createStatusResult(FAILED),
+        createStatusResult(OK)
+      )
+    );
 
     verify(configStoreProvider, never()).get();
   }
@@ -61,9 +90,14 @@ class MirrorFailedHookTest {
     MirrorConfiguration mirrorConfig = new MirrorConfiguration();
     mirrorConfig.setManagingUsers(ImmutableList.of("trillian", "arthur", "zaphod"));
     mockConfigStore(mirrorConfig);
-    mockStatusStore(MirrorStatus.success(Instant.now()));
 
-    hook.handleEvent(new MirrorSyncEvent(REPOSITORY, new MirrorCommandResult(false, emptyList(), Duration.ZERO)));
+    hook.handleEvent(
+      new MirrorStatusChangedEvent(
+        REPOSITORY,
+        createStatusResult(OK),
+        createStatusResult(FAILED)
+      )
+    );
 
     verify(mailService, times(3)).emailTemplateBuilder();
   }
@@ -73,20 +107,25 @@ class MirrorFailedHookTest {
     MirrorConfiguration mirrorConfig = new MirrorConfiguration();
     mirrorConfig.setManagingUsers(ImmutableList.of("trillian", "arthur", "zaphod"));
     mockConfigStore(mirrorConfig);
-    mockStatusStore(MirrorStatus.failed(Instant.now()));
 
-    hook.handleEvent(new MirrorSyncEvent(REPOSITORY, new MirrorCommandResult(false, emptyList(), Duration.ZERO)));
+    hook.handleEvent(
+      new MirrorStatusChangedEvent(
+        REPOSITORY,
+        createStatusResult(FAILED),
+        createStatusResult(FAILED)
+      )
+    );
 
     verify(mailService, never()).emailTemplateBuilder();
-  }
-
-  private void mockStatusStore(MirrorStatus status) {
-    when(statusStore.getStatus(REPOSITORY)).thenReturn(status);
   }
 
   private void mockConfigStore(MirrorConfiguration mirrorConfig) {
     MirrorConfigurationStore configurationStore = mock(MirrorConfigurationStore.class);
     when(configStoreProvider.get()).thenReturn(configurationStore);
     when(configurationStore.getConfiguration(REPOSITORY)).thenReturn(Optional.of(mirrorConfig));
+  }
+
+  private MirrorStatus.Result createStatusResult(MirrorCommandResult.ResultType result) {
+    return MirrorStatus.create(result, Instant.now()).getResult();
   }
 }

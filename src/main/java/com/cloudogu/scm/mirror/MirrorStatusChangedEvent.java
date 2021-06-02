@@ -23,32 +23,20 @@
  */
 package com.cloudogu.scm.mirror;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import sonia.scm.event.Event;
+import sonia.scm.repository.Repository;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import java.util.Collections;
-import java.util.List;
-
-@Setter
+@Event
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@XmlAccessorType(XmlAccessType.FIELD)
-public class MirrorVerificationConfiguration {
+public class MirrorStatusChangedEvent {
+  private final Repository repository;
+  private final MirrorStatus.Result previousResult;
+  private final MirrorStatus.Result newResult;
 
-  private List<String> branchesAndTagsPatterns;
-  private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
-  private List<RawGpgKey> allowedGpgKeys;
-
-  public List<String> getBranchesAndTagsPatterns() {
-    return branchesAndTagsPatterns != null ? branchesAndTagsPatterns : Collections.emptyList();
-  }
-
-  public List<RawGpgKey> getAllowedGpgKeys() {
-    return allowedGpgKeys != null ? allowedGpgKeys : Collections.emptyList();
+  public MirrorStatusChangedEvent(Repository repository, MirrorStatus.Result previousResult, MirrorStatus.Result newResult) {
+    this.repository = repository;
+    this.previousResult = previousResult;
+    this.newResult = newResult;
   }
 }

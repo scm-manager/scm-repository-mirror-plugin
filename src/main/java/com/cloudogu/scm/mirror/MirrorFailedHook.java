@@ -1,3 +1,26 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.cloudogu.scm.mirror;
 
 import com.github.legman.Subscribe;
@@ -14,7 +37,6 @@ import sonia.scm.mail.api.Topic;
 import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.MirrorCommandResult;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -51,21 +73,18 @@ public class MirrorFailedHook {
 
   private final MailService mailService;
   private final Provider<MirrorConfigurationStore> configStoreProvider;
-  private final MirrorStatusStore statusStore;
   private final ScmConfiguration scmConfiguration;
 
   @Inject
-  public MirrorFailedHook(MailService mailService, Provider<MirrorConfigurationStore> mirrorConfigurationStore, MirrorStatusStore statusStore, ScmConfiguration scmConfiguration) {
+  public MirrorFailedHook(MailService mailService, Provider<MirrorConfigurationStore> mirrorConfigurationStore, ScmConfiguration scmConfiguration) {
     this.mailService = mailService;
     this.configStoreProvider = mirrorConfigurationStore;
-    this.statusStore = statusStore;
     this.scmConfiguration = scmConfiguration;
   }
 
-  //We depend on stored data therefore this should happen synchronously to prevent race conditions
-  @Subscribe(async = false)
-  public void handleEvent(MirrorSyncEvent event) {
-    if (event.getResult().getResult() != MirrorCommandResult.ResultType.OK) {
+  @Subscribe
+  public void handleEvent(MirrorStatusChangedEvent event) {
+    if (event.getNewResult() == MirrorStatus.Result.FAILED) {
       Optional<MirrorConfiguration> mirrorConfiguration = configStoreProvider.get().getConfiguration(event.getRepository());
       if (mirrorConfiguration.isPresent() && shouldSendEmail(event, mirrorConfiguration.get())) {
         for (String user : mirrorConfiguration.get().getManagingUsers()) {
@@ -87,22 +106,23 @@ public class MirrorFailedHook {
     }
   }
 
-  private boolean shouldSendEmail(MirrorSyncEvent event, MirrorConfiguration mirrorConfiguration) {
+  private boolean shouldSendEmail(MirrorStatusChangedEvent event, MirrorConfiguration mirrorConfiguration) {
     return mirrorConfiguration.getManagingUsers() != null
-      && statusStore.getStatus(event.getRepository()).getResult() != MirrorStatus.Result.FAILED;
+      && event.getNewResult() != event.getPreviousResult();
   }
 
-  private String getMailSubject(MirrorSyncEvent event, Locale locale) {
+  private String getMailSubject(MirrorStatusChangedEvent event, Locale locale) {
     Repository repository = event.getRepository();
     String displayEventName = SUBJECT_BUNDLES.get(locale).getString(MIRROR_FAILED_EVENT_DISPLAY_NAME);
     return MessageFormat.format(SUBJECT_PATTERN, repository.getNamespace(), repository.getName(), displayEventName);
   }
 
-  private Map<String, Object> getTemplateModel(MirrorSyncEvent event) {
+  private Map<String, Object> getTemplateModel(MirrorStatusChangedEvent event) {
     Map<String, Object> result = Maps.newHashMap();
-    result.put("namespace", event.getRepository().getNamespace());
-    result.put("name", event.getRepository().getName());
-    result.put("link", getRepositoryLink(event.getRepository()));
+    Repository repository = event.getRepository();
+    result.put("namespace", repository.getNamespace());
+    result.put("name", repository.getName());
+    result.put("link", getRepositoryLink(repository));
     return result;
   }
 

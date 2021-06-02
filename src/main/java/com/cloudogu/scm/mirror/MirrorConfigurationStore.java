@@ -25,7 +25,6 @@
 package com.cloudogu.scm.mirror;
 
 import com.google.common.base.Strings;
-import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.Initable;
