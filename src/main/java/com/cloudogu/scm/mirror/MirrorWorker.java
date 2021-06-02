@@ -157,8 +157,8 @@ class MirrorWorker {
 
   private void handleResult(Repository repository, MirrorConfiguration configuration, Instant startTime, MirrorCommandResult.ResultType result) {
     MirrorStatus status = MirrorStatus.create(result, startTime);
-    statusStore.setStatus(repository, status);
     sendNotificationWhenChanged(repository, configuration, status.getResult());
+    statusStore.setStatus(repository, status);
   }
 
   private void sendNotificationWhenChanged(Repository repository, MirrorConfiguration configuration, MirrorStatus.Result status) {
