@@ -66,16 +66,22 @@
       "keyList": {
         "displayName": "Anzeigename",
         "delete": "Löschen",
-        "emptyNotification": "Keine Schlüssel definiert",
+        "emptyNotification": "Keine Schlüssel definiert, bitte mindestens einen Schlüssel hinzufügen",
         "new": {
           "title": "Neuer Schlüssel",
           "displayName": {
             "label": "Anzeigename",
-            "helpText": "Ein beschreibender Name für den Schlüssel."
+            "helpText": "Ein beschreibender Name für den Schlüssel.",
+            "errors": {
+              "required": "Dies ist ein Pflichtfeld"
+            }
           },
           "raw": {
             "label": "Schlüssel",
-            "helpText": "Der eigentliche GPG Schlüssel"
+            "helpText": "Der eigentliche GPG Schlüssel",
+            "errors": {
+              "required": "Dies ist ein Pflichtfeld"
+            }
           },
           "submit": "Schlüssel hinzufügen"
         }

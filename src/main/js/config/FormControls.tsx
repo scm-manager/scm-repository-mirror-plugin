@@ -267,7 +267,7 @@ export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ co
     mode: "onChange"
   });
   const gpgVerificationType = useWatch({ control, name: "gpgVerificationType" });
-  const { isValid } = formState;
+  const { isValid, errors } = formState;
   const { value } = field;
 
   useEffect(() => {
@@ -311,8 +311,11 @@ export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ co
         <>
           <h5 className="subtitle is-5">{t("scm-repository-mirror-plugin.form.keyList.new.title")}</h5>
           <InputField
+            className="mb-5"
             label={t("scm-repository-mirror-plugin.form.keyList.new.displayName.label")}
             helpText={t("scm-repository-mirror-plugin.form.keyList.new.displayName.helpText")}
+            errorMessage={t("scm-repository-mirror-plugin.form.keyList.new.displayName.errors.required")}
+            validationError={!!errors.displayName}
             {...register("displayName", {
               required: true
             })}
@@ -320,6 +323,8 @@ export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ co
           <Textarea
             label={t("scm-repository-mirror-plugin.form.keyList.new.raw.label")}
             helpText={t("scm-repository-mirror-plugin.form.keyList.new.raw.helpText")}
+            errorMessage={t("scm-repository-mirror-plugin.form.keyList.new.raw.errors.required")}
+            validationError={!!errors.raw}
             {...register("raw", {
               required: true
             })}

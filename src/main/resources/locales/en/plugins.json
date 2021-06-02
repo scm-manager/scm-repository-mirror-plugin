@@ -71,11 +71,17 @@
           "title": "New Key",
           "displayName": {
             "label": "Display Name",
-            "helpText": "A descriptive name for the key."
+            "helpText": "A descriptive name for the key.",
+            "errors": {
+              "required": "This field is required"
+            }
           },
           "raw": {
             "label": "Raw",
-            "helpText": "The raw key. Simply copy & paste it into this field."
+            "helpText": "The raw key. Simply copy & paste it into this field.",
+            "errors": {
+              "required": "This field is required"
+            }
           },
           "submit": "Add Key"
         }
