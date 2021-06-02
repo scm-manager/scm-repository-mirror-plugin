@@ -48,6 +48,7 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.MirrorCommandResult;
+import sonia.scm.repository.api.MirrorCommandResult.ResultType;
 import sonia.scm.web.JsonMockHttpRequest;
 import sonia.scm.web.JsonMockHttpResponse;
 import sonia.scm.web.RestDispatcher;
@@ -74,7 +75,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static sonia.scm.web.MockScmPathInfoStore.forUri;
 
 @ExtendWith({MockitoExtension.class, ShiroExtension.class})
 class MirrorRootResourceTest {
@@ -358,7 +358,7 @@ class MirrorRootResourceTest {
 
     @Test
     void shouldReturnLogs() throws URISyntaxException {
-      LogEntry entry = log(false, 21L, "not so awesome");
+      LogEntry entry = log(ResultType.FAILED, 21L, "not so awesome");
       when(logStore.get(repository)).thenReturn(Collections.singletonList(entry));
 
       MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/logs");
@@ -370,7 +370,7 @@ class MirrorRootResourceTest {
       JsonNode json = response.getContentAsJson();
 
       JsonNode jsonEntry = json.get("_embedded").get("entries").get(0);
-      assertThat(jsonEntry.get("success").asBoolean()).isFalse();
+      assertThat(jsonEntry.get("result").asText()).isEqualTo("FAILED");
       assertThat(jsonEntry.get("duration").asLong()).isEqualTo(21L);
       assertThat(jsonEntry.get("log").get(0).asText()).isEqualTo("not so awesome");
       assertThat(jsonEntry.get("finishedAt").asText()).isNotNull();
@@ -390,8 +390,8 @@ class MirrorRootResourceTest {
       ).isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/logs");
     }
 
-    private LogEntry log(boolean success, long duration, String... logs) {
-      return new LogEntry(new MirrorCommandResult(success, Arrays.asList(logs), Duration.ofMillis(duration)));
+    private LogEntry log(ResultType result, long duration, String... logs) {
+      return new LogEntry(new MirrorCommandResult(result, Arrays.asList(logs), Duration.ofMillis(duration)));
     }
 
   }

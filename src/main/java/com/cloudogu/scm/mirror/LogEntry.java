@@ -26,6 +26,7 @@ package com.cloudogu.scm.mirror;
 
 import lombok.Getter;
 import sonia.scm.repository.api.MirrorCommandResult;
+import sonia.scm.repository.api.MirrorCommandResult.ResultType;
 import sonia.scm.xml.XmlInstantAdapter;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -40,7 +41,7 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class LogEntry {
 
-  private boolean success;
+  private ResultType result;
   @XmlJavaTypeAdapter(XmlDurationAdapter.class)
   private Duration duration;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
@@ -52,7 +53,7 @@ public class LogEntry {
 
   public LogEntry(MirrorCommandResult result) {
     this.duration = result.getDuration();
-    this.success = result.isSuccess();
+    this.result = result.getResult();
     this.finishedAt = Instant.now();
     this.log = result.getLog();
   }

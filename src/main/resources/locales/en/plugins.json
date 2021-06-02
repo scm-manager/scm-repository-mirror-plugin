@@ -110,9 +110,13 @@
     "logs": {
       "navLink": "Synchronization log",
       "subtitle": "Synchronization log",
-      "success": {
+      "ok": {
         "label": "success",
         "title": "Synchronization successful"
+      },
+      "rejectedUpdates": {
+        "label": "partial",
+        "title": "Synchronization partial successful"
       },
       "failed": {
         "label": "failed",
