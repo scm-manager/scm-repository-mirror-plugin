@@ -14,6 +14,7 @@ import sonia.scm.mail.api.Topic;
 import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.MirrorCommandResult;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -39,7 +40,7 @@ public class MirrorFailedHook {
   public static final String MIRROR_FAILED_EVENT_DISPLAY_NAME = "mirrorFailed";
   private static final Category CATEGORY = new Category("scm-manager-core");
   static final Topic TOPIC_MIRROR_FAILED = new Topic(CATEGORY, MIRROR_FAILED_EVENT_DISPLAY_NAME);
-  protected static final String HEALTH_CHECK_FAILED_TEMPLATE_PATH = "com/cloudogu/mail/emailnotification/mirror_failed.mustache";
+  protected static final String MIRROR_TEMPLATE_PATH = "com/cloudogu/mail/emailnotification/mirror_failed.mustache";
   private static final String SCM_REPOSITORY_URL_PATTERN = "{0}/repo/{1}/{2}/settings/general/";
 
   private static final String SUBJECT_PATTERN = "{0}/{1} {2}";
@@ -64,7 +65,7 @@ public class MirrorFailedHook {
   //We depend on stored data therefore this should happen synchronously to prevent race conditions
   @Subscribe(async = false)
   public void handleEvent(MirrorSyncEvent event) {
-    if (!event.getResult().isSuccess()) {
+    if (event.getResult().getResult() != MirrorCommandResult.ResultType.OK) {
       Optional<MirrorConfiguration> mirrorConfiguration = configStoreProvider.get().getConfiguration(event.getRepository());
       if (mirrorConfiguration.isPresent() && shouldSendEmail(event, mirrorConfiguration.get())) {
         for (String user : mirrorConfiguration.get().getManagingUsers()) {
@@ -75,7 +76,7 @@ public class MirrorFailedHook {
               .toUser(user)
               .withSubject(getMailSubject(event, ENGLISH))
               .withSubject(GERMAN, getMailSubject(event, GERMAN))
-              .withTemplate(HEALTH_CHECK_FAILED_TEMPLATE_PATH, MailTemplateType.MARKDOWN_HTML)
+              .withTemplate(MIRROR_TEMPLATE_PATH, MailTemplateType.MARKDOWN_HTML)
               .andModel(getTemplateModel(event))
               .send();
           } catch (MailSendBatchException e) {
