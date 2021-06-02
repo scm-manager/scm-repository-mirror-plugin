@@ -21,29 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror;
 
+import lombok.Getter;
+import sonia.scm.event.Event;
+import sonia.scm.repository.Repository;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+@Event
+@Getter
+public class MirrorStatusChangedEvent {
+  private final Repository repository;
+  private final MirrorStatus.Result previousResult;
+  private final MirrorStatus.Result newResult;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
-
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
-
-  author = "SCM-Team"
-  category = "Workflow"
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  public MirrorStatusChangedEvent(Repository repository, MirrorStatus.Result previousResult, MirrorStatus.Result newResult) {
+    this.repository = repository;
+    this.previousResult = previousResult;
+    this.newResult = newResult;
   }
 }

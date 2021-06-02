@@ -25,9 +25,11 @@
 package com.cloudogu.scm.mirror;
 
 import lombok.Getter;
+import sonia.scm.event.Event;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.MirrorCommandResult;
 
+@Event
 @Getter
 public class MirrorSyncEvent {
 

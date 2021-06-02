@@ -26,11 +26,14 @@ package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.LogEntry;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
 import java.time.Duration;
 
 @Mapper
 public interface LogEntryMapper {
 
+  @Mapping(ignore = true, target = "attributes")
   LogEntryDto map(LogEntry entry);
 
   default long map(Duration duration) {

@@ -57,7 +57,6 @@ public class MirrorRootResource {
   private final GlobalMirrorConfigurationDtoToGlobalConfigurationMapper fromDtoMapper = getMapper(GlobalMirrorConfigurationDtoToGlobalConfigurationMapper.class);
   private final GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper;
 
-  // TODO check whether we should use the repository mapper from the core here
   private final MirrorRequestDtoToRepositoryMapper requestDtoToRepositoryMapper = Mappers.getMapper(MirrorRequestDtoToRepositoryMapper.class);
   private final MirrorConfigurationDtoToConfigurationMapper requestDtoToRequestMapper = Mappers.getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
 
