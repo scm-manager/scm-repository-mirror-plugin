@@ -25,7 +25,6 @@
 package com.cloudogu.scm.mirror;
 
 import com.google.common.base.Strings;
-import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.Initable;
@@ -37,10 +36,12 @@ import sonia.scm.store.ConfigurationStoreFactory;
 import sonia.scm.web.security.AdministrationContext;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Optional;
 
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
+@Singleton
 public class MirrorConfigurationStore implements Initable {
 
   public static final String DUMMY_PASSWORD = "_DUMMY_";
