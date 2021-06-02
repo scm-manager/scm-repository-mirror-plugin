@@ -38,11 +38,9 @@ import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.MirrorCommandResult;
 
 import javax.inject.Provider;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
-import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -53,7 +51,7 @@ import static sonia.scm.repository.api.MirrorCommandResult.ResultType.FAILED;
 import static sonia.scm.repository.api.MirrorCommandResult.ResultType.OK;
 
 @ExtendWith(MockitoExtension.class)
-class MirrorFailedHookTest {
+class MirrorFailedEmailNotificationHookTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.create42Puzzle();
 
@@ -65,7 +63,7 @@ class MirrorFailedHookTest {
   private ScmConfiguration scmConfiguration;
 
   @InjectMocks
-  private MirrorFailedHook hook;
+  private MirrorFailedEmailNotificationHook hook;
 
   @BeforeEach
   void shouldInitHookConfig() {

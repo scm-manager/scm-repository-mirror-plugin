@@ -55,9 +55,9 @@ import static java.util.ResourceBundle.getBundle;
 @Extension
 @EagerSingleton
 @Requires("scm-mail-plugin")
-public class MirrorFailedHook {
+public class MirrorFailedEmailNotificationHook {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MirrorFailedHook.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MirrorFailedEmailNotificationHook.class);
 
   public static final String MIRROR_FAILED_EVENT_DISPLAY_NAME = "mirrorFailed";
   private static final Category CATEGORY = new Category("scm-manager-core");
@@ -76,7 +76,7 @@ public class MirrorFailedHook {
   private final ScmConfiguration scmConfiguration;
 
   @Inject
-  public MirrorFailedHook(MailService mailService, Provider<MirrorConfigurationStore> mirrorConfigurationStore, ScmConfiguration scmConfiguration) {
+  public MirrorFailedEmailNotificationHook(MailService mailService, Provider<MirrorConfigurationStore> mirrorConfigurationStore, ScmConfiguration scmConfiguration) {
     this.mailService = mailService;
     this.configStoreProvider = mirrorConfigurationStore;
     this.scmConfiguration = scmConfiguration;
@@ -88,21 +88,25 @@ public class MirrorFailedHook {
       Optional<MirrorConfiguration> mirrorConfiguration = configStoreProvider.get().getConfiguration(event.getRepository());
       if (mirrorConfiguration.isPresent() && shouldSendEmail(event, mirrorConfiguration.get())) {
         for (String user : mirrorConfiguration.get().getManagingUsers()) {
-          try {
-            mailService
-              .emailTemplateBuilder()
-              .onTopic(TOPIC_MIRROR_FAILED)
-              .toUser(user)
-              .withSubject(getMailSubject(event, ENGLISH))
-              .withSubject(GERMAN, getMailSubject(event, GERMAN))
-              .withTemplate(MIRROR_TEMPLATE_PATH, MailTemplateType.MARKDOWN_HTML)
-              .andModel(getTemplateModel(event))
-              .send();
-          } catch (MailSendBatchException e) {
-            LOG.warn("Could not send email for failing mirror attempt", e);
-          }
+          sendMail(event, user);
         }
       }
+    }
+  }
+
+  private void sendMail(MirrorStatusChangedEvent event, String user) {
+    try {
+      mailService
+        .emailTemplateBuilder()
+        .onTopic(TOPIC_MIRROR_FAILED)
+        .toUser(user)
+        .withSubject(getMailSubject(event, ENGLISH))
+        .withSubject(GERMAN, getMailSubject(event, GERMAN))
+        .withTemplate(MIRROR_TEMPLATE_PATH, MailTemplateType.MARKDOWN_HTML)
+        .andModel(getTemplateModel(event))
+        .send();
+    } catch (MailSendBatchException e) {
+      LOG.warn("Could not send email for failing mirror attempt", e);
     }
   }
 
