@@ -33,7 +33,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -45,8 +44,6 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.MirrorCommandBuilder;
 import sonia.scm.repository.api.MirrorCommandResult;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import java.time.Duration;
 import java.util.List;
@@ -54,6 +51,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static com.cloudogu.scm.mirror.MirrorStatus.Result.SUCCESS;
 import static com.google.inject.util.Providers.of;
@@ -76,13 +74,9 @@ import static sonia.scm.repository.api.MirrorCommandResult.ResultType.REJECTED_U
 class MirrorWorkerTest {
 
   @Mock
-  private RepositoryServiceFactory repositoryServiceFactory;
-  @Mock
   private MirrorStatusStore statusStore;
 
   @Mock
-  private RepositoryService repositoryService;
-  @Mock(answer = Answers.RETURNS_SELF)
   private MirrorCommandBuilder mirrorCommandBuilder;
   @Mock
   private PrivilegedMirrorRunner privilegedMirrorRunner;
@@ -95,7 +89,8 @@ class MirrorWorkerTest {
   @Mock
   @SuppressWarnings("rawtypes")
   private ScheduledFuture cancelableSchedule;
-
+  @Mock
+  private MirrorCommandCaller mirrorCommandCaller;
 
   private MirrorWorker worker;
 
@@ -113,7 +108,7 @@ class MirrorWorkerTest {
         return null;
       }
     ).when(privilegedMirrorRunner).exceptedFromReadOnly(any());
-    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, of(privilegedMirrorRunner), notificationSender, eventBus);
+    worker = new MirrorWorker(new SimpleMeterRegistry(), executor, statusStore, of(privilegedMirrorRunner), notificationSender, eventBus, mirrorCommandCaller);
   }
 
   @Test
@@ -134,8 +129,8 @@ class MirrorWorkerTest {
 
     @BeforeEach
     void supportMirrorCommand() {
-      when(repositoryServiceFactory.create(repository)).thenReturn(repositoryService);
-      when(repositoryService.getMirrorCommand()).thenReturn(mirrorCommandBuilder);
+      when(mirrorCommandCaller.call(eq(repository), any(), any()))
+        .thenAnswer(invocation -> invocation.getArgument(2, Function.class).apply(mirrorCommandBuilder));
     }
 
     @Test
@@ -229,49 +224,8 @@ class MirrorWorkerTest {
         }
 
         @Test
-        void shouldSetUrlInCommand() {
-          MirrorConfiguration configuration = createMirrorConfig();
-
-          worker.startUpdate(repository, configuration);
-
-          verify(mirrorCommandBuilder).setSourceUrl("https://hog/");
-        }
-
-        @Test
-        void shouldSetUsernamePasswordCredentialsInCommand() {
-          MirrorConfiguration configuration = createMirrorConfig(new UsernamePasswordCredential("dent", "hog"));
-
-          worker.startUpdate(repository, configuration);
-
-          verify(mirrorCommandBuilder).setCredentials(argThat(
-            credentials -> {
-              assertThat(credentials).extracting("username").containsExactly("dent");
-              assertThat(credentials).extracting("password").containsExactly("hog");
-              return true;
-            }
-          ));
-        }
-
-        @Test
-        void shouldSetKeyCredentialsInCommand() {
-          byte[] key = {};
-          MirrorConfiguration configuration = createMirrorConfig(new CertificateCredential(key, "hog"));
-
-          worker.startUpdate(repository, configuration);
-
-          verify(mirrorCommandBuilder).setCredentials(argThat(
-            credentials -> {
-              assertThat(credentials).extracting("certificate").containsExactly(key);
-              assertThat(credentials).extracting("password").containsExactly((Object) "hog".toCharArray());
-              return true;
-            }
-          ));
-        }
-
-        @Test
         void shouldRunOnlyOneUpdateAtATime() throws InterruptedException {
-          byte[] key = {};
-          MirrorConfiguration configuration = createMirrorConfig(new CertificateCredential(key, "hog"));
+          MirrorConfiguration configuration = createMirrorConfig();
           CountDownLatch startedLatch = new CountDownLatch(1);
           when(mirrorCommandBuilder.update())
             .thenAnswer(invocation -> {
@@ -388,14 +342,6 @@ class MirrorWorkerTest {
 
   private MirrorConfiguration createMirrorConfig() {
     return createMirrorConfig(emptyList(), null, null);
-  }
-
-  private MirrorConfiguration createMirrorConfig(CertificateCredential cc) {
-    return createMirrorConfig(emptyList(), null, cc);
-  }
-
-  private MirrorConfiguration createMirrorConfig(UsernamePasswordCredential upc) {
-    return createMirrorConfig(emptyList(), upc, null);
   }
 
   private MirrorConfiguration createMirrorConfig(List<String> managingUsers, UsernamePasswordCredential upc, CertificateCredential cc) {
