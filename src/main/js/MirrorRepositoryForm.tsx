@@ -57,7 +57,7 @@ type Props = {
 
 const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, NameForm, InformationForm }) => {
   const [t] = useTranslation("plugins");
-  const { handleSubmit, formState, watch, control, register } = useForm<MirrorConfigurationDto>({
+  const { handleSubmit, formState, getValues, control, register } = useForm<MirrorConfigurationDto>({
     mode: "onChange"
   });
   const [repository, setRepository] = useState<RepositoryCreation>({
@@ -69,18 +69,18 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     contextEntries: {}
   });
   const [valid, setValid] = useState({ namespaceAndName: false, contact: true });
-  const { isValid: isFormValid } = formState;
-  const url = watch("url", "");
+  const { isValid: isFormValid, touchedFields } = formState;
 
   useEffect(() => {
-    if (url && !repository.name) {
+    const url = getValues("url")
+    if (url && touchedFields.url && !repository.name) {
       // If the repository name is not fill we set a name suggestion
       const match = url.match(/([^\/]+?)(?:.git)?$/);
       if (match && match[1]) {
         setRepository({ ...repository, name: match[1] });
       }
     }
-  }, [url]);
+  }, [getValues, touchedFields.url]);
 
   const isValid = () => Object.values(valid).every(v => v) && isFormValid;
   const innerOnSubmit = (configFormValue: MirrorConfigurationDto) => {
