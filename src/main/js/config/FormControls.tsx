@@ -29,12 +29,11 @@ import {
   MirrorVerificationConfigurationDto,
   PublicKey
 } from "../types";
-import React, { ChangeEvent, FC, useState } from "react";
+import React, { ChangeEvent, FC } from "react";
 import { useTranslation } from "react-i18next";
 import { SelectValue } from "@scm-manager/ui-types";
 import {
   AutocompleteAddEntryToTableField,
-  Checkbox,
   FileInput,
   Icon,
   InputField,
@@ -113,65 +112,41 @@ export const FileInputControl: FC<MirrorConfigControlProps> = ({ control, isRead
 
 export const CredentialsControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
-  const [showBaseAuthCredentials, setShowBaseAuthCredentials] = useState(false);
-  const [showKeyAuthCredentials, setShowKeyAuthCredentials] = useState(false);
   const { field: usernameField } = useController({ control, name: "usernamePasswordCredential.username" });
   const { field: passwordField } = useController({ control, name: "usernamePasswordCredential.password" });
   const { field: certificatePasswordField } = useController({ control, name: "certificateCredential.password" });
 
   return (
     <>
-      <Column className="column is-full">
-        <Checkbox
-          label={t("scm-repository-mirror-plugin.form.withBaseAuth.label")}
-          onChange={setShowBaseAuthCredentials}
-          checked={showBaseAuthCredentials}
+      <Column className="column is-half">
+        <InputField
+          label={t("scm-repository-mirror-plugin.form.username.label")}
+          helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
+          disabled={isReadonly}
+          {...usernameField}
         />
       </Column>
-      {showBaseAuthCredentials ? (
-        <>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.username.label")}
-              helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
-              disabled={isReadonly}
-              {...usernameField}
-            />
-          </Column>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.password.label")}
-              type="password"
-              helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
-              disabled={isReadonly}
-              {...passwordField}
-            />
-          </Column>
-        </>
-      ) : null}
-      <Column className="column is-full">
-        <Checkbox
-          label={t("scm-repository-mirror-plugin.form.withKeyAuth.label")}
-          onChange={setShowKeyAuthCredentials}
-          checked={showKeyAuthCredentials}
+      <Column className="column is-half">
+        <InputField
+          label={t("scm-repository-mirror-plugin.form.password.label")}
+          type="password"
+          helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
+          disabled={isReadonly}
+          {...passwordField}
         />
       </Column>
-      {showKeyAuthCredentials ? (
-        <>
-          <Column className="column is-half">
-            <FileInputControl control={control} isReadonly={isReadonly} />
-          </Column>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
-              type="password"
-              helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
-              disabled={isReadonly}
-              {...certificatePasswordField}
-            />
-          </Column>
-        </>
-      ) : null}
+      <Column className="column is-half">
+        <FileInputControl control={control} isReadonly={isReadonly} />
+      </Column>
+      <Column className="column is-half">
+        <InputField
+          label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
+          type="password"
+          helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
+          disabled={isReadonly}
+          {...certificatePasswordField}
+        />
+      </Column>
     </>
   );
 };
@@ -261,6 +236,8 @@ export const UrlControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }
 
 export const coalesceFormValue = <T extends MirrorConfigurationDto>(value: T): T => {
   const output: MirrorConfigurationDto = { ...value };
+
+  console.log("coalesceFormValue", output);
 
   if (!output.usernamePasswordCredential?.username) {
     delete output.usernamePasswordCredential;
