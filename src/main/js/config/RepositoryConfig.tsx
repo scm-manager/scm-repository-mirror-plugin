@@ -31,7 +31,7 @@ import {
   Subtitle
 } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
-import { MirrorConfigurationDto } from "../types";
+import { MirrorConfigurationDto, MirrorConfigurationForm } from "../types";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
 import {
@@ -85,13 +85,26 @@ export const TriggerButton: FC<{ link: string }> = ({ link }) => {
 const RepositoryConfig: FC<Props> = ({ link }) => {
   const [t] = useTranslation("plugins");
   const { initialConfiguration, update, isReadonly, ...formProps } = useConfigLink<MirrorConfigurationDto>(link);
-  const { formState, handleSubmit, control, reset, register } = useForm<MirrorConfigurationDto>({
+  const { formState, handleSubmit, control, reset, register } = useForm<MirrorConfigurationForm>({
     mode: "onChange"
   });
 
   useEffect(() => {
     if (initialConfiguration) {
-      reset(initialConfiguration);
+      const form = { ...initialConfiguration };
+      if (initialConfiguration.usernamePasswordCredential) {
+        form.usernamePasswordCredential = {
+          ...initialConfiguration.usernamePasswordCredential,
+          enabled: true
+        };
+      }
+      if (initialConfiguration.certificateCredential) {
+        form.certificateCredential = {
+          ...initialConfiguration.certificateCredential,
+          enabled: true
+        };
+      }
+      reset(form);
     }
   }, [initialConfiguration]);
 
