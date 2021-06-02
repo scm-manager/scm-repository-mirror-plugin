@@ -21,30 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror.api;
 
-package com.cloudogu.scm.mirror;
+import com.cloudogu.scm.mirror.RawGpgKey;
+import org.mapstruct.Mapper;
 
-import org.apache.shiro.SecurityUtils;
-import sonia.scm.config.ConfigurationPermissions;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
-
-public final class MirrorPermissions {
-
-  public static final String PERMISSION = "mirror";
-
-  private MirrorPermissions() {
-  }
-
-  static void checkRepositoryMirrorPermission(Repository repository) {
-    RepositoryPermissions.custom(PERMISSION, repository).check();
-  }
-
-  public static boolean hasRepositoryMirrorPermission(Repository repository) {
-    return RepositoryPermissions.custom(PERMISSION, repository).isPermitted();
-  }
-
-  public static boolean hasGlobalMirrorPermission() {
-    return ConfigurationPermissions.write(PERMISSION).isPermitted();
-  }
+@Mapper
+public abstract class RawGpgKeyToKeyDtoMapper {
+  abstract RawGpgKeyDto map(RawGpgKey key);
 }

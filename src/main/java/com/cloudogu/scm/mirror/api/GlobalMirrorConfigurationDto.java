@@ -21,30 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror.api;
 
-package com.cloudogu.scm.mirror;
+import de.otto.edison.hal.Links;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import org.apache.shiro.SecurityUtils;
-import sonia.scm.config.ConfigurationPermissions;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
+import javax.validation.constraints.NotNull;
 
-public final class MirrorPermissions {
+@Getter
+@Setter
+@NoArgsConstructor
+public class GlobalMirrorConfigurationDto extends MirrorVerificationConfigurationDto {
 
-  public static final String PERMISSION = "mirror";
+  @NotNull
+  private boolean httpsOnly;
 
-  private MirrorPermissions() {
+  GlobalMirrorConfigurationDto(Links links) {
+    super(links);
   }
 
-  static void checkRepositoryMirrorPermission(Repository repository) {
-    RepositoryPermissions.custom(PERMISSION, repository).check();
-  }
-
-  public static boolean hasRepositoryMirrorPermission(Repository repository) {
-    return RepositoryPermissions.custom(PERMISSION, repository).isPermitted();
-  }
-
-  public static boolean hasGlobalMirrorPermission() {
-    return ConfigurationPermissions.write(PERMISSION).isPermitted();
-  }
 }

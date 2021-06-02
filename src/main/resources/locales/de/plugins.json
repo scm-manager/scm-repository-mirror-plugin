@@ -10,6 +10,7 @@
       "createButton": "Repository spiegeln"
     },
     "form": {
+      "subtitle": "Konfiguration der Spiegelung",
       "withBaseAuth": {
         "label": "Verwende Standard-Authentifizierung"
       },
@@ -18,7 +19,7 @@
       },
       "url": {
         "label": "Url",
-        "helpText": "Die URL des Repositories, welches gespiegelt werden sollte.",
+        "helpText": "Die URL des Repositories, welches gespiegelt werden sollte. Nach der Erstellung kann diese URL nicht mehr geändert werden.",
         "errors": {
           "required": "Die URL ist erforderlich",
           "invalid": "Die URL ist inkorrekt"
@@ -59,17 +60,46 @@
         "helpText": "Diese Benutzer werden benachrichtigt, falls das Spiegeln fehlschlägt.",
         "addButton": "Benutzer hinzufügen",
         "autocompletePlaceholder": "Nutzer zum Benachrichtigen hinzufügen"
-      }
+      },
+      "manualSync": "Spiegelung jetzt aktualisieren"
     },
     "flag": {
       "label": "mirror",
       "success": "Letzte Synchronisation erfolgreich",
+      "rejectedUpdates": "Letzte Synchronisation teilweise fehlgeschlagen",
       "failed": "Letzte Synchronisation fehlgeschlagen",
       "notYetRun": "Noch nicht synchronisiert"
     }
   },
   "notifications": {
     "mirrorSuccess": "Das Spiegeln des Repository war erfolgreich.",
+    "mirrorUpdatesRejected": "Das Spiegeln des Repository ist teilweise fehlgeschlagen.",
     "mirrorFailed": "Das Spiegeln des Repository ist fehlgeschlagen."
+  },
+  "permissions": {
+    "configuration": {
+      "read,write": {
+        "mirror": {
+          "displayName": "Globale Spiegel Konfiguration ändern",
+          "description": "Darf die globale Spiegel Konfiguration verändern"
+        }
+      }
+    },
+    "repository": {
+      "mirror": {
+        "*": {
+          "displayName": "Repository-spezifische Spiegel Konfiguration ändern",
+          "description": "Darf die repository-spezifischen Spiegel Konfiguration verändern (falls nicht global deaktiviert)"
+        }
+      }
+    }
+  },
+  "verbs": {
+    "repository": {
+      "mirror": {
+        "displayName": "Spiegel Konfiguration ändern",
+        "description": "Darf die Spiegel Konfiguration verändern (falls nicht global deaktiviert)"
+      }
+    }
   }
 }

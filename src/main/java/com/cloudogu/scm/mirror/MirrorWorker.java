@@ -130,20 +130,17 @@ class MirrorWorker {
       Instant startTime = Instant.now();
       try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
         LOG.debug("using url {}", configuration.getUrl());
-        MirrorCommandBuilder mirrorCommand = repositoryService.getMirrorCommand().setSourceUrl(configuration.getUrl());
+        MirrorCommandBuilder mirrorCommand =
+          repositoryService.getMirrorCommand()
+            .setSourceUrl(configuration.getUrl());
         setCredentials(configuration, mirrorCommand);
         MirrorCommandResult commandResult = callback.apply(mirrorCommand);
         eventBus.post(new MirrorSyncEvent(repository, commandResult));
-        if (commandResult.isSuccess()) {
-          LOG.debug("got successful result for sync of {}", repository);
-          handleSuccess(repository, configuration, startTime);
-        } else {
-          LOG.debug("got failure for sync of {}", repository);
-          handleFailed(repository, configuration, startTime);
-        }
+        LOG.debug("got result {} for sync of {}", commandResult.getResult(), repository);
+        handleResult(repository, configuration, startTime, commandResult.getResult());
       } catch (Exception e) {
         LOG.error("got exception while syncing {}", repository, e);
-        handleFailed(repository, configuration, startTime);
+        handleResult(repository, configuration, startTime, MirrorCommandResult.ResultType.FAILED);
       } finally {
         runningSynchronizations.remove(repository.getId());
       }
@@ -152,30 +149,26 @@ class MirrorWorker {
     }
   }
 
-  private void handleSuccess(Repository repository, MirrorConfiguration configuration, Instant startTime) {
-    sendSuccessNotificationWhenFirstSuccess(repository, configuration);
-    statusStore.setStatus(repository, MirrorStatus.success(startTime));
+  private void handleResult(Repository repository, MirrorConfiguration configuration, Instant startTime, MirrorCommandResult.ResultType result) {
+    MirrorStatus status = MirrorStatus.create(result, startTime);
+    statusStore.setStatus(repository, status);
+    sendNotificationWhenChanged(repository, configuration, status.getResult());
   }
 
-  private void handleFailed(Repository repository, MirrorConfiguration configuration, Instant startTime) {
-    sendFailureNotificationWhenFirstFailure(repository, configuration);
-    statusStore.setStatus(repository, MirrorStatus.failed(startTime));
-  }
-
-  private void sendSuccessNotificationWhenFirstSuccess(Repository repository, MirrorConfiguration configuration) {
-    if (getLatestStatus(repository) == MirrorStatus.Result.FAILED && configuration.getManagingUsers() != null) {
-      for (String user : configuration.getManagingUsers()) {
-        notificationSender.send(new Notification(Type.SUCCESS, "/repo/" + repository.getNamespaceAndName() + "/settings/general", "mirrorSuccess"), user);
-      }
+  private void sendNotificationWhenChanged(Repository repository, MirrorConfiguration configuration, MirrorStatus.Result status) {
+    if (getLatestStatus(repository) != status) {
+      sendNotifications(repository, configuration, status.getNotificationType(), status.getNotificationKey());
     }
   }
 
-  private void sendFailureNotificationWhenFirstFailure(Repository repository, MirrorConfiguration configuration) {
-    if (getLatestStatus(repository) == MirrorStatus.Result.SUCCESS && configuration.getManagingUsers() != null) {
-      for (String user : configuration.getManagingUsers()) {
-        notificationSender.send(new Notification(Type.ERROR, "/repo/" + repository.getNamespaceAndName() + "/settings/general", "mirrorFailed"), user);
-      }
+  private void sendNotifications(Repository repository, MirrorConfiguration configuration, Type type, String mirrorUpdatesRejected) {
+    for (String user : configuration.getManagingUsers()) {
+      notificationSender.send(buildNotification(repository, type, mirrorUpdatesRejected), user);
     }
+  }
+
+  private Notification buildNotification(Repository repository, Type error, String mirrorFailed) {
+    return new Notification(error, "/repo/" + repository.getNamespaceAndName() + "/settings/general", mirrorFailed);
   }
 
   private MirrorStatus.Result getLatestStatus(Repository repository) {

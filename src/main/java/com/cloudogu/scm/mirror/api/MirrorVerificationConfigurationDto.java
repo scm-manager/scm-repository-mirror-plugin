@@ -21,30 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror.api;
 
-package com.cloudogu.scm.mirror;
+import com.cloudogu.scm.mirror.MirrorGpgVerificationType;
+import com.cloudogu.scm.mirror.RawGpgKey;
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.checkerframework.common.value.qual.IntRange;
 
-import org.apache.shiro.SecurityUtils;
-import sonia.scm.config.ConfigurationPermissions;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
-public final class MirrorPermissions {
+@Getter
+@Setter
+@NoArgsConstructor
+public class MirrorVerificationConfigurationDto extends HalRepresentation {
 
-  public static final String PERMISSION = "mirror";
+  private String branchesAndTagsPatterns;
 
-  private MirrorPermissions() {
+  @NotNull
+  private MirrorGpgVerificationType gpgVerificationType;
+  private List<RawGpgKeyDto> allowedGpgKeys;
+
+  MirrorVerificationConfigurationDto(Links links) {
+    super(links);
   }
 
-  static void checkRepositoryMirrorPermission(Repository repository) {
-    RepositoryPermissions.custom(PERMISSION, repository).check();
-  }
-
-  public static boolean hasRepositoryMirrorPermission(Repository repository) {
-    return RepositoryPermissions.custom(PERMISSION, repository).isPermitted();
-  }
-
-  public static boolean hasGlobalMirrorPermission() {
-    return ConfigurationPermissions.write(PERMISSION).isPermitted();
-  }
 }

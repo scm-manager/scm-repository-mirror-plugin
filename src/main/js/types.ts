@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { RepositoryCreation } from "@scm-manager/ui-types";
+import { HalRepresentation, RepositoryCreation } from "@scm-manager/ui-types";
 
 export type UsernamePasswordCredentialDto = {
   username: string;
@@ -34,7 +34,13 @@ export type CertificateCredentialDto = {
   password: string;
 };
 
-export type MirrorConfigurationDto = {
+export type MirrorVerificationConfigurationDto = {
+  branchesAndTagsPatterns: string;
+  gpgVerificationType: MirrorGpgVerificationType;
+  allowedGpgKeys?: PublicKey[];
+};
+
+export type MirrorConfigurationDto = HalRepresentation & MirrorVerificationConfigurationDto & {
   url: string;
   synchronizationPeriod: number;
   managingUsers: string[];
@@ -44,4 +50,14 @@ export type MirrorConfigurationDto = {
 
 export type MirrorRequestDto = MirrorConfigurationDto & RepositoryCreation;
 
-export type RepositoryMirrorConfiguration = MirrorConfigurationDto;
+export type GlobalConfigurationDto = MirrorVerificationConfigurationDto & {
+  httpsOnly: boolean;
+};
+
+export const mirrorGpgVerificationTypes = ["NONE", "SIGNATURE", "SCM_USER_SIGNATURE", "KEY_LIST"] as const;
+export type MirrorGpgVerificationType = typeof mirrorGpgVerificationTypes[number];
+
+export type PublicKey = HalRepresentation & {
+  displayName: string;
+  raw: string;
+};

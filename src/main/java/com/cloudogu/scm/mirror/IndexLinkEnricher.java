@@ -21,54 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.cloudogu.scm.mirror;
 
+import com.cloudogu.scm.mirror.api.MirrorRootResource;
+import sonia.scm.api.v2.resources.Enrich;
+import sonia.scm.api.v2.resources.HalAppender;
+import sonia.scm.api.v2.resources.HalEnricher;
+import sonia.scm.api.v2.resources.HalEnricherContext;
+import sonia.scm.api.v2.resources.Index;
+import sonia.scm.api.v2.resources.LinkBuilder;
+import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.plugin.Extension;
-import sonia.scm.repository.ReadOnlyCheck;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Collection;
-
-import static java.util.Arrays.asList;
+import javax.inject.Provider;
 
 @Extension
-@Singleton
-class MirrorReadOnlyCheck implements ReadOnlyCheck, PrivilegedMirrorRunner {
+@Enrich(Index.class)
+public class IndexLinkEnricher implements HalEnricher {
 
-  private static final Collection<String> ALLOWED_PERMISSIONS = asList("delete", "modify", "permissionWrite");
-
-  private final MirrorConfigurationStore configurationStore;
-  private final ThreadLocal<Boolean> excepted = ThreadLocal.withInitial(() -> false);
+  private final Provider<ScmPathInfoStore> scmPathInfoStore;
 
   @Inject
-  MirrorReadOnlyCheck(MirrorConfigurationStore configurationStore) {
-    this.configurationStore = configurationStore;
+  public IndexLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore) {
+    this.scmPathInfoStore = scmPathInfoStore;
   }
 
   @Override
-  public String getReason() {
-    return "repository is a mirror";
-  }
+  public void enrich(HalEnricherContext context, HalAppender appender) {
+    if (MirrorPermissions.hasGlobalMirrorPermission()) {
+      String globalConfigUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class)
+        .method("getGlobalMirrorConfiguration")
+        .parameters()
+        .href();
 
-  @Override
-  public boolean isReadOnly(String repositoryId) {
-    return !excepted.get() && configurationStore.hasConfiguration(repositoryId);
-  }
-
-  @Override
-  public boolean isReadOnly(String permission, String repositoryId) {
-    return !ALLOWED_PERMISSIONS.contains(permission) && isReadOnly(repositoryId);
-  }
-
-  @Override
-  public void exceptedFromReadOnly(Runnable runnable) {
-    excepted.set(true);
-    try {
-      runnable.run();
-    } finally {
-      excepted.remove();
+      appender.appendLink("mirrorConfiguration", globalConfigUrl);
     }
   }
 }

@@ -56,8 +56,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
 
-@ExtendWith(MockitoExtension.class)
-@ExtendWith(ShiroExtension.class)
+@ExtendWith({ShiroExtension.class, MockitoExtension.class})
+@SubjectAware(
+  value = "trillian"
+)
 class MirrorServiceTest {
 
   @Mock
@@ -90,8 +92,7 @@ class MirrorServiceTest {
 
   @Test
   @SubjectAware(
-    value = "trillian",
-    permissions = "repository:configureMirror:42"
+    permissions = "repository:mirror:42"
   )
   void shouldCallUpdateCommand() {
     repository.setId("42");
@@ -105,8 +106,7 @@ class MirrorServiceTest {
 
   @Test
   @SubjectAware(
-    value = "trillian",
-    permissions = "repository:configureMirror:42"
+    permissions = "repository:mirror:42"
   )
   void shouldFailUpdateCommandWhenNotConfiguredAsMirror() {
     repository.setId("42");
@@ -117,7 +117,6 @@ class MirrorServiceTest {
 
   @Nested
   @SubjectAware(
-    value = "trillian",
     permissions = "repository:create"
   )
   class WithCreatePermission {

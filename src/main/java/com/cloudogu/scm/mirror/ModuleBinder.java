@@ -24,7 +24,10 @@
 
 package com.cloudogu.scm.mirror;
 
+import com.cloudogu.scm.mirror.api.GlobalMirrorConfigurationToGlobalConfigurationDtoMapper;
+import com.cloudogu.scm.mirror.api.MirrorConfigurationToConfigurationDtoMapper;
 import com.google.inject.AbstractModule;
+import org.mapstruct.factory.Mappers;
 import sonia.scm.plugin.Extension;
 
 @Extension
@@ -32,5 +35,9 @@ public class ModuleBinder extends AbstractModule {
   @Override
   protected void configure() {
     bind(PrivilegedMirrorRunner.class).to(MirrorReadOnlyCheck.class);
+    bind(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class)
+      .to(Mappers.getMapperClass(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class));
+    bind(MirrorConfigurationToConfigurationDtoMapper.class)
+      .to(Mappers.getMapperClass(MirrorConfigurationToConfigurationDtoMapper.class));
   }
 }

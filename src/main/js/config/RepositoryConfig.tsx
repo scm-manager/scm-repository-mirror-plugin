@@ -21,19 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect } from "react";
-import { ConfigurationForm } from "@scm-manager/ui-components";
+import React, { FC, useEffect, useState } from "react";
+import { apiClient, Button, ConfigurationForm, ErrorNotification, Subtitle } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
 import { MirrorConfigurationDto } from "../types";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
 import {
   coalesceFormValue,
-  CredentialsInputControl,
+  CredentialsControl,
   ManagingUsersControl,
   SynchronizationPeriodControl,
   UrlControl
 } from "./FormControls";
+import { Link } from "@scm-manager/ui-types";
+import {useTranslation} from "react-i18next";
 
 const Columns = styled.div`
   padding: 0.75rem 0 0;
@@ -43,7 +45,37 @@ type Props = {
   link: string;
 };
 
+export const TriggerButton: FC<{ link: string }> = ({ link }) => {
+  const [t] = useTranslation("plugins");
+  const [triggerError, setTriggerError] = useState<Error | undefined>();
+  const [triggerLoading, setTriggerLoading] = useState<boolean>();
+
+  const triggerMirroring = () => {
+    setTriggerLoading(true);
+    apiClient
+      .post(link)
+      .then(() => setTriggerLoading(false))
+      .catch(setTriggerError);
+  };
+
+  return (
+    <>
+      <ErrorNotification error={triggerError} />
+      <Button
+        icon="sync-alt"
+        action={triggerMirroring}
+        label={t("scm-repository-mirror-plugin.form.manualSync")}
+        loading={triggerLoading}
+        disabled={!link}
+        type="button"
+        color="info"
+      />
+    </>
+  );
+};
+
 const RepositoryConfig: FC<Props> = ({ link }) => {
+  const [t] = useTranslation("plugins");
   const { initialConfiguration, update, isReadonly, ...formProps } = useConfigLink<MirrorConfigurationDto>(link);
   const { formState, handleSubmit, control, reset } = useForm<MirrorConfigurationDto>({
     mode: "onChange"
@@ -55,13 +87,20 @@ const RepositoryConfig: FC<Props> = ({ link }) => {
     }
   }, [initialConfiguration]);
 
-  const onSubmit = handleSubmit(formValue => update(coalesceFormValue(formValue)));
+  const onSubmit = handleSubmit(formValue =>
+    // Because the url field is disabled (sets url to undefined) but the dto expects the url to be present in the request,
+    // we have to manually set the url to the initial configuration
+    update(coalesceFormValue({ ...formValue, url: initialConfiguration.url }))
+  );
 
   return (
     <ConfigurationForm isValid={formState.isValid} isReadonly={isReadonly} onSubmit={onSubmit} {...formProps}>
+      <TriggerButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />
+      <hr />
+      <Subtitle subtitle={t("scm-repository-mirror-plugin.form.subtitle")} />
       <Columns className="columns is-multiline">
-        <UrlControl control={control} isReadonly={isReadonly} />
-        <CredentialsInputControl control={control} isReadonly={isReadonly} />
+        <UrlControl control={control} isReadonly={true} />
+        <CredentialsControl control={control} isReadonly={isReadonly} />
         <SynchronizationPeriodControl control={control} isReadonly={isReadonly} />
         <ManagingUsersControl control={control} isReadonly={isReadonly} />
       </Columns>

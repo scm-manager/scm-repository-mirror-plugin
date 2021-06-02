@@ -10,6 +10,7 @@
       "createButton": "Mirror Repository"
     },
     "form": {
+      "subtitle": "Mirror Configuration",
       "withBaseAuth": {
         "label": "Use Basic Authentication"
       },
@@ -18,7 +19,7 @@
       },
       "url": {
         "label": "Url",
-        "helpText": "The url of the repository that should be mirrored.",
+        "helpText": "The url of the repository that should be mirrored. This url cannot be changed once the mirror has been created.",
         "errors": {
           "required": "The URL is required",
           "invalid": "The URL is invalid"
@@ -59,17 +60,81 @@
         "helpText": "These users will be notified whenever mirroring fails.",
         "addButton": "Add user",
         "autocompletePlaceholder": "Add users to notify"
+      },
+      "manualSync": "Refresh mirror now",
+      "keyList": {
+        "displayName": "Display Name",
+        "raw": "Raw",
+        "delete": "Delete",
+        "emptyNotification": "No keys defined yet",
+        "new": {
+          "displayName": {
+            "label": "Display Name",
+            "helpText": "A descriptive name for the key."
+          },
+          "raw": {
+            "label": "Raw",
+            "helpText": "The raw key. Simply copy & paste it into this field."
+          },
+          "submit": "Add Key"
+        }
+      },
+      "gpgVerificationType": {
+        "options": {
+          "none": "None",
+          "signature": "Any Signature",
+          "scm_user_signature": "SCM User Signature",
+          "key_list": "Pre-defined Key List"
+        },
+        "label": "GPG Verification Type",
+        "helpText": "Define if or how signatures on commits should be validated."
+      },
+      "httpsOnly": {
+        "label": "HTTPS Only",
+        "helpText": "Only allow https for mirror connections. Disables the use of unsecured http connections."
+      },
+      "branchesAndTagsPatterns": {
+        "label": "Branches and Tags",
+        "helpText": "Comma-separated glob patterns describing which branches and/or tags should be mirrored. If left blank, all branches and tags will be mirrored."
       }
     },
     "flag": {
       "label": "mirror",
       "success": "Last synchronization successful",
+      "rejectedUpdates": "Last synchronization partially failed",
       "failed": "Last synchronization failed",
       "notYetRun": "Not yet synchronized"
     }
   },
   "notifications": {
     "mirrorSuccess": "Repository mirroring succeeded.",
+    "mirrorUpdatesRejected": "Repository mirroring has partially failed.",
     "mirrorFailed": "Repository mirroring has failed."
+  },
+  "permissions": {
+    "configuration": {
+      "read,write": {
+        "mirror": {
+          "displayName": "Modify global mirror configuration",
+          "description": "May modify the global mirror configuration"
+        }
+      }
+    },
+    "repository": {
+      "mirror": {
+        "*": {
+          "displayName": "Modify repository specific mirror configuration",
+          "description": "May modify the repository specific mirror configuration for all repositories (if not disabled globally)"
+        }
+      }
+    }
+  },
+  "verbs": {
+    "repository": {
+      "mirror": {
+        "displayName": "configure mirror",
+        "description": "May modify the repository specific mirror configurations (if not disabled globally)"
+      }
+    }
   }
 }

@@ -80,7 +80,7 @@ public class MirrorService {
   }
 
   public void updateMirror(Repository repository) {
-    MirrorPermissions.checkMirrorPermission(repository);
+    MirrorPermissions.checkRepositoryMirrorPermission(repository);
     MirrorConfiguration configuration = configurationStore.getConfiguration(repository)
       .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
     mirrorWorker.startUpdate(repository, configuration);

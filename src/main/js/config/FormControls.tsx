@@ -1,15 +1,49 @@
-import { Control, useController } from "react-hook-form";
-import { MirrorConfigurationDto } from "../types";
-import React, { ChangeEvent, FC } from "react";
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+import { Control, useController, useForm } from "react-hook-form";
+import {
+  MirrorConfigurationDto,
+  mirrorGpgVerificationTypes,
+  MirrorVerificationConfigurationDto,
+  PublicKey
+} from "../types";
+import React, { ChangeEvent, FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SelectValue } from "@scm-manager/ui-types";
 import {
   AutocompleteAddEntryToTableField,
+  Checkbox,
   FileInput,
+  Icon,
   InputField,
+  Level,
   MemberNameTagGroup,
   Select,
-  SelectItem
+  SelectItem,
+  SubmitButton,
+  Textarea
 } from "@scm-manager/ui-components";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import readBinaryFileAsBase64String from "../readBinaryFileAsBase64String";
@@ -20,9 +54,13 @@ const Column = styled.div`
   margin-bottom: 0.5rem;
 `;
 
-export type ControlProps = { control: Control<MirrorConfigurationDto>; isReadonly: boolean };
+export type MirrorConfigControlProps = { control: Control<MirrorConfigurationDto>; isReadonly: boolean };
+export type MirrorVerificationConfigControlProps = {
+  control: Control<MirrorVerificationConfigurationDto>;
+  isReadonly: boolean;
+};
 
-export const ManagingUsersControl: FC<ControlProps> = ({ control, isReadonly }) => {
+export const ManagingUsersControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
   const userSuggestions = useUserSuggestions();
   const { field } = useController({ control, name: "managingUsers" });
   const [t] = useTranslation("plugins");
@@ -53,7 +91,7 @@ export const ManagingUsersControl: FC<ControlProps> = ({ control, isReadonly }) 
   );
 };
 
-export const FileInputControl: FC<ControlProps> = ({ control, isReadonly }) => {
+export const FileInputControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
   const { field } = useController({ control, name: "certificateCredential.certificate" });
   const [t] = useTranslation("plugins");
 
@@ -73,43 +111,67 @@ export const FileInputControl: FC<ControlProps> = ({ control, isReadonly }) => {
   );
 };
 
-export const CredentialsInputControl: FC<ControlProps> = ({ control, isReadonly }) => {
+export const CredentialsControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
+  const [showBaseAuthCredentials, setShowBaseAuthCredentials] = useState(false);
+  const [showKeyAuthCredentials, setShowKeyAuthCredentials] = useState(false);
   const { field: usernameField } = useController({ control, name: "usernamePasswordCredential.username" });
   const { field: passwordField } = useController({ control, name: "usernamePasswordCredential.password" });
   const { field: certificatePasswordField } = useController({ control, name: "certificateCredential.password" });
 
   return (
     <>
-      <Column className="column is-half">
-        <InputField
-          label={t("scm-repository-mirror-plugin.form.username.label")}
-          helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
-          disabled={isReadonly}
-          {...usernameField}
+      <Column className="column is-full">
+        <Checkbox
+          label={t("scm-repository-mirror-plugin.form.withBaseAuth.label")}
+          onChange={setShowBaseAuthCredentials}
+          checked={showBaseAuthCredentials}
         />
       </Column>
-      <Column className="column is-half">
-        <InputField
-          label={t("scm-repository-mirror-plugin.form.password.label")}
-          type="password"
-          helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
-          disabled={isReadonly}
-          {...passwordField}
+      {showBaseAuthCredentials ? (
+        <>
+          <Column className="column is-half">
+            <InputField
+              label={t("scm-repository-mirror-plugin.form.username.label")}
+              helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
+              disabled={isReadonly}
+              {...usernameField}
+            />
+          </Column>
+          <Column className="column is-half">
+            <InputField
+              label={t("scm-repository-mirror-plugin.form.password.label")}
+              type="password"
+              helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
+              disabled={isReadonly}
+              {...passwordField}
+            />
+          </Column>
+        </>
+      ) : null}
+      <Column className="column is-full">
+        <Checkbox
+          label={t("scm-repository-mirror-plugin.form.withKeyAuth.label")}
+          onChange={setShowKeyAuthCredentials}
+          checked={showKeyAuthCredentials}
         />
       </Column>
-      <Column className="column is-half">
-        <FileInputControl control={control} isReadonly={isReadonly} />
-      </Column>
-      <Column className="column is-half">
-        <InputField
-          label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
-          type="password"
-          helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
-          disabled={isReadonly}
-          {...certificatePasswordField}
-        />
-      </Column>
+      {showKeyAuthCredentials ? (
+        <>
+          <Column className="column is-half">
+            <FileInputControl control={control} isReadonly={isReadonly} />
+          </Column>
+          <Column className="column is-half">
+            <InputField
+              label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
+              type="password"
+              helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
+              disabled={isReadonly}
+              {...certificatePasswordField}
+            />
+          </Column>
+        </>
+      ) : null}
     </>
   );
 };
@@ -149,7 +211,7 @@ export const createPeriodOptions: (t: (key: string) => string) => SelectItem[] =
   }
 ];
 
-export const SynchronizationPeriodControl: FC<ControlProps> = ({ control, isReadonly }) => {
+export const SynchronizationPeriodControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field } = useController({ control, name: "synchronizationPeriod", defaultValue: 60 });
 
@@ -166,7 +228,7 @@ export const SynchronizationPeriodControl: FC<ControlProps> = ({ control, isRead
   );
 };
 
-export const UrlControl: FC<ControlProps> = ({ control, isReadonly }) => {
+export const UrlControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field, fieldState } = useController({
     control,
@@ -208,4 +270,103 @@ export const coalesceFormValue = <T extends MirrorConfigurationDto>(value: T): T
   }
 
   return output as T;
+};
+
+const Columns = styled.div`
+  padding: 0.75rem 0 0;
+`;
+
+export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
+  const [t] = useTranslation("plugins");
+  const { field } = useController({ control, name: "allowedGpgKeys" });
+  const { register, handleSubmit, reset } = useForm<PublicKey>();
+
+  const deleteKey = (displayName: string) =>
+    field.onChange(field.value?.filter(key => key.displayName !== displayName) || []);
+  const addNewKey = (key: PublicKey) => {
+    field.onChange([...(field.value || []), key]);
+    reset();
+  };
+
+  return (
+    <>
+      <table className="card-table table is-hoverable is-fullwidth">
+        <tr>
+          <th>{t("scm-repository-mirror-plugin.form.keyList.displayName")}</th>
+          <th className="is-hidden-mobile">{t("scm-repository-mirror-plugin.form.keyList.raw")}</th>
+          <th />
+        </tr>
+        {field.value?.map(({ raw, displayName }, index) => (
+          <tr key={index}>
+            <td>{displayName}</td>
+            <td>{raw}</td>
+            <td>
+              <button onClick={() => deleteKey(displayName)}>
+                <span className="icon">
+                  <Icon name="trash" title={t("scm-repository-mirror-plugin.form.keyList.delete")} color="inherit" />
+                </span>
+              </button>
+            </td>
+          </tr>
+        ))}
+      </table>
+      {field.value?.length === 0 ? (
+        <div className="notification is-primary">
+          {t("scm-repository-mirror-plugin.form.keyList.emptyNotification")}
+        </div>
+      ) : null}
+      {isReadonly ? null : (
+        <>
+          <Columns>
+            <Column>
+              <InputField
+                label={t("scm-repository-mirror-plugin.form.keyList.new.displayName.label")}
+                helpText={t("scm-repository-mirror-plugin.form.keyList.new.displayName.helpText")}
+                {...register("displayName")}
+              />
+              <Textarea
+                label={t("scm-repository-mirror-plugin.form.keyList.new.raw.label")}
+                helpText={t("scm-repository-mirror-plugin.form.keyList.new.raw.helpText")}
+                {...register("raw")}
+              />
+            </Column>
+          </Columns>
+          <Level
+            right={
+              <SubmitButton
+                action={handleSubmit(addNewKey)}
+                label={t("scm-repository-mirror-plugin.form.keyList.new.submit")}
+              />
+            }
+          />
+        </>
+      )}
+    </>
+  );
+};
+
+export const createGpgVerificationTypeOptions: (t: (key: string) => string) => SelectItem[] = t =>
+  mirrorGpgVerificationTypes.map(mirrorGpgVerificationType => ({
+    label: t(
+      `scm-repository-mirror-plugin.form.gpgVerificationType.options.${mirrorGpgVerificationType.toLowerCase()}`
+    ),
+    value: mirrorGpgVerificationType
+  }));
+
+export const GpgVerificationControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
+  const [t] = useTranslation("plugins");
+  const { field: verificationTypeField } = useController({ control, name: "gpgVerificationType" });
+  const showKeyList = verificationTypeField.value === "KEY_LIST";
+  return (
+    <>
+      <Select
+        label={t("scm-repository-mirror-plugin.form.gpgVerificationType.label")}
+        helpText={t("scm-repository-mirror-plugin.form.gpgVerificationType.helpText")}
+        disabled={isReadonly}
+        options={createGpgVerificationTypeOptions(t)}
+        {...verificationTypeField}
+      />
+      {showKeyList ? <PublicKeysControl control={control} isReadonly={isReadonly} /> : null}
+    </>
+  );
 };

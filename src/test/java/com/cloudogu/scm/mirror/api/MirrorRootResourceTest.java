@@ -83,11 +83,15 @@ class MirrorRootResourceTest {
   private RepositoryManager repositoryManager;
   @Mock
   private MirrorConfigurationStore configurationStore;
+  @Mock
+  private GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper;
+  @Mock
+  private MirrorConfigurationToConfigurationDtoMapper configurationToConfigurationDtoMapper;
 
   @BeforeEach
   void initResource() {
-    MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, forUri("/"));
-    dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService));
+    MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, configurationToConfigurationDtoMapper);
+    dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService, configurationStore, toDtoMapper));
   }
 
   @Nested
@@ -181,7 +185,7 @@ class MirrorRootResourceTest {
   void shouldFailToSetConfigurationForMissingRepository() throws URISyntaxException {
     JsonMockHttpRequest request = JsonMockHttpRequest
       .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
-      .json("{'url':'http://hog/scm', 'synchronizationPeriod':42}");
+      .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'gpgVerificationType':'NONE'}");
     MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
@@ -202,6 +206,18 @@ class MirrorRootResourceTest {
     verify(configurationStore, never()).setConfiguration(any(), any());
   }
 
+  @Test
+  void shouldRetrieveGlobalConfigurationFromService() throws URISyntaxException {
+    MockHttpRequest request = MockHttpRequest
+      .get("/v2/mirror/configuration");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(204);
+    verify(configurationStore).getGlobalConfiguration();
+  }
+
   @Nested
   @ExtendWith(ShiroExtension.class)
   class ForSingleRepository {
@@ -217,7 +233,7 @@ class MirrorRootResourceTest {
     void shouldSetUrlAndPeriodInConfiguration() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest
         .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
-        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42}");
+        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'gpgVerificationType':'NONE'}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);

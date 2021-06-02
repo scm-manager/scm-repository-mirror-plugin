@@ -24,27 +24,26 @@
 
 package com.cloudogu.scm.mirror;
 
-import org.apache.shiro.SecurityUtils;
-import sonia.scm.config.ConfigurationPermissions;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public final class MirrorPermissions {
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
-  public static final String PERMISSION = "mirror";
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement
+@EqualsAndHashCode
+public class RawGpgKey {
 
-  private MirrorPermissions() {
-  }
+  private String displayName;
+  private String raw;
 
-  static void checkRepositoryMirrorPermission(Repository repository) {
-    RepositoryPermissions.custom(PERMISSION, repository).check();
-  }
-
-  public static boolean hasRepositoryMirrorPermission(Repository repository) {
-    return RepositoryPermissions.custom(PERMISSION, repository).isPermitted();
-  }
-
-  public static boolean hasGlobalMirrorPermission() {
-    return ConfigurationPermissions.write(PERMISSION).isPermitted();
-  }
 }

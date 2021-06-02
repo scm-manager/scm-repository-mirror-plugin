@@ -21,30 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror.api;
 
-package com.cloudogu.scm.mirror;
+import com.cloudogu.scm.mirror.RawGpgKey;
+import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
-import org.apache.shiro.SecurityUtils;
-import sonia.scm.config.ConfigurationPermissions;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public final class MirrorPermissions {
+class RawGpgKeyToKeyDtoMapperTest {
 
-  public static final String PERMISSION = "mirror";
+  private RawGpgKeyToKeyDtoMapper mapper = Mappers.getMapper(RawGpgKeyToKeyDtoMapper.class);
 
-  private MirrorPermissions() {
+  @Test
+  void shouldMapRawGpgKeyToDto() {
+    RawGpgKey input = new RawGpgKey("foo", "bar");
+    final RawGpgKeyDto output = mapper.map(input);
+    assertThat(output.getDisplayName()).isEqualTo("foo");
+    assertThat(output.getRaw()).isEqualTo("bar");
   }
 
-  static void checkRepositoryMirrorPermission(Repository repository) {
-    RepositoryPermissions.custom(PERMISSION, repository).check();
-  }
-
-  public static boolean hasRepositoryMirrorPermission(Repository repository) {
-    return RepositoryPermissions.custom(PERMISSION, repository).isPermitted();
-  }
-
-  public static boolean hasGlobalMirrorPermission() {
-    return ConfigurationPermissions.write(PERMISSION).isPermitted();
-  }
 }

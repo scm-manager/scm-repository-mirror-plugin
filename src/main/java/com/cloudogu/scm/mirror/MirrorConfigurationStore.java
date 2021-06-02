@@ -24,6 +24,8 @@
 
 package com.cloudogu.scm.mirror;
 
+import com.google.common.base.Strings;
+import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.Initable;
@@ -37,6 +39,8 @@ import sonia.scm.web.security.AdministrationContext;
 import javax.inject.Inject;
 import java.util.Optional;
 
+import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
+
 public class MirrorConfigurationStore implements Initable {
 
   public static final String DUMMY_PASSWORD = "_DUMMY_";
@@ -44,6 +48,7 @@ public class MirrorConfigurationStore implements Initable {
   private static final Logger LOG = LoggerFactory.getLogger(MirrorConfigurationStore.class);
 
   private final ConfigurationStoreFactory storeFactory;
+  private final ConfigurationStore<GlobalMirrorConfiguration> globalStore;
   private final MirrorScheduler scheduler;
   private final RepositoryManager repositoryManager;
   private final AdministrationContext administrationContext;
@@ -56,15 +61,16 @@ public class MirrorConfigurationStore implements Initable {
     this.repositoryManager = repositoryManager;
     this.administrationContext = administrationContext;
     this.privilegedMirrorRunner = privilegedMirrorRunner;
+    this.globalStore = storeFactory.withType(GlobalMirrorConfiguration.class).withName(STORE_NAME).build();
   }
 
   public Optional<MirrorConfiguration> getConfiguration(Repository repository) {
-    MirrorPermissions.checkMirrorPermission(repository);
+    MirrorPermissions.checkRepositoryMirrorPermission(repository);
     return createConfigurationStore(repository).getOptional();
   }
 
   public void setConfiguration(Repository repository, MirrorConfiguration configuration) {
-    MirrorPermissions.checkMirrorPermission(repository);
+    MirrorPermissions.checkRepositoryMirrorPermission(repository);
     LOG.debug("setting new configuration for repository {}", repository);
     privilegedMirrorRunner.exceptedFromReadOnly(
       () -> {
@@ -79,6 +85,13 @@ public class MirrorConfigurationStore implements Initable {
   }
 
   private void updateWithExisting(MirrorConfiguration existingConfig, MirrorConfiguration configuration) {
+    if (Strings.isNullOrEmpty(configuration.getUrl())) {
+      configuration.setUrl(existingConfig.getUrl());
+    } else {
+      doThrow()
+        .violation("url must not be changed", "url")
+        .when(!existingConfig.getUrl().equals(configuration.getUrl()));
+    }
     if (shouldUpdatePasswordWithExisting(existingConfig, configuration)) {
       LOG.trace("keeping password for username from existing configuration");
       configuration.getUsernamePasswordCredential().setPassword(existingConfig.getUsernamePasswordCredential().getPassword());
@@ -99,6 +112,14 @@ public class MirrorConfigurationStore implements Initable {
     return createConfigurationStore(repositoryId)
       .getOptional()
       .isPresent();
+  }
+
+  public GlobalMirrorConfiguration getGlobalConfiguration() {
+    return globalStore.getOptional().orElse(new GlobalMirrorConfiguration());
+  }
+
+  public void setGlobalConfiguration(GlobalMirrorConfiguration globalConfig) {
+    globalStore.set(globalConfig);
   }
 
   @Override

@@ -21,21 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.MirrorConfiguration;
-import com.cloudogu.scm.mirror.MirrorConfigurationStore;
+import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorPermissions;
 import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.Links;
-import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
-import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -44,49 +40,36 @@ import java.util.List;
 
 import static de.otto.edison.hal.Link.link;
 
-@Mapper(uses = RawGpgKeyToKeyDtoMapper.class)
-public abstract class MirrorConfigurationToConfigurationDtoMapper {
+@Mapper( uses = RawGpgKeyToKeyDtoMapper.class)
+public abstract class GlobalMirrorConfigurationToGlobalConfigurationDtoMapper {
 
   @Inject
   Provider<ScmPathInfoStore> scmPathInfoStore;
 
   @Mapping(ignore = true, target = "attributes")
-  abstract MirrorConfigurationDto map(MirrorConfiguration configuration, @Context Repository repository);
+  abstract GlobalMirrorConfigurationDto map(GlobalMirrorConfiguration configuration);
 
   @Mapping(target = "branchesAndTagsPatterns")
   String map(List<String> value) {
     return String.join(",", value);
   }
 
-  @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
-  abstract MirrorConfigurationDto.UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
-
-  @Mapping(target = "certificate", expression = "java(null)")
-  @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
-  abstract MirrorConfigurationDto.CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
-
   @ObjectFactory
-  MirrorConfigurationDto createConfigurationDto(@Context Repository repository) {
-    return new MirrorConfigurationDto(createLinks(repository));
+  GlobalMirrorConfigurationDto createGlobalConfigurationDto() {
+    String configurationUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class)
+      .method("getGlobalMirrorConfiguration")
+      .parameters()
+      .href();
+    return new GlobalMirrorConfigurationDto(createLinks(configurationUrl));
   }
 
-  private Links createLinks(Repository repository) {
-    String configurationUrl = createUrl(repository, "getMirrorConfiguration");
-    String manualSyncUrl = createUrl(repository, "syncMirror");
-
-    Links.Builder builder = Links.linkingTo().self(configurationUrl);
-    if (MirrorPermissions.hasRepositoryMirrorPermission(repository)) {
+  private Links createLinks(String configurationUrl) {
+    Links.Builder builder = Links.linkingTo();
+    if (MirrorPermissions.hasGlobalMirrorPermission()) {
+      builder.self(configurationUrl);
       builder.single(link("update", configurationUrl));
-      builder.single(link("syncMirror", manualSyncUrl));
     }
     return builder.build();
-  }
-
-  private String createUrl(Repository repository, String methodName) {
-    return new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
-      .method("repository").parameters(repository.getNamespace(), repository.getName())
-      .method(methodName).parameters()
-      .href();
   }
 
   @VisibleForTesting
