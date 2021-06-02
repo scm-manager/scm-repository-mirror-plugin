@@ -21,21 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
-import com.google.common.base.Splitter;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import { apiClient } from "@scm-manager/ui-components";
+import { Link, Repository } from "@scm-manager/ui-types";
+import { useQuery } from "react-query";
+import { LogCollection } from "./types";
 
-import java.util.List;
+const createCacheKey = (repository: Repository) => {
+  return ["repository", repository.namespace, repository.name, "mirror-logs"];
+};
 
-@Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
-public abstract class GlobalMirrorConfigurationDtoToGlobalConfigurationMapper {
-  abstract GlobalMirrorConfiguration map(GlobalMirrorConfigurationDto configurationDto);
+const fetchMirrorLogs = (link: string) => {
+  return apiClient.get(link).then(res => res.json());
+};
 
-  @Mapping(target = "branchesAndTagsPatterns")
-  List<String> map(String value) {
-    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
+const useMirrorLogs = (repository: Repository) => {
+  const link = (repository._links["mirrorLogs"] as Link)?.href;
+  if (!link) {
+    throw new Error("repository has not mirror logs");
   }
-}
+  const { error, isLoading, data } = useQuery<LogCollection, Error>(createCacheKey(repository), () =>
+    fetchMirrorLogs(link)
+  );
+
+  return {
+    error,
+    isLoading,
+    data
+  };
+};
+
+export default useMirrorLogs;

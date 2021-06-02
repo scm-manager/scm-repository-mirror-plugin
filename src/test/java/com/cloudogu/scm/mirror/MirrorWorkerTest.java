@@ -27,6 +27,7 @@ package com.cloudogu.scm.mirror;
 import com.cloudogu.scm.mirror.MirrorConfiguration.CertificateCredential;
 import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import com.google.common.collect.ImmutableList;
+import com.google.inject.util.Providers;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -55,6 +56,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static com.cloudogu.scm.mirror.MirrorStatus.Result.SUCCESS;
+import static com.google.inject.util.Providers.of;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
@@ -111,7 +113,7 @@ class MirrorWorkerTest {
         return null;
       }
     ).when(privilegedMirrorRunner).exceptedFromReadOnly(any());
-    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, privilegedMirrorRunner, notificationSender, eventBus);
+    worker = new MirrorWorker(repositoryServiceFactory, new SimpleMeterRegistry(), executor, statusStore, of(privilegedMirrorRunner), notificationSender, eventBus);
   }
 
   @Test
@@ -172,7 +174,7 @@ class MirrorWorkerTest {
         verify(notificationSender).send(argThat(n -> {
             assertThat(n.getMessage()).isEqualTo("mirrorSuccess");
             assertThat(n.getType()).isEqualTo(Type.SUCCESS);
-            assertThat(n.getLink()).isEqualTo("/repo/" + repository.getNamespaceAndName() + "/settings/general");
+            assertThat(n.getLink()).isEqualTo("/repo/" + repository.getNamespaceAndName() + "/mirror-logs");
             return true;
           }),
           eq("trillian")
@@ -204,7 +206,7 @@ class MirrorWorkerTest {
           verify(notificationSender).send(argThat(n -> {
               assertThat(n.getMessage()).isEqualTo("mirrorFailed");
               assertThat(n.getType()).isEqualTo(Type.ERROR);
-              assertThat(n.getLink()).isEqualTo("/repo/" + repository.getNamespaceAndName() + "/settings/general");
+              assertThat(n.getLink()).isEqualTo("/repo/" + repository.getNamespaceAndName() + "/mirror-logs");
               return true;
             }),
             eq("trillian")

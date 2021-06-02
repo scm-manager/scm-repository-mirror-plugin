@@ -21,21 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
-import com.google.common.base.Splitter;
+import com.cloudogu.scm.mirror.LogEntry;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import java.time.Duration;
 
-import java.util.List;
+@Mapper
+public interface LogEntryMapper {
 
-@Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
-public abstract class GlobalMirrorConfigurationDtoToGlobalConfigurationMapper {
-  abstract GlobalMirrorConfiguration map(GlobalMirrorConfigurationDto configurationDto);
+  LogEntryDto map(LogEntry entry);
 
-  @Mapping(target = "branchesAndTagsPatterns")
-  List<String> map(String value) {
-    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
+  default long map(Duration duration) {
+    return duration.toMillis();
   }
 }

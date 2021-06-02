@@ -42,7 +42,7 @@ import {
   MemberNameTagGroup,
   Select,
   SelectItem,
-  SubmitButton,
+  Button,
   Textarea
 } from "@scm-manager/ui-components";
 import { useUserSuggestions } from "@scm-manager/ui-api";
@@ -57,7 +57,7 @@ const Column = styled.div`
 export type MirrorConfigControlProps = { control: Control<MirrorConfigurationDto>; isReadonly: boolean };
 export type MirrorVerificationConfigControlProps = {
   control: Control<MirrorVerificationConfigurationDto>;
-  isReadonly: boolean;
+  isReadonly?: boolean;
 };
 
 export const ManagingUsersControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
@@ -272,14 +272,14 @@ export const coalesceFormValue = <T extends MirrorConfigurationDto>(value: T): T
   return output as T;
 };
 
-const Columns = styled.div`
-  padding: 0.75rem 0 0;
+const VerticalAlignCell = styled.td`
+  vertical-align: middle !important;
 `;
 
 export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field } = useController({ control, name: "allowedGpgKeys" });
-  const { register, handleSubmit, reset } = useForm<PublicKey>();
+  const { register, handleSubmit, reset, formState } = useForm<PublicKey>();
 
   const deleteKey = (displayName: string) =>
     field.onChange(field.value?.filter(key => key.displayName !== displayName) || []);
@@ -290,51 +290,52 @@ export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ co
 
   return (
     <>
-      <table className="card-table table is-hoverable is-fullwidth">
-        <tr>
-          <th>{t("scm-repository-mirror-plugin.form.keyList.displayName")}</th>
-          <th className="is-hidden-mobile">{t("scm-repository-mirror-plugin.form.keyList.raw")}</th>
-          <th />
-        </tr>
-        {field.value?.map(({ raw, displayName }, index) => (
-          <tr key={index}>
-            <td>{displayName}</td>
-            <td>{raw}</td>
-            <td>
-              <button onClick={() => deleteKey(displayName)}>
-                <span className="icon">
-                  <Icon name="trash" title={t("scm-repository-mirror-plugin.form.keyList.delete")} color="inherit" />
-                </span>
-              </button>
-            </td>
-          </tr>
-        ))}
-      </table>
-      {field.value?.length === 0 ? (
+      {!field.value || field.value.length === 0 ? (
         <div className="notification is-primary">
           {t("scm-repository-mirror-plugin.form.keyList.emptyNotification")}
         </div>
-      ) : null}
+      ) : (
+        <table className="card-table table is-hoverable is-fullwidth">
+          <tr>
+            <th>{t("scm-repository-mirror-plugin.form.keyList.displayName")}</th>
+            <th />
+          </tr>
+          {field.value?.map(({ raw, displayName }, index) => (
+            <tr key={index}>
+              <VerticalAlignCell>{displayName}</VerticalAlignCell>
+              <td className="has-text-right">
+                <button className="button" onClick={() => deleteKey(displayName)}>
+                  <span className="icon">
+                    <Icon name="trash" title={t("scm-repository-mirror-plugin.form.keyList.delete")} color="inherit" />
+                  </span>
+                </button>
+              </td>
+            </tr>
+          ))}
+        </table>
+      )}
       {isReadonly ? null : (
         <>
-          <Columns>
-            <Column>
-              <InputField
-                label={t("scm-repository-mirror-plugin.form.keyList.new.displayName.label")}
-                helpText={t("scm-repository-mirror-plugin.form.keyList.new.displayName.helpText")}
-                {...register("displayName")}
-              />
-              <Textarea
-                label={t("scm-repository-mirror-plugin.form.keyList.new.raw.label")}
-                helpText={t("scm-repository-mirror-plugin.form.keyList.new.raw.helpText")}
-                {...register("raw")}
-              />
-            </Column>
-          </Columns>
+          <h5 className="subtitle is-5">{t("scm-repository-mirror-plugin.form.keyList.new.title")}</h5>
+          <InputField
+            label={t("scm-repository-mirror-plugin.form.keyList.new.displayName.label")}
+            helpText={t("scm-repository-mirror-plugin.form.keyList.new.displayName.helpText")}
+            {...register("displayName", {
+              required: true
+            })}
+          />
+          <Textarea
+            label={t("scm-repository-mirror-plugin.form.keyList.new.raw.label")}
+            helpText={t("scm-repository-mirror-plugin.form.keyList.new.raw.helpText")}
+            {...register("raw", {
+              required: true
+            })}
+          />
           <Level
             right={
-              <SubmitButton
+              <Button
                 action={handleSubmit(addNewKey)}
+                disabled={!formState.isValid}
                 label={t("scm-repository-mirror-plugin.form.keyList.new.submit")}
               />
             }
@@ -355,7 +356,7 @@ export const createGpgVerificationTypeOptions: (t: (key: string) => string) => S
 
 export const GpgVerificationControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
-  const { field: verificationTypeField } = useController({ control, name: "gpgVerificationType" });
+  const { field: verificationTypeField } = useController({ control, name: "gpgVerificationType", defaultValue: "NONE" });
   const showKeyList = verificationTypeField.value === "KEY_LIST";
   return (
     <>

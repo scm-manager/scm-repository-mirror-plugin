@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { Level, SubmitButton } from "@scm-manager/ui-components";
+import { InputField, Level, SubmitButton } from "@scm-manager/ui-components";
 import React, { FC, useEffect, useState } from "react";
 import { MirrorConfigurationDto, MirrorRequestDto } from "./types";
 import { useForm } from "react-hook-form";
@@ -30,7 +30,13 @@ import { RepositoryCreation } from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { extensionPoints } from "@scm-manager/ui-extensions";
-import { coalesceFormValue, CredentialsControl, SynchronizationPeriodControl, UrlControl } from "./config/FormControls";
+import {
+  coalesceFormValue,
+  CredentialsControl,
+  GpgVerificationControl,
+  SynchronizationPeriodControl,
+  UrlControl
+} from "./config/FormControls";
 
 const Column = styled.div`
   padding: 0 0.75rem;
@@ -43,7 +49,7 @@ const Columns = styled.div`
 
 type Props = {
   onSubmit: (output: MirrorRequestDto) => void;
-  disabled?: boolean;
+  disabled: boolean;
   InformationForm: extensionPoints.RepositoryCreatorComponentProps["informationForm"];
   NameForm: extensionPoints.RepositoryCreatorComponentProps["nameForm"];
   repositoryType: string;
@@ -51,7 +57,7 @@ type Props = {
 
 const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, NameForm, InformationForm }) => {
   const [t] = useTranslation("plugins");
-  const { handleSubmit, formState, watch, control } = useForm<MirrorConfigurationDto>({
+  const { handleSubmit, formState, watch, control, register } = useForm<MirrorConfigurationDto>({
     mode: "onChange"
   });
   const [repository, setRepository] = useState<RepositoryCreation>({
@@ -105,6 +111,15 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
         disabled={disabled}
         setValid={(contact: boolean) => setValid({ ...valid, contact })}
       />
+      <hr />
+      <h4 className="subtitle is-4">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h4>
+      <InputField
+        label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
+        helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
+        disabled={disabled}
+        {...register("branchesAndTagsPatterns")}
+      />
+      <GpgVerificationControl control={control} isReadonly={disabled} />
       <Level
         right={
           <SubmitButton

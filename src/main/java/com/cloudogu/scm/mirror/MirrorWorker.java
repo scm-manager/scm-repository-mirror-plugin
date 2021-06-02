@@ -42,6 +42,8 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +56,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+@Singleton
 class MirrorWorker {
 
   private static final Logger LOG = LoggerFactory.getLogger(MirrorWorker.class);
@@ -61,7 +64,7 @@ class MirrorWorker {
   private final RepositoryServiceFactory repositoryServiceFactory;
   private final ScheduledExecutorService executor;
   private final MirrorStatusStore statusStore;
-  private final PrivilegedMirrorRunner privilegedMirrorRunner;
+  private final Provider<PrivilegedMirrorRunner> privilegedMirrorRunner;
   private final NotificationSender notificationSender;
   private final ScmEventBus eventBus;
 
@@ -71,7 +74,7 @@ class MirrorWorker {
   MirrorWorker(RepositoryServiceFactory repositoryServiceFactory,
                MeterRegistry registry,
                MirrorStatusStore statusStore,
-               PrivilegedMirrorRunner privilegedMirrorRunner,
+               Provider<PrivilegedMirrorRunner> privilegedMirrorRunner,
                NotificationSender notificationSender, ScmEventBus eventBus) {
     this(repositoryServiceFactory, registry, Executors.newScheduledThreadPool(4), statusStore, privilegedMirrorRunner, notificationSender, eventBus);
   }
@@ -81,7 +84,7 @@ class MirrorWorker {
                MeterRegistry registry,
                ScheduledExecutorService executor,
                MirrorStatusStore statusStore,
-               PrivilegedMirrorRunner privilegedMirrorRunner,
+               Provider<PrivilegedMirrorRunner> privilegedMirrorRunner,
                NotificationSender notificationSender, ScmEventBus eventBus) {
     this.repositoryServiceFactory = repositoryServiceFactory;
     this.executor = executor;
@@ -93,7 +96,7 @@ class MirrorWorker {
   }
 
   void startInitialSync(Repository repository, MirrorConfiguration configuration) {
-    privilegedMirrorRunner.exceptedFromReadOnly(() -> statusStore.setStatus(repository, MirrorStatus.initialStatus()));
+    privilegedMirrorRunner.get().exceptedFromReadOnly(() -> statusStore.setStatus(repository, MirrorStatus.initialStatus()));
     LOG.info("enqueuing initial sync for mirror {} from url {}", repository, configuration.getUrl());
     startAsynchronously(repository, configuration, MirrorCommandBuilder::initialCall);
   }
@@ -107,7 +110,13 @@ class MirrorWorker {
     LOG.info("scheduling update for mirror {} from url {} in {} minutes every {} minutes", repository, configuration.getUrl(), delay, configuration.getSynchronizationPeriod());
     ScheduledFuture<?> scheduledFuture =
       executor.scheduleAtFixedRate(
-        () -> privilegedMirrorRunner.exceptedFromReadOnly(() -> startSynchronously(repository, configuration, MirrorCommandBuilder::update)),
+        () -> {
+          try {
+            privilegedMirrorRunner.get().exceptedFromReadOnly(() -> startSynchronously(repository, configuration, MirrorCommandBuilder::update));
+          } catch (Exception e) {
+            LOG.error("got exception running scheduled mirror call", e);
+          }
+        },
         delay,
         configuration.getSynchronizationPeriod(),
         TimeUnit.MINUTES);
@@ -120,7 +129,13 @@ class MirrorWorker {
   private void startAsynchronously(Repository repository, MirrorConfiguration configuration, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
     // TODO Shiro context should either be set to admin or inherit the current subject
     executor.submit(
-      () -> privilegedMirrorRunner.exceptedFromReadOnly(() -> startSynchronously(repository, configuration, callback))
+      () -> {
+        try {
+          privilegedMirrorRunner.get().exceptedFromReadOnly(() -> startSynchronously(repository, configuration, callback));
+        } catch (Exception e) {
+          LOG.error("got exception running asynchronous mirror call", e);
+        }
+      }
     );
   }
 
@@ -168,7 +183,7 @@ class MirrorWorker {
   }
 
   private Notification buildNotification(Repository repository, Type error, String mirrorFailed) {
-    return new Notification(error, "/repo/" + repository.getNamespaceAndName() + "/settings/general", mirrorFailed);
+    return new Notification(error, "/repo/" + repository.getNamespaceAndName() + "/mirror-logs", mirrorFailed);
   }
 
   private MirrorStatus.Result getLatestStatus(Repository repository) {

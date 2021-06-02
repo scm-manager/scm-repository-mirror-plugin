@@ -21,21 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
-import com.google.common.base.Splitter;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import React, { FC } from "react";
+import { SecondaryNavigationItem } from "@scm-manager/ui-components";
+import { useTranslation } from "react-i18next";
 
-import java.util.List;
+type Props = {
+  url: string;
+};
 
-@Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
-public abstract class GlobalMirrorConfigurationDtoToGlobalConfigurationMapper {
-  abstract GlobalMirrorConfiguration map(GlobalMirrorConfigurationDto configurationDto);
+const LogNavLink: FC<Props> = ({ url }) => {
+  const [t] = useTranslation("plugins");
+  return (
+    <SecondaryNavigationItem
+      to={`${url}/mirror-logs`}
+      icon="fas fa-copy"
+      label={t("scm-repository-mirror-plugin.logs.navLink")}
+      title={t("scm-repository-mirror-plugin.logs.navLink")}
+    />
+  );
+};
 
-  @Mapping(target = "branchesAndTagsPatterns")
-  List<String> map(String value) {
-    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
-  }
-}
+export default LogNavLink;

@@ -36,10 +36,13 @@ import sonia.scm.store.ConfigurationStoreFactory;
 import sonia.scm.web.security.AdministrationContext;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 import java.util.Optional;
 
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
+@Singleton
 public class MirrorConfigurationStore implements Initable {
 
   public static final String DUMMY_PASSWORD = "_DUMMY_";
@@ -51,10 +54,10 @@ public class MirrorConfigurationStore implements Initable {
   private final MirrorScheduler scheduler;
   private final RepositoryManager repositoryManager;
   private final AdministrationContext administrationContext;
-  private final PrivilegedMirrorRunner privilegedMirrorRunner;
+  private final Provider<PrivilegedMirrorRunner> privilegedMirrorRunner;
 
   @Inject
-  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory, MirrorScheduler scheduler, RepositoryManager repositoryManager, AdministrationContext administrationContext, PrivilegedMirrorRunner privilegedMirrorRunner) {
+  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory, MirrorScheduler scheduler, RepositoryManager repositoryManager, AdministrationContext administrationContext, Provider<PrivilegedMirrorRunner> privilegedMirrorRunner) {
     this.storeFactory = storeFactory;
     this.scheduler = scheduler;
     this.repositoryManager = repositoryManager;
@@ -71,7 +74,7 @@ public class MirrorConfigurationStore implements Initable {
   public void setConfiguration(Repository repository, MirrorConfiguration configuration) {
     MirrorPermissions.checkRepositoryMirrorPermission(repository);
     LOG.debug("setting new configuration for repository {}", repository);
-    privilegedMirrorRunner.exceptedFromReadOnly(
+    privilegedMirrorRunner.get().exceptedFromReadOnly(
       () -> {
         ConfigurationStore<MirrorConfiguration> store = createConfigurationStore(repository);
         store.getOptional().ifPresent(

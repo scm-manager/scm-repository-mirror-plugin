@@ -21,21 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
-import com.google.common.base.Splitter;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import React, {FC} from "react";
+import {Repository} from "@scm-manager/ui-types";
+import {Route} from "react-router-dom";
+import Logs from "./Logs";
 
-import java.util.List;
+type Props = {
+  url: string;
+  repository: Repository;
+};
 
-@Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
-public abstract class GlobalMirrorConfigurationDtoToGlobalConfigurationMapper {
-  abstract GlobalMirrorConfiguration map(GlobalMirrorConfigurationDto configurationDto);
+const LogRoute: FC<Props> = ({url, repository}) => (
+  <Route path={`${url}/mirror-logs`} exact>
+    <Logs repository={repository}/>
+  </Route>
+);
 
-  @Mapping(target = "branchesAndTagsPatterns")
-  List<String> map(String value) {
-    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
-  }
-}
+export default LogRoute;

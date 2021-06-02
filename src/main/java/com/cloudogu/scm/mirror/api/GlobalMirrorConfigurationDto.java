@@ -33,6 +33,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @NoArgsConstructor
+@SuppressWarnings("java:S2160") // equals not needed here
 public class GlobalMirrorConfigurationDto extends MirrorVerificationConfigurationDto {
 
   @NotNull

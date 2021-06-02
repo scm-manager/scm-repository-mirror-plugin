@@ -21,21 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
-import com.google.common.base.Splitter;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import de.otto.edison.hal.HalRepresentation;
+import lombok.Getter;
+import lombok.Setter;
+import sonia.scm.repository.api.MirrorCommandResult.ResultType;
 
+import java.time.Instant;
 import java.util.List;
 
-@Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
-public abstract class GlobalMirrorConfigurationDtoToGlobalConfigurationMapper {
-  abstract GlobalMirrorConfiguration map(GlobalMirrorConfigurationDto configurationDto);
+@Getter
+@Setter
+@SuppressWarnings("java:S2160") // we don't need equals for dto
+public class LogEntryDto extends HalRepresentation {
 
-  @Mapping(target = "branchesAndTagsPatterns")
-  List<String> map(String value) {
-    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
-  }
+  private ResultType result;
+  private long duration;
+  private Instant finishedAt;
+  private List<String> log;
+
 }

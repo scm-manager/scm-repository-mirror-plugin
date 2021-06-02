@@ -61,7 +61,9 @@ public class RepositoryEnricher implements HalEnricher {
     if (configurationService.hasConfiguration(repository.getId())) {
       appendStatusEmbedded(appender, repository);
       if (MirrorPermissions.hasRepositoryMirrorPermission(repository)) {
-        appendConfigurationLink(appender, repository);
+        LinkBuilder linkBuilder = linkBuilder(repository);
+        appendConfigurationLink(appender, linkBuilder);
+        appendLogsLink(appender, linkBuilder);
       }
     }
   }
@@ -71,11 +73,18 @@ public class RepositoryEnricher implements HalEnricher {
     appender.appendEmbedded("mirrorStatus", new MirrorStatusDto(status.getResult()));
   }
 
-  private void appendConfigurationLink(HalAppender appender, Repository repository) {
-    String configurationUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
-      .method("repository").parameters(repository.getNamespace(), repository.getName())
-      .method("getMirrorConfiguration").parameters()
-      .href();
+  private void appendConfigurationLink(HalAppender appender, LinkBuilder linkBuilder) {
+    String configurationUrl = linkBuilder.method("getMirrorConfiguration").parameters().href();
     appender.appendLink("mirrorConfiguration", configurationUrl);
+  }
+
+  private void appendLogsLink(HalAppender appender, LinkBuilder linkBuilder) {
+    String configurationUrl = linkBuilder.method("getLogs").parameters().href();
+    appender.appendLink("mirrorLogs", configurationUrl);
+  }
+
+  private LinkBuilder linkBuilder(Repository repository) {
+    return new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
+      .method("repository").parameters(repository.getNamespace(), repository.getName());
   }
 }

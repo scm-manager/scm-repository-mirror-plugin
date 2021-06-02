@@ -37,12 +37,14 @@ import sonia.scm.repository.RepositoryType;
 import sonia.scm.repository.api.Command;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import static java.util.Collections.singletonList;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
+@Singleton
 public class MirrorService {
 
   private static final Logger LOG = LoggerFactory.getLogger(MirrorService.class);

@@ -1,7 +1,8 @@
 {
   "scm-repository-mirror-plugin": {
     "settings": {
-      "navLink": "Spiegelung"
+      "navLink": "Spiegelung",
+      "title": "Globale Spiegel Konfiguration"
     },
     "create": {
       "subtitle": "Ein existierendes Repository spiegeln"
@@ -61,14 +62,68 @@
         "addButton": "Benutzer hinzufügen",
         "autocompletePlaceholder": "Nutzer zum Benachrichtigen hinzufügen"
       },
-      "manualSync": "Spiegelung jetzt aktualisieren"
+      "manualSync": "Spiegelung jetzt aktualisieren",
+      "keyList": {
+        "displayName": "Anzeigename",
+        "delete": "Löschen",
+        "emptyNotification": "Keine Schlüssel definiert",
+        "new": {
+          "title": "Neuer Schlüssel",
+          "displayName": {
+            "label": "Anzeigename",
+            "helpText": "Ein beschreibender Name für den Schlüssel."
+          },
+          "raw": {
+            "label": "Schlüssel",
+            "helpText": "Der eigentliche GPG Schlüssel"
+          },
+          "submit": "Schlüssel hinzufügen"
+        }
+      },
+      "gpgVerificationType": {
+        "options": {
+          "none": "Keine",
+          "signature": "Beliebeige Signatur",
+          "scm_user_signature": "Signatur eines SCM-Manager Users",
+          "key_list": "Vorgegebene Liste"
+        },
+        "label": "GPG Verifikation",
+        "helpText": "Definiert, ob bzw. wie Signaturen von Commits und Tags überprüft werden."
+      },
+      "httpsOnly": {
+        "label": "Nur HTTPS",
+        "helpText": "Es werden nur HTTPS URLs akzeptiert."
+      },
+      "branchesAndTagsPatterns": {
+        "label": "Branches und Tags",
+        "helpText": "Komma-separierte Liste mit glob Patterns die besagt, welche Branches und Tags gespiegelt werden sollen. Bei einer leeren Liste werden alle Branches bzw. Tags gespiegelt."
+      },
+      "verificationFilters": "Filter"
     },
     "flag": {
-      "label": "mirror",
+      "label": "Spiegel",
       "success": "Letzte Synchronisation erfolgreich",
       "rejectedUpdates": "Letzte Synchronisation teilweise fehlgeschlagen",
       "failed": "Letzte Synchronisation fehlgeschlagen",
       "notYetRun": "Noch nicht synchronisiert"
+    },
+    "logs": {
+      "navLink": "Protokoll der Spiegelung",
+      "subtitle": "Protokoll der Spiegelung",
+      "ok": {
+        "label": "erfolgreich",
+        "title": "Synchronisation erfolgreich"
+      },
+      "rejectedUpdates": {
+        "label": "teilweise",
+        "title": "Synchronisation teilweise erfolgreich"
+      },
+      "failed": {
+        "label": "fehlgeschlagen",
+        "title": "Synchronisation fehlgeschlagen"
+      },
+      "finishedAt": "<0/> beendet",
+      "duration": "dauerte <0/>"
     }
   },
   "notifications": {

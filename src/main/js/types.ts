@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { HalRepresentation, RepositoryCreation } from "@scm-manager/ui-types";
+import { HalRepresentation, HalRepresentationWithEmbedded, Embedded, RepositoryCreation } from "@scm-manager/ui-types";
 
 export type UsernamePasswordCredentialDto = {
   username: string;
@@ -61,3 +61,16 @@ export type PublicKey = HalRepresentation & {
   displayName: string;
   raw: string;
 };
+
+export type LogEntry = HalRepresentation & {
+  result: "OK" | "REJECTED_UPDATES" | "FAILED";
+  duration: number;
+  finishedAt: string;
+  log: string[];
+};
+
+type EmbeddedLogEntries = Embedded & {
+  entries: LogEntry[];
+};
+
+export type LogCollection = HalRepresentationWithEmbedded<EmbeddedLogEntries>;

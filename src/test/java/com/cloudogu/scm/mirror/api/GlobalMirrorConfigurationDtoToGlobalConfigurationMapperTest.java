@@ -39,7 +39,7 @@ class GlobalMirrorConfigurationDtoToGlobalConfigurationMapperTest {
   void shouldMapToDao() {
     GlobalMirrorConfigurationDto input = new GlobalMirrorConfigurationDto();
     input.setHttpsOnly(true);
-    input.setBranchesAndTagsPatterns("default,feature/*");
+    input.setBranchesAndTagsPatterns("default, feature/*, ,,");
     input.setGpgVerificationType(MirrorGpgVerificationType.KEY_LIST);
     input.setAllowedGpgKeys(ImmutableList.of(new RawGpgKeyDto("foo", "bar")));
 

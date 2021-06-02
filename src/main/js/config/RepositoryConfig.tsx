@@ -22,7 +22,14 @@
  * SOFTWARE.
  */
 import React, { FC, useEffect, useState } from "react";
-import { apiClient, Button, ConfigurationForm, ErrorNotification, Subtitle } from "@scm-manager/ui-components";
+import {
+  apiClient,
+  Button,
+  ConfigurationForm,
+  ErrorNotification,
+  InputField,
+  Subtitle
+} from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
 import { MirrorConfigurationDto } from "../types";
 import { useForm } from "react-hook-form";
@@ -30,12 +37,13 @@ import styled from "styled-components";
 import {
   coalesceFormValue,
   CredentialsControl,
+  GpgVerificationControl,
   ManagingUsersControl,
   SynchronizationPeriodControl,
   UrlControl
 } from "./FormControls";
 import { Link } from "@scm-manager/ui-types";
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const Columns = styled.div`
   padding: 0.75rem 0 0;
@@ -77,7 +85,7 @@ export const TriggerButton: FC<{ link: string }> = ({ link }) => {
 const RepositoryConfig: FC<Props> = ({ link }) => {
   const [t] = useTranslation("plugins");
   const { initialConfiguration, update, isReadonly, ...formProps } = useConfigLink<MirrorConfigurationDto>(link);
-  const { formState, handleSubmit, control, reset } = useForm<MirrorConfigurationDto>({
+  const { formState, handleSubmit, control, reset, register } = useForm<MirrorConfigurationDto>({
     mode: "onChange"
   });
 
@@ -104,6 +112,15 @@ const RepositoryConfig: FC<Props> = ({ link }) => {
         <SynchronizationPeriodControl control={control} isReadonly={isReadonly} />
         <ManagingUsersControl control={control} isReadonly={isReadonly} />
       </Columns>
+      <hr />
+      <h4 className="subtitle is-4">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h4>
+      <InputField
+        label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
+        helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
+        disabled={isReadonly}
+        {...register("branchesAndTagsPatterns")}
+      />
+      <GpgVerificationControl control={control} isReadonly={isReadonly} />
     </ConfigurationForm>
   );
 };

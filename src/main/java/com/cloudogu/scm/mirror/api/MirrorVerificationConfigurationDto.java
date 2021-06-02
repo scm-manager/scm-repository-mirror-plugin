@@ -24,13 +24,11 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorGpgVerificationType;
-import com.cloudogu.scm.mirror.RawGpgKey;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.checkerframework.common.value.qual.IntRange;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -38,6 +36,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@SuppressWarnings("java:S2160") // equals not needed here
 public class MirrorVerificationConfigurationDto extends HalRepresentation {
 
   private String branchesAndTagsPatterns;

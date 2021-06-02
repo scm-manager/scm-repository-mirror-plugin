@@ -25,10 +25,10 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfiguration;
+import com.google.common.base.Splitter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -42,7 +42,7 @@ abstract class MirrorConfigurationDtoToConfigurationMapper {
 
   @Mapping(target = "branchesAndTagsPatterns")
   List<String> map(String value) {
-    return Arrays.asList(value.split(","));
+    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
   }
 
   byte[] mapBase64(String base64encoded) {

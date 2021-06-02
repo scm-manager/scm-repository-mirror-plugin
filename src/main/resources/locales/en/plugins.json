@@ -1,7 +1,8 @@
 {
   "scm-repository-mirror-plugin": {
     "settings": {
-      "navLink": "Mirror"
+      "navLink": "Mirror",
+      "title": "Global Mirror Configuration"
     },
     "create": {
       "subtitle": "Mirror existing repository"
@@ -64,10 +65,10 @@
       "manualSync": "Refresh mirror now",
       "keyList": {
         "displayName": "Display Name",
-        "raw": "Raw",
         "delete": "Delete",
         "emptyNotification": "No keys defined yet",
         "new": {
+          "title": "New Key",
           "displayName": {
             "label": "Display Name",
             "helpText": "A descriptive name for the key."
@@ -87,7 +88,7 @@
           "key_list": "Pre-defined Key List"
         },
         "label": "GPG Verification Type",
-        "helpText": "Define if or how signatures on commits should be validated."
+        "helpText": "Define if or how signatures on commits and tags should be validated."
       },
       "httpsOnly": {
         "label": "HTTPS Only",
@@ -96,7 +97,8 @@
       "branchesAndTagsPatterns": {
         "label": "Branches and Tags",
         "helpText": "Comma-separated glob patterns describing which branches and/or tags should be mirrored. If left blank, all branches and tags will be mirrored."
-      }
+      },
+      "verificationFilters": "Filters"
     },
     "flag": {
       "label": "mirror",
@@ -104,6 +106,24 @@
       "rejectedUpdates": "Last synchronization partially failed",
       "failed": "Last synchronization failed",
       "notYetRun": "Not yet synchronized"
+    },
+    "logs": {
+      "navLink": "Mirror Log",
+      "subtitle": "Mirror Log",
+      "ok": {
+        "label": "success",
+        "title": "Synchronization successful"
+      },
+      "rejectedUpdates": {
+        "label": "partial",
+        "title": "Synchronization partial successful"
+      },
+      "failed": {
+        "label": "failed",
+        "title": "Synchronization failed"
+      },
+      "finishedAt": "finished <0/>",
+      "duration": "took <0/>"
     }
   },
   "notifications": {
