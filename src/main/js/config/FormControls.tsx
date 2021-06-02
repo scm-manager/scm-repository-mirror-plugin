@@ -279,7 +279,7 @@ const VerticalAlignCell = styled.td`
 export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field } = useController({ control, name: "allowedGpgKeys" });
-  const { register, handleSubmit, reset } = useForm<PublicKey>();
+  const { register, handleSubmit, reset, formState } = useForm<PublicKey>();
 
   const deleteKey = (displayName: string) =>
     field.onChange(field.value?.filter(key => key.displayName !== displayName) || []);
@@ -320,17 +320,22 @@ export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ co
           <InputField
             label={t("scm-repository-mirror-plugin.form.keyList.new.displayName.label")}
             helpText={t("scm-repository-mirror-plugin.form.keyList.new.displayName.helpText")}
-            {...register("displayName")}
+            {...register("displayName", {
+              required: true
+            })}
           />
           <Textarea
             label={t("scm-repository-mirror-plugin.form.keyList.new.raw.label")}
             helpText={t("scm-repository-mirror-plugin.form.keyList.new.raw.helpText")}
-            {...register("raw")}
+            {...register("raw", {
+              required: true
+            })}
           />
           <Level
             right={
               <Button
                 action={handleSubmit(addNewKey)}
+                disabled={!formState.isValid}
                 label={t("scm-repository-mirror-plugin.form.keyList.new.submit")}
               />
             }
