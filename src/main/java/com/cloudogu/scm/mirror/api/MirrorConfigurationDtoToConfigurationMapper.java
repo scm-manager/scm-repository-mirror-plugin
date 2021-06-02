@@ -26,11 +26,14 @@ package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.Base64;
 import java.util.List;
+
+import static java.util.Collections.emptyList;
 
 @Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
 abstract class MirrorConfigurationDtoToConfigurationMapper {
@@ -42,6 +45,9 @@ abstract class MirrorConfigurationDtoToConfigurationMapper {
 
   @Mapping(target = "branchesAndTagsPatterns")
   List<String> map(String value) {
+    if (Strings.isNullOrEmpty(value)) {
+      return emptyList();
+    }
     return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
   }
 

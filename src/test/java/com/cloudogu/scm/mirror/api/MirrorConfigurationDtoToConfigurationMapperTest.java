@@ -66,4 +66,15 @@ class MirrorConfigurationDtoToConfigurationMapperTest {
     assertThat(output.getAllowedGpgKeys().get(0).getRaw()).isEqualTo("bar");
   }
 
+  @Test
+  void shouldHandleEmptyPatternList() {
+    final MirrorConfigurationDto input = new MirrorConfigurationDto();
+    input.setUrl("https://foo.bar");
+    input.setBranchesAndTagsPatterns(null);
+    input.setGpgVerificationType(MirrorGpgVerificationType.NONE);
+
+    final MirrorConfiguration output = mapper.map(input);
+
+    assertThat(output.getBranchesAndTagsPatterns()).isEmpty();
+  }
 }
