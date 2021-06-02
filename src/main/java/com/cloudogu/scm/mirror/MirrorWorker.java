@@ -123,7 +123,6 @@ class MirrorWorker {
   }
 
   private void startAsynchronously(Repository repository, MirrorConfiguration configuration, Function<MirrorCommandBuilder, MirrorCommandResult> callback) {
-    // TODO Shiro context should either be set to admin or inherit the current subject
     executor.submit(
       () -> {
         try {
