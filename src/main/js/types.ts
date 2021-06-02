@@ -29,10 +29,18 @@ export type UsernamePasswordCredentialDto = {
   password: string;
 };
 
+export type UsernamePasswordCredentialForm = UsernamePasswordCredentialDto & {
+  enabled: boolean;
+};
+
 export type CertificateCredentialDto = {
   certificate: string;
   password: string;
 };
+
+export type CertificateCredentialForm = CertificateCredentialDto & {
+  enabled: boolean;
+}
 
 export type MirrorVerificationConfigurationDto = {
   branchesAndTagsPatterns: string;
@@ -40,7 +48,6 @@ export type MirrorVerificationConfigurationDto = {
   allowedGpgKeys?: PublicKey[];
   fastForwardOnly?: boolean;
 };
-
 export type MirrorConfigurationDto = HalRepresentation &
   MirrorVerificationConfigurationDto & {
     url: string;
@@ -49,6 +56,11 @@ export type MirrorConfigurationDto = HalRepresentation &
     usernamePasswordCredential?: UsernamePasswordCredentialDto;
     certificateCredential?: CertificateCredentialDto;
   };
+
+export type MirrorConfigurationForm = MirrorConfigurationDto & {
+  usernamePasswordCredential?: UsernamePasswordCredentialForm;
+  certificateCredential?: CertificateCredentialForm;
+}
 
 export type MirrorRequestDto = MirrorConfigurationDto & RepositoryCreation;
 
