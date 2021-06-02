@@ -63,7 +63,7 @@ export type PublicKey = HalRepresentation & {
 };
 
 export type LogEntry = HalRepresentation & {
-  success: boolean;
+  result: "OK" | "REJECTED_UPDATES" | "FAILED";
   duration: number;
   finishedAt: string;
   log: string[];

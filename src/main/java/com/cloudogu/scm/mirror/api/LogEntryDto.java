@@ -27,6 +27,7 @@ package com.cloudogu.scm.mirror.api;
 import de.otto.edison.hal.HalRepresentation;
 import lombok.Getter;
 import lombok.Setter;
+import sonia.scm.repository.api.MirrorCommandResult.ResultType;
 
 import java.time.Instant;
 import java.util.List;
@@ -36,7 +37,7 @@ import java.util.List;
 @SuppressWarnings("java:S2160") // we don't need equals for dto
 public class LogEntryDto extends HalRepresentation {
 
-  private boolean success;
+  private ResultType result;
   private long duration;
   private Instant finishedAt;
   private List<String> log;

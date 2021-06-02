@@ -42,11 +42,11 @@ type Props = {
   repository: Repository;
 };
 
-const SuccessTag = () => {
+const OkTag = () => {
   const [t] = useTranslation("plugins");
   return (
-    <RepositoryFlag color={"success"} title={t("scm-repository-mirror-plugin.logs.success.title")}>
-      {t("scm-repository-mirror-plugin.logs.success.label")}
+    <RepositoryFlag color={"success"} title={t("scm-repository-mirror-plugin.logs.ok.title")}>
+      {t("scm-repository-mirror-plugin.logs.ok.label")}
     </RepositoryFlag>
   );
 };
@@ -58,6 +58,32 @@ const FailedTag = () => {
       {t("scm-repository-mirror-plugin.logs.failed.label")}
     </RepositoryFlag>
   );
+};
+
+const RejectedUpdatesTag = () => {
+  const [t] = useTranslation("plugins");
+  return (
+    <RepositoryFlag color={"warning"} title={t("scm-repository-mirror-plugin.logs.rejectedUpdates.title")}>
+      {t("scm-repository-mirror-plugin.logs.rejectedUpdates.label")}
+    </RepositoryFlag>
+  );
+};
+
+type ResultTagProps = {
+  entry: LogEntry;
+};
+
+const ResultTag: FC<ResultTagProps> = ({ entry }) => {
+  switch (entry.result) {
+    case "OK":
+      return <OkTag />;
+    case "FAILED":
+      return <FailedTag />;
+    case "REJECTED_UPDATES":
+      return <RejectedUpdatesTag />;
+    default:
+      throw new Error("unknown result type " + entry.result);
+  }
 };
 
 type LogRowProps = {
@@ -98,7 +124,9 @@ const LogRow: FC<LogRowProps> = ({ entry, initialOpenState }) => {
         <Column minWidth={2}>
           <Icon name={open ? "angle-down" : "angle-right"} />
         </Column>
-        <Column minWidth={5}>{entry.success ? <SuccessTag /> : <FailedTag />}</Column>
+        <Column minWidth={5}>
+          <ResultTag entry={entry} />
+        </Column>
         <Column minWidth={15}>
           <Trans i18nKey="plugins:scm-repository-mirror-plugin.logs.finishedAt" components={[dateFromNow]} />
         </Column>

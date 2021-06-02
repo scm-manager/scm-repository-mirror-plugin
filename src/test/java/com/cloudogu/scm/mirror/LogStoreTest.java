@@ -36,6 +36,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.MirrorCommandResult;
+import sonia.scm.repository.api.MirrorCommandResult.ResultType;
 import sonia.scm.store.InMemoryByteDataStoreFactory;
 
 import java.time.Duration;
@@ -71,7 +72,7 @@ class LogStoreTest {
   @Test
   @SubjectAware(value = "trillian", permissions = "repository:mirror:42")
   void shouldStoreLogs() {
-    MirrorCommandResult result = result(true, 42, "awesome sync");
+    MirrorCommandResult result = result(ResultType.OK, 42, "awesome sync");
     MirrorSyncEvent event = new MirrorSyncEvent(heartOfGold, result);
 
     eventBus.post(event);
@@ -98,7 +99,7 @@ class LogStoreTest {
   @SubjectAware(value = "trillian", permissions = "repository:mirror:42")
   void shouldLimitStoreEntries() {
     for (int i=0; i<LogStore.ENTRY_LIMIT + 5; i++) {
-      MirrorCommandResult result = result(false, 21, "sync " + i);
+      MirrorCommandResult result = result(ResultType.FAILED, 21, "sync " + i);
       MirrorSyncEvent event = new MirrorSyncEvent(heartOfGold, result);
       eventBus.post(event);
     }
@@ -111,8 +112,8 @@ class LogStoreTest {
     assertThat(last.getLog()).containsOnly("sync 5");
   }
 
-  private MirrorCommandResult result(boolean success, long duration, String... logs) {
-    return new MirrorCommandResult(success, Arrays.asList(logs), Duration.ofMillis(duration));
+  private MirrorCommandResult result(ResultType result, long duration, String... logs) {
+    return new MirrorCommandResult(result, Arrays.asList(logs), Duration.ofMillis(duration));
   }
 
 }
