@@ -356,7 +356,7 @@ export const createGpgVerificationTypeOptions: (t: (key: string) => string) => S
 
 export const GpgVerificationControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
-  const { field: verificationTypeField } = useController({ control, name: "gpgVerificationType" });
+  const { field: verificationTypeField } = useController({ control, name: "gpgVerificationType", defaultValue: "NONE" });
   const showKeyList = verificationTypeField.value === "KEY_LIST";
   return (
     <>

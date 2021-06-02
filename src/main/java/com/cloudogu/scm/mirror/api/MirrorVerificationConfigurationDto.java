@@ -36,6 +36,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@SuppressWarnings("java:S2160") // equals not needed here
 public class MirrorVerificationConfigurationDto extends HalRepresentation {
 
   private String branchesAndTagsPatterns;

@@ -23,12 +23,10 @@
  */
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.api.RawGpgKeyDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import sonia.scm.util.Util;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
