@@ -34,6 +34,7 @@ import sonia.scm.repository.Tag;
 import sonia.scm.repository.api.MirrorFilter;
 import sonia.scm.security.PublicKey;
 
+import static com.cloudogu.scm.mirror.ConfigurableFilter.MESSAGE_NO_FAST_FORWARD;
 import static com.cloudogu.scm.mirror.ConfigurableFilter.MESSAGE_NO_VALID_SIGNATURE;
 import static com.cloudogu.scm.mirror.ConfigurableFilter.MESSAGE_PATTERN_NOT_MATCHED;
 import static java.util.Arrays.asList;
@@ -436,6 +437,41 @@ class FilterBuilderTest {
 
       assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
       assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_PATTERN_NOT_MATCHED);
+    }
+  }
+
+  @Nested
+  class WhenConfiguredWithFFOnlyFilter {
+
+    private final MirrorConfiguration configuration = new MirrorConfiguration();
+    private MirrorFilter mirrorFilter;
+
+    @BeforeEach
+    void setUpConfiguration() {
+      configuration.setGpgVerificationType(MirrorGpgVerificationType.NONE);
+      configuration.setFastForwardOnly(true);
+      mirrorFilter = filterBuilder.createFilter(configuration, emptyList());
+    }
+
+    @Test
+    void shouldAcceptBranchesWithFastForward() {
+      MirrorFilter.BranchUpdate branchUpdate = mockBranchUpdate(new Changeset(), "main");
+      when(branchUpdate.isForcedUpdate()).thenReturn(false);
+
+      MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
+
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isTrue();
+    }
+
+    @Test
+    void shouldRejectBranchesWithNoFastForward() {
+      MirrorFilter.BranchUpdate branchUpdate = mockBranchUpdate(new Changeset(), "main");
+      when(branchUpdate.isForcedUpdate()).thenReturn(true);
+
+      MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
+
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
+      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_NO_FAST_FORWARD);
     }
   }
 
