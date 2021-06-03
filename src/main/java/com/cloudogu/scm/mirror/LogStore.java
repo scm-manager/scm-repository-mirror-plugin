@@ -28,20 +28,22 @@ import com.github.legman.Subscribe;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
+import sonia.scm.EagerSingleton;
 import sonia.scm.collect.EvictingQueue;
+import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 import java.util.Queue;
 
-@Singleton
+@EagerSingleton
+@Extension
 public class LogStore {
 
   @VisibleForTesting
