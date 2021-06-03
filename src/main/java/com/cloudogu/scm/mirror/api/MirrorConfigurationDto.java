@@ -74,7 +74,6 @@ public class MirrorConfigurationDto extends MirrorVerificationConfigurationDto {
   @AllArgsConstructor
   @NoArgsConstructor
   static class CertificateCredentialDto {
-    @NotBlank
     private String certificate;
     private String password;
   }

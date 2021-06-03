@@ -51,7 +51,11 @@ abstract class MirrorConfigurationDtoToConfigurationMapper {
     return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
   }
 
+  @SuppressWarnings("java:S1168") // we want to signal that the certificate is not set and null signals this much better as an empty array
   byte[] mapBase64(String base64encoded) {
-    return Base64.getDecoder().decode(base64encoded.replace("\n", ""));
+    if (base64encoded != null) {
+      return Base64.getDecoder().decode(base64encoded.replace("\n", ""));
+    }
+    return null;
   }
 }

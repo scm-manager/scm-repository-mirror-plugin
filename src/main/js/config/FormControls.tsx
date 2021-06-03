@@ -258,7 +258,7 @@ export const coalesceFormValue = <T extends MirrorConfigurationForm>(value: T): 
   if (!output.usernamePasswordCredential?.enabled || !output.usernamePasswordCredential?.username) {
     delete output.usernamePasswordCredential;
   }
-  if (!output.certificateCredential?.enabled || !output.certificateCredential?.certificate) {
+  if (!output.certificateCredential?.enabled) {
     delete output.certificateCredential;
   }
 
