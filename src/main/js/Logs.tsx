@@ -37,6 +37,7 @@ import useMirrorLogs from "./useMirrorLogs";
 import { LogEntry } from "./types";
 import { Trans, useTranslation } from "react-i18next";
 import styled from "styled-components";
+import classNames from "classnames";
 
 type Props = {
   repository: Repository;
@@ -116,7 +117,7 @@ const LogLines: FC<LogLinesProps> = ({ lines }) => (
 
 const calcDuration = (entry: LogEntry) => {
   return new Date(entry.ended).getTime() - new Date(entry.started).getTime();
-}
+};
 
 const LogRow: FC<LogRowProps> = ({ entry, initialOpenState }) => {
   const [open, setOpen] = useState(initialOpenState);
@@ -124,7 +125,12 @@ const LogRow: FC<LogRowProps> = ({ entry, initialOpenState }) => {
   const duration = <Duration duration={calcDuration(entry)} />;
   return (
     <article>
-      <div className="has-cursor-pointer" onClick={() => setOpen(!open)}>
+      <div
+        className={classNames({
+          "has-cursor-pointer": !!entry.log
+        })}
+        onClick={() => setOpen(!open)}
+      >
         <Column minWidth={2}>
           <Icon name={open ? "angle-down" : "angle-right"} />
         </Column>
@@ -138,7 +144,7 @@ const LogRow: FC<LogRowProps> = ({ entry, initialOpenState }) => {
           <Trans i18nKey="plugins:scm-repository-mirror-plugin.logs.duration" components={[duration]} />
         </Column>
       </div>
-      {open ? <LogLines lines={entry.log} /> : null}
+      {open && entry.log ? <LogLines lines={entry.log} /> : null}
     </article>
   );
 };

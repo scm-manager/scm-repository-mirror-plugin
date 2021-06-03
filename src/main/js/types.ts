@@ -80,7 +80,7 @@ export type LogEntry = HalRepresentation & {
   result: "SUCCESS" | "FAILED_UPDATES" | "FAILED";
   started: string;
   ended: string;
-  log: string[];
+  log?: string[] | null;
 };
 
 type EmbeddedLogEntries = Embedded & {
