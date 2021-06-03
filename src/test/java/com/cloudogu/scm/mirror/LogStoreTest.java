@@ -40,6 +40,7 @@ import sonia.scm.repository.api.MirrorCommandResult.ResultType;
 import sonia.scm.store.InMemoryByteDataStoreFactory;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -73,9 +74,7 @@ class LogStoreTest {
   @Test
   @SubjectAware(value = "trillian", permissions = "repository:mirror:42")
   void shouldStoreLogs() {
-    MirrorCommandResult result = result(ResultType.OK, 42, "awesome sync");
-    MirrorStatus status = null;
-    MirrorSyncEvent event = new MirrorSyncEvent(heartOfGold, result, status);
+    MirrorSyncEvent event = event(MirrorStatus.Result.SUCCESS, 42L, "awesome sync");
 
     eventBus.post(event);
 
@@ -83,9 +82,15 @@ class LogStoreTest {
     assertThat(entries).hasSize(1);
 
     LogEntry entry = entries.get(0);
-    assertThat(entry.getFinishedAt()).isNotNull();
+    assertThat(entry.getStarted()).isNotNull();
+    assertThat(entry.getEnded()).isNotNull();
     assertThat(entry.getLog()).containsOnly("awesome sync");
-    assertThat(entry.getDuration().toMillis()).isEqualTo(42L);
+  }
+
+  private MirrorSyncEvent event(MirrorStatus.Result result, long duration, String... logs) {
+    MirrorCommandResult commandResult = result(ResultType.OK, duration, logs);
+    MirrorStatus status = MirrorStatus.create(result, Instant.now().minusMillis(duration));
+    return new MirrorSyncEvent(heartOfGold, commandResult, status);
   }
 
   @Test
@@ -101,10 +106,7 @@ class LogStoreTest {
   @SubjectAware(value = "trillian", permissions = "repository:mirror:42")
   void shouldLimitStoreEntries() {
     for (int i=0; i<LogStore.ENTRY_LIMIT + 5; i++) {
-      MirrorCommandResult result = result(ResultType.FAILED, 21, "sync " + i);
-      MirrorStatus status = null;
-      MirrorSyncEvent event = new MirrorSyncEvent(heartOfGold, result, status);
-      eventBus.post(event);
+      eventBus.post(event(MirrorStatus.Result.FAILED, 21L, "sync " + i));
     }
 
     List<LogEntry> entries = logStore.get(heartOfGold);

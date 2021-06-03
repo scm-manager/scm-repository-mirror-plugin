@@ -61,8 +61,13 @@ public class LogStore {
   public void handle(MirrorSyncEvent event) {
     DataStore<LogEntries> store = store(event.getRepository());
     LogEntries entries = entries(store);
-    entries.add(new LogEntry(event.getResult()));
+    entries.add(entry(event));
     store.put(STORE_ENTRY, entries);
+  }
+
+  @SuppressWarnings("UnstableApiUsage")
+  private LogEntry entry(MirrorSyncEvent event) {
+    return new LogEntry(event.getStatus(), event.getResult().getLog());
   }
 
   public List<LogEntry> get(Repository repository) {

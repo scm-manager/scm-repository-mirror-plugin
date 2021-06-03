@@ -42,11 +42,11 @@ type Props = {
   repository: Repository;
 };
 
-const OkTag = () => {
+const SuccessTag = () => {
   const [t] = useTranslation("plugins");
   return (
-    <RepositoryFlag color={"success"} title={t("scm-repository-mirror-plugin.logs.ok.title")}>
-      {t("scm-repository-mirror-plugin.logs.ok.label")}
+    <RepositoryFlag color={"success"} title={t("scm-repository-mirror-plugin.logs.success.title")}>
+      {t("scm-repository-mirror-plugin.logs.success.label")}
     </RepositoryFlag>
   );
 };
@@ -60,11 +60,11 @@ const FailedTag = () => {
   );
 };
 
-const RejectedUpdatesTag = () => {
+const FailedUpdatesTag = () => {
   const [t] = useTranslation("plugins");
   return (
-    <RepositoryFlag color={"warning"} title={t("scm-repository-mirror-plugin.logs.rejectedUpdates.title")}>
-      {t("scm-repository-mirror-plugin.logs.rejectedUpdates.label")}
+    <RepositoryFlag color={"warning"} title={t("scm-repository-mirror-plugin.logs.failedUpdates.title")}>
+      {t("scm-repository-mirror-plugin.logs.failedUpdates.label")}
     </RepositoryFlag>
   );
 };
@@ -75,12 +75,12 @@ type ResultTagProps = {
 
 const ResultTag: FC<ResultTagProps> = ({ entry }) => {
   switch (entry.result) {
-    case "OK":
-      return <OkTag />;
+    case "SUCCESS":
+      return <SuccessTag />;
     case "FAILED":
       return <FailedTag />;
-    case "REJECTED_UPDATES":
-      return <RejectedUpdatesTag />;
+    case "FAILED_UPDATES":
+      return <FailedUpdatesTag />;
     default:
       throw new Error("unknown result type " + entry.result);
   }
@@ -114,10 +114,14 @@ const LogLines: FC<LogLinesProps> = ({ lines }) => (
   </ul>
 );
 
+const calcDuration = (entry: LogEntry) => {
+  return new Date(entry.ended).getTime() - new Date(entry.started).getTime();
+}
+
 const LogRow: FC<LogRowProps> = ({ entry, initialOpenState }) => {
   const [open, setOpen] = useState(initialOpenState);
-  const dateFromNow = <DateFromNow date={entry.finishedAt} />;
-  const duration = <Duration duration={entry.duration} />;
+  const dateFromNow = <DateFromNow date={entry.started} />;
+  const duration = <Duration duration={calcDuration(entry)} />;
   return (
     <article>
       <div className="has-cursor-pointer" onClick={() => setOpen(!open)}>

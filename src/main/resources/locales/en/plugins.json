@@ -120,11 +120,11 @@
     "logs": {
       "navLink": "Mirror Log",
       "subtitle": "Mirror Log",
-      "ok": {
+      "success": {
         "label": "success",
         "title": "Synchronization successful"
       },
-      "rejectedUpdates": {
+      "failedUpdates": {
         "label": "partial",
         "title": "Synchronization partial successful"
       },

@@ -25,51 +25,38 @@
 package com.cloudogu.scm.mirror;
 
 import lombok.Getter;
-import sonia.scm.repository.api.MirrorCommandResult;
-import sonia.scm.repository.api.MirrorCommandResult.ResultType;
 import sonia.scm.xml.XmlInstantAdapter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 @Getter
 @XmlAccessorType(XmlAccessType.FIELD)
 public class LogEntry {
 
-  private ResultType result;
-  @XmlJavaTypeAdapter(XmlDurationAdapter.class)
-  private Duration duration;
+  private MirrorStatus.Result result;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
-  private Instant finishedAt;
+  private Instant started;
+  @XmlJavaTypeAdapter(XmlInstantAdapter.class)
+  private Instant ended;
   private List<String> log;
 
   private LogEntry() {
   }
 
-  public LogEntry(MirrorCommandResult result) {
-    this.duration = result.getDuration();
-    this.result = result.getResult();
-    this.finishedAt = Instant.now();
-    this.log = result.getLog();
+  public LogEntry(MirrorStatus status, String... log) {
+    this(status, Arrays.asList(log));
   }
 
-  public static class XmlDurationAdapter extends XmlAdapter<Long, Duration> {
-
-    @Override
-    public Duration unmarshal(Long v) {
-      return Duration.ofMillis(v);
-
-    }
-
-    @Override
-    public Long marshal(Duration v) {
-      return v.toMillis();
-    }
+  public LogEntry(MirrorStatus status, List<String> log) {
+    this.result = status.getResult();
+    this.started = status.getStarted();
+    this.ended = status.getEnded();
+    this.log = log;
   }
 
 }

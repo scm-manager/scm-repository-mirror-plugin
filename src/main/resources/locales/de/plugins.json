@@ -120,11 +120,11 @@
     "logs": {
       "navLink": "Protokoll der Spiegelung",
       "subtitle": "Protokoll der Spiegelung",
-      "ok": {
+      "success": {
         "label": "erfolgreich",
         "title": "Synchronisation erfolgreich"
       },
-      "rejectedUpdates": {
+      "failedUpdates": {
         "label": "teilweise",
         "title": "Synchronisation teilweise erfolgreich"
       },

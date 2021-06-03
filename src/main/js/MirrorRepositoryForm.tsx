@@ -38,11 +38,6 @@ import {
   UrlControl
 } from "./config/FormControls";
 
-const Column = styled.div`
-  padding: 0 0.75rem;
-  margin-bottom: 0.5rem;
-`;
-
 const Columns = styled.div`
   padding: 0.75rem 0 0;
 `;

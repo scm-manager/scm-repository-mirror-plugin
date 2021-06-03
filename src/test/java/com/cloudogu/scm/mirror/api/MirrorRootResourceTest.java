@@ -30,6 +30,8 @@ import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
+import com.cloudogu.scm.mirror.MirrorStatus;
+import com.cloudogu.scm.mirror.MirrorStatus.Result;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.otto.edison.hal.Links;
 import org.github.sdorra.jse.ShiroExtension;
@@ -49,17 +51,15 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryTestData;
-import sonia.scm.repository.api.MirrorCommandResult;
-import sonia.scm.repository.api.MirrorCommandResult.ResultType;
 import sonia.scm.web.JsonMockHttpRequest;
 import sonia.scm.web.JsonMockHttpResponse;
 import sonia.scm.web.RestDispatcher;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -365,23 +365,24 @@ class MirrorRootResourceTest {
     }
 
     @Test
-    void shouldReturnLogs() throws URISyntaxException {
-      LogEntry entry = log(ResultType.FAILED, 21L, "not so awesome");
-      when(logStore.get(repository)).thenReturn(Collections.singletonList(entry));
+    void shouldReturnLogs() throws URISyntaxException, UnsupportedEncodingException {
+      when(logStore.get(repository)).thenReturn(Collections.singletonList(log()));
 
       MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/logs");
       JsonMockHttpResponse response = new JsonMockHttpResponse();
 
       dispatcher.invoke(request, response);
 
+      System.out.println(response.getContentAsString());
+
       assertThat(response.getStatus()).isEqualTo(200);
       JsonNode json = response.getContentAsJson();
 
       JsonNode jsonEntry = json.get("_embedded").get("entries").get(0);
       assertThat(jsonEntry.get("result").asText()).isEqualTo("FAILED");
-      assertThat(jsonEntry.get("duration").asLong()).isEqualTo(21L);
+      assertThat(jsonEntry.get("started").asText()).isNotNull();
+      assertThat(jsonEntry.get("ended").asText()).isNotNull();
       assertThat(jsonEntry.get("log").get(0).asText()).isEqualTo("not so awesome");
-      assertThat(jsonEntry.get("finishedAt").asText()).isNotNull();
     }
 
     @Test
@@ -398,8 +399,9 @@ class MirrorRootResourceTest {
       ).isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/logs");
     }
 
-    private LogEntry log(ResultType result, long duration, String... logs) {
-      return new LogEntry(new MirrorCommandResult(result, Arrays.asList(logs), Duration.ofMillis(duration)));
+    private LogEntry log() {
+      Instant started = Instant.now().minusMillis(21L);
+      return new LogEntry(MirrorStatus.create(Result.FAILED, started), "not so awesome");
     }
 
   }
