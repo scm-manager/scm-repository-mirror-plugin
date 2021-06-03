@@ -82,12 +82,12 @@ class ConfigurableFilter implements MirrorFilter {
       }
 
       private Result checkForAcceptedSignature(List<Signature> signatures) {
-        boolean result = hasAcceptedSignatureX(signatures);
+        boolean result = hasAcceptedSignature(signatures);
         issuesFound |= !result;
         return result? Result.accept(): Result.reject(MESSAGE_NO_VALID_SIGNATURE);
       }
 
-      private boolean hasAcceptedSignatureX(List<Signature> signatures) {
+      private boolean hasAcceptedSignature(List<Signature> signatures) {
         switch (configuration.getGpgVerificationType()) {
           case NONE:
             return true;
