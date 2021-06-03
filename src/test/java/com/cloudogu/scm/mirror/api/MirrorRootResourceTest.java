@@ -145,7 +145,7 @@ class MirrorRootResourceTest {
     @Test
     void shouldConfigureBasicAuth() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'trillian','password':'hog'}}");
+        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'trillian','password':'hog'}, 'gpgVerificationType':'NONE'}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);

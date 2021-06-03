@@ -48,6 +48,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -81,12 +82,14 @@ public class MirrorResource {
   @GET
   @Path("/configuration")
   @Produces("application/json")
-  public MirrorConfigurationDto getMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name) {
+  public Response getMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name) {
     Repository repository = loadRepository(namespace, name);
     MirrorConfiguration configuration =
       configurationService.getConfiguration(repository)
-      .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
-    return toDtoMapper.map(configuration, repository);
+      .orElseThrow(() -> new NotConfiguredForMirrorException(repository));return Response
+      .status(200)
+      .entity(toDtoMapper.map(configuration, repository))
+      .build();
   }
 
   @PUT
