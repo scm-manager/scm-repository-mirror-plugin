@@ -108,7 +108,7 @@ type LogLinesProps = {
 };
 
 const LogLines: FC<LogLinesProps> = ({ lines }) => (
-  <ul className="m-3 p-3 has-background-white-ter">
+  <ul className="m-3 p-3 has-background-white-ter is-family-monospace is-size-7 has-text-black">
     {lines.map(line => (
       <li key={line}>{line}</li>
     ))}
