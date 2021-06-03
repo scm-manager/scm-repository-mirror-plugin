@@ -288,7 +288,7 @@ export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ co
 
   useEffect(() => {
     field.onChange(field.value);
-  }, [gpgVerificationType, field]);
+  }, [gpgVerificationType]);
 
   const deleteKey = (displayName: string) =>
     field.onChange(value?.filter(key => key.displayName !== displayName) || []);
