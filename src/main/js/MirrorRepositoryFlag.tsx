@@ -27,13 +27,10 @@ import { Repository } from "@scm-manager/ui-types";
 import { RepositoryFlag } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
+import { MirrorStatus } from "./types";
 
 type Props = {
   repository: Repository;
-};
-
-type MirrorStatus = {
-  result: "SUCCESS" | "FAILED" | "REJECTED_UPDATES" | "NOT_YET_RUN";
 };
 
 const MirrorRepositoryFlag: FC<Props> = ({ repository }) => {
@@ -53,9 +50,9 @@ const MirrorRepositoryFlag: FC<Props> = ({ repository }) => {
           {t("scm-repository-mirror-plugin.flag.label")}
         </RepositoryFlag>
       );
-    case "REJECTED_UPDATES":
+    case "FAILED_UPDATES":
       return (
-        <RepositoryFlag color={"warning"} title={t("scm-repository-mirror-plugin.flag.rejectedUpdates")}>
+        <RepositoryFlag color={"warning"} title={t("scm-repository-mirror-plugin.flag.failedUpdates")}>
           {t("scm-repository-mirror-plugin.flag.label")}
         </RepositoryFlag>
       );

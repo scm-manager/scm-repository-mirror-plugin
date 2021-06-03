@@ -113,7 +113,7 @@
     "flag": {
       "label": "mirror",
       "success": "Last synchronization successful",
-      "rejectedUpdates": "Last synchronization partially failed",
+      "failedUpdates": "Last synchronization partially failed",
       "failed": "Last synchronization failed",
       "notYetRun": "Not yet synchronized"
     },

@@ -76,8 +76,12 @@ export type PublicKey = HalRepresentation & {
   raw: string;
 };
 
+export type MirrorStatus = {
+  result: "SUCCESS" | "FAILED" | "FAILED_UPDATES" | "NOT_YET_RUN";
+};
+
 export type LogEntry = HalRepresentation & {
-  result: "SUCCESS" | "FAILED_UPDATES" | "FAILED";
+  result: Omit<MirrorStatus, "NOT_YET_RUN">;
   started: string;
   ended: string;
   log?: string[] | null;

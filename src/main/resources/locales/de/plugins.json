@@ -113,7 +113,7 @@
     "flag": {
       "label": "Spiegel",
       "success": "Letzte Synchronisation erfolgreich",
-      "rejectedUpdates": "Letzte Synchronisation teilweise fehlgeschlagen",
+      "failedUpdates": "Letzte Synchronisation teilweise fehlgeschlagen",
       "failed": "Letzte Synchronisation fehlgeschlagen",
       "notYetRun": "Noch nicht synchronisiert"
     },
