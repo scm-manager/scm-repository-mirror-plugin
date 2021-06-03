@@ -134,7 +134,7 @@ const LogRow: FC<LogRowProps> = ({ entry, initialOpenState }) => {
         <Column minWidth={2}>
           <Icon name={open ? "angle-down" : "angle-right"} />
         </Column>
-        <Column minWidth={5}>
+        <Column minWidth={7}>
           <ResultTag entry={entry} />
         </Column>
         <Column minWidth={15}>
