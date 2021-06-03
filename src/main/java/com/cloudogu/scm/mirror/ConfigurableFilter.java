@@ -39,9 +39,9 @@ import static com.cloudogu.scm.mirror.MirrorGpgVerificationType.NONE;
 @SuppressWarnings("UnstableApiUsage")
 class ConfigurableFilter implements MirrorFilter {
 
-  public static final String MESSAGE_PATTERN_NOT_MATCHED = "does not match configured patterns";
-  public static final String MESSAGE_NO_VALID_SIGNATURE = "no valid signature";
-  public static final String MESSAGE_NO_FAST_FORWARD = "no fast forward";
+  public static final String MESSAGE_PATTERN_NOT_MATCHED = "skipped: does not match configured patterns";
+  public static final String MESSAGE_NO_VALID_SIGNATURE = "skipped: no valid signature";
+  public static final String MESSAGE_NO_FAST_FORWARD = "skipped: no fast forward";
 
   private final MirrorConfiguration configuration;
   private final Collection<String> keysIds;
@@ -62,6 +62,7 @@ class ConfigurableFilter implements MirrorFilter {
           return Result.reject(MESSAGE_PATTERN_NOT_MATCHED);
         }
         if (configuration.isFastForwardOnly() && branch.isForcedUpdate()) {
+          issuesFound = true;
           return Result.reject(MESSAGE_NO_FAST_FORWARD);
         }
         if (configuration.getGpgVerificationType() == NONE) {
