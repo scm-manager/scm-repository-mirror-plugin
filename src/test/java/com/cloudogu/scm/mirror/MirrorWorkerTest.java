@@ -79,7 +79,7 @@ class MirrorWorkerTest {
   @Mock
   private MirrorCommandBuilder mirrorCommandBuilder;
   @Mock
-  private PrivilegedMirrorRunner privilegedMirrorRunner;
+  private TaskDecoratorFactory taskDecoratorFactory;
   @Mock
   private NotificationSender notificationSender;
   @Mock
@@ -102,13 +102,9 @@ class MirrorWorkerTest {
       invocation.getArgument(0, Runnable.class).run();
       return null;
     }).when(executor).submit(any(Runnable.class));
-    lenient().doAnswer(
-      invocationOnMock -> {
-        invocationOnMock.getArgument(0, Runnable.class).run();
-        return null;
-      }
-    ).when(privilegedMirrorRunner).exceptedFromReadOnly(any());
-    worker = new MirrorWorker(new SimpleMeterRegistry(), executor, statusStore, of(privilegedMirrorRunner), notificationSender, eventBus, mirrorCommandCaller);
+    lenient().when(taskDecoratorFactory.decorate(any()))
+      .thenAnswer(invocation -> invocation.getArgument(0));
+    worker = new MirrorWorker(new SimpleMeterRegistry(), executor, statusStore, notificationSender, eventBus, mirrorCommandCaller, taskDecoratorFactory);
   }
 
   @Test

@@ -64,10 +64,10 @@ class MirrorWorker {
 
   private final ScheduledExecutorService executor;
   private final MirrorStatusStore statusStore;
-  private final Provider<PrivilegedMirrorRunner> privilegedMirrorRunner;
   private final NotificationSender notificationSender;
   private final ScmEventBus eventBus;
   private final MirrorCommandCaller mirrorCommandCaller;
+  private final TaskDecoratorFactory taskDecoratorFactory;
 
   private final Set<String> runningSynchronizations = Collections.synchronizedSet(new HashSet<>());
 
@@ -77,29 +77,30 @@ class MirrorWorker {
                Provider<PrivilegedMirrorRunner> privilegedMirrorRunner,
                NotificationSender notificationSender,
                ScmEventBus eventBus,
-               MirrorCommandCaller mirrorCommandCaller) {
-    this(registry, Executors.newScheduledThreadPool(4), statusStore, privilegedMirrorRunner, notificationSender, eventBus, mirrorCommandCaller);
+               MirrorCommandCaller mirrorCommandCaller,
+               TaskDecoratorFactory taskDecoratorFactory) {
+    this(registry, Executors.newScheduledThreadPool(4), statusStore, notificationSender, eventBus, mirrorCommandCaller, taskDecoratorFactory);
   }
 
   @VisibleForTesting
   MirrorWorker(MeterRegistry registry,
                ScheduledExecutorService executor,
                MirrorStatusStore statusStore,
-               Provider<PrivilegedMirrorRunner> privilegedMirrorRunner,
                NotificationSender notificationSender,
                ScmEventBus eventBus,
-               MirrorCommandCaller mirrorCommandCaller) {
+               MirrorCommandCaller mirrorCommandCaller,
+               TaskDecoratorFactory taskDecoratorFactory) {
     this.executor = executor;
     this.statusStore = statusStore;
-    this.privilegedMirrorRunner = privilegedMirrorRunner;
     this.notificationSender = notificationSender;
     this.eventBus = eventBus;
     this.mirrorCommandCaller = mirrorCommandCaller;
+    this.taskDecoratorFactory = taskDecoratorFactory;
     Metrics.executor(registry, executor, "mirror", "fixed");
   }
 
   void startInitialSync(Repository repository, MirrorConfiguration configuration) {
-    privilegedMirrorRunner.get().exceptedFromReadOnly(() -> statusStore.setStatus(repository, MirrorStatus.initialStatus()));
+    taskDecoratorFactory.decorate(() -> statusStore.setStatus(repository, MirrorStatus.initialStatus())).run();
     LOG.info("enqueuing initial sync for mirror {} from url {}", repository, configuration.getUrl());
     startAsynchronously(repository, configuration, MirrorCommandBuilder::initialCall);
   }
@@ -109,13 +110,14 @@ class MirrorWorker {
     startAsynchronously(repository, configuration, MirrorCommandBuilder::update);
   }
 
+
   CancelableSchedule scheduleUpdate(Repository repository, MirrorConfiguration configuration, int delay) {
     LOG.info("scheduling update for mirror {} from url {} in {} minutes every {} minutes", repository, configuration.getUrl(), delay, configuration.getSynchronizationPeriod());
     ScheduledFuture<?> scheduledFuture =
       executor.scheduleAtFixedRate(
         () -> {
           try {
-            privilegedMirrorRunner.get().exceptedFromReadOnly(() -> startSynchronously(repository, configuration, MirrorCommandBuilder::update));
+            taskDecoratorFactory.decorate(() -> startSynchronously(repository, configuration, MirrorCommandBuilder::update)).run();
           } catch (Exception e) {
             LOG.error("got exception running scheduled mirror call", e);
           }
@@ -133,7 +135,7 @@ class MirrorWorker {
     executor.submit(
       () -> {
         try {
-          privilegedMirrorRunner.get().exceptedFromReadOnly(() -> startSynchronously(repository, configuration, callback));
+          taskDecoratorFactory.decorate(() -> startSynchronously(repository, configuration, callback)).run();
         } catch (Exception e) {
           LOG.error("got exception running asynchronous mirror call", e);
         }
