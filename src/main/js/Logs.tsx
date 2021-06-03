@@ -121,7 +121,7 @@ const calcDuration = (entry: LogEntry) => {
 
 const LogRow: FC<LogRowProps> = ({ entry, initialOpenState }) => {
   const [open, setOpen] = useState(initialOpenState);
-  const dateFromNow = <DateFromNow date={entry.started} />;
+  const dateFromNow = <DateFromNow date={entry.ended} />;
   const duration = <Duration duration={calcDuration(entry)} />;
   return (
     <article>
