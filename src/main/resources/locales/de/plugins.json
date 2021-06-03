@@ -89,7 +89,7 @@
       "gpgVerificationType": {
         "options": {
           "none": "Keine",
-          "signature": "Beliebeige Signatur",
+          "signature": "Beliebige Signatur",
           "scm_user_signature": "Signatur eines SCM-Manager Users",
           "key_list": "Vorgegebene Liste"
         },
@@ -154,7 +154,7 @@
       "mirror": {
         "*": {
           "displayName": "Repository-spezifische Spiegel Konfiguration ändern",
-          "description": "Darf die repository-spezifischen Spiegel Konfiguration verändern (falls nicht global deaktiviert)"
+          "description": "Darf die repository-spezifischen Spiegel Konfiguration verändern"
         }
       }
     }
@@ -163,7 +163,7 @@
     "repository": {
       "mirror": {
         "displayName": "Spiegel Konfiguration ändern",
-        "description": "Darf die Spiegel Konfiguration verändern (falls nicht global deaktiviert)"
+        "description": "Darf die Spiegel Konfiguration verändern"
       }
     }
   }

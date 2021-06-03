@@ -154,7 +154,7 @@
       "mirror": {
         "*": {
           "displayName": "Modify repository specific mirror configuration",
-          "description": "May modify the repository specific mirror configuration for all repositories (if not disabled globally)"
+          "description": "May modify the repository specific mirror configuration for all repositories"
         }
       }
     }
@@ -163,7 +163,7 @@
     "repository": {
       "mirror": {
         "displayName": "configure mirror",
-        "description": "May modify the repository specific mirror configurations (if not disabled globally)"
+        "description": "May modify the repository specific mirror configurations"
       }
     }
   }
