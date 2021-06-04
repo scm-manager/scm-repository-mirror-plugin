@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static com.cloudogu.scm.mirror.MirrorGpgVerificationType.NONE;
+import static sonia.scm.repository.api.MirrorFilter.Result.accept;
 
 @SuppressWarnings("UnstableApiUsage")
 class ConfigurableFilter implements MirrorFilter {
@@ -48,7 +49,7 @@ class ConfigurableFilter implements MirrorFilter {
 
   private boolean issuesFound = false;
 
-  public ConfigurableFilter(MirrorConfiguration configuration, List<PublicKey> keys) {
+  ConfigurableFilter(MirrorConfiguration configuration, List<PublicKey> keys) {
     this.configuration = configuration;
     this.keysIds = collectKeyIds(keys);
   }
@@ -66,9 +67,9 @@ class ConfigurableFilter implements MirrorFilter {
           return Result.reject(MESSAGE_NO_FAST_FORWARD);
         }
         if (configuration.getGpgVerificationType() == NONE) {
-          return Result.accept();
+          return accept();
         }
-        return checkForAcceptedSignature(branch.getChangeset().getSignatures());
+        return branch.getChangeset().map(c -> checkForAcceptedSignature(c.getSignatures())).orElseGet(Result::accept);
       }
 
       @Override
@@ -77,15 +78,15 @@ class ConfigurableFilter implements MirrorFilter {
           return Result.reject(MESSAGE_PATTERN_NOT_MATCHED);
         }
         if (configuration.getGpgVerificationType() == NONE) {
-          return Result.accept();
+          return accept();
         }
-        return checkForAcceptedSignature(tag.getTag().getSignatures());
+        return tag.getTag().map(t -> checkForAcceptedSignature(t.getSignatures())).orElseGet(Result::accept);
       }
 
       private Result checkForAcceptedSignature(List<Signature> signatures) {
         boolean result = hasAcceptedSignature(signatures);
         issuesFound |= !result;
-        return result? Result.accept(): Result.reject(MESSAGE_NO_VALID_SIGNATURE);
+        return result? accept(): Result.reject(MESSAGE_NO_VALID_SIGNATURE);
       }
 
       private boolean hasAcceptedSignature(List<Signature> signatures) {
