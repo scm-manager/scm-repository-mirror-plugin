@@ -105,6 +105,7 @@
         "helpText": "Komma-separierte Liste mit glob Patterns die besagt, welche Branches und Tags gespiegelt werden sollen. Bei einer leeren Liste werden alle Branches bzw. Tags gespiegelt."
       },
       "verificationFilters": "Filter",
+      "verificationFiltersHint": "Diese Filter haben keinen Einfluss auf die Spiegelung von SVN Repositories.",
       "fastForwardOnly": {
         "label": "Nur Fast-Forward",
         "helpText": "Es werden nur Änderungen an Branches übernommen, die durch einen Fast-Forward entstanden sind."

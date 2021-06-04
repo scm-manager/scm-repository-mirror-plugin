@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { Checkbox, InputField, Level, SubmitButton } from "@scm-manager/ui-components";
+import { Checkbox, InputField, Level, Notification, SubmitButton } from "@scm-manager/ui-components";
 import React, { FC, useEffect, useState } from "react";
 import { MirrorConfigurationDto, MirrorRequestDto } from "./types";
 import { useForm } from "react-hook-form";
@@ -109,6 +109,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
       />
       <hr />
       <h4 className="subtitle is-4">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h4>
+      <Notification type={"inherit"}>{t("scm-repository-mirror-plugin.form.verificationFiltersHint")}</Notification>
       <Checkbox
         label={t("scm-repository-mirror-plugin.form.fastForwardOnly.label")}
         helpText={t("scm-repository-mirror-plugin.form.fastForwardOnly.helpText")}

@@ -29,6 +29,7 @@ import {
   ConfigurationForm,
   ErrorNotification,
   InputField,
+  Notification,
   Subtitle
 } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
@@ -128,6 +129,7 @@ const RepositoryConfig: FC<Props> = ({ link }) => {
       </Columns>
       <hr />
       <h4 className="subtitle is-4">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h4>
+      <Notification type={"inherit"}>{t("scm-repository-mirror-plugin.form.verificationFiltersHint")}</Notification>
       <Checkbox
         label={t("scm-repository-mirror-plugin.form.fastForwardOnly.label")}
         helpText={t("scm-repository-mirror-plugin.form.fastForwardOnly.helpText")}
