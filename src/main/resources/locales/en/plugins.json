@@ -93,7 +93,7 @@
           "scm_user_signature": "SCM User Signature",
           "key_list": "Pre-defined Key List"
         },
-        "label": "GPG Verification Type",
+        "label": "GPG Verification",
         "helpText": "Define if or how signatures on commits and tags should be validated."
       },
       "httpsOnly": {
