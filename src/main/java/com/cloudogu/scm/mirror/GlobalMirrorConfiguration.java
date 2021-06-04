@@ -21,29 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@XmlRootElement(name = "global-mirror-configuration")
+@XmlAccessorType(XmlAccessType.FIELD)
+public class GlobalMirrorConfiguration extends MirrorVerificationConfiguration {
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+  private boolean httpsOnly = false;
 
-  author = "SCM-Team"
-  category = "Workflow"
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
-  }
 }

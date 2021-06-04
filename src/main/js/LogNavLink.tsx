@@ -22,28 +22,24 @@
  * SOFTWARE.
  */
 
+import React, { FC } from "react";
+import { SecondaryNavigationItem } from "@scm-manager/ui-components";
+import { useTranslation } from "react-i18next";
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+type Props = {
+  url: string;
+};
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+const LogNavLink: FC<Props> = ({ url }) => {
+  const [t] = useTranslation("plugins");
+  return (
+    <SecondaryNavigationItem
+      to={`${url}/mirror-logs`}
+      icon="fas fa-copy"
+      label={t("scm-repository-mirror-plugin.logs.navLink")}
+      title={t("scm-repository-mirror-plugin.logs.navLink")}
+    />
+  );
+};
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
-
-  author = "SCM-Team"
-  category = "Workflow"
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
-  }
-}
+export default LogNavLink;

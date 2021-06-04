@@ -21,29 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror;
 
+import com.cloudogu.scm.mirror.api.MirrorRootResource;
+import sonia.scm.api.v2.resources.HalAppender;
+import sonia.scm.api.v2.resources.HalEnricher;
+import sonia.scm.api.v2.resources.HalEnricherContext;
+import sonia.scm.api.v2.resources.LinkBuilder;
+import sonia.scm.api.v2.resources.ScmPathInfoStore;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import javax.inject.Inject;
+import javax.inject.Provider;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+// @Extension
+// @Enrich(Index.class)
+public class IndexLinkEnricher implements HalEnricher {
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+  private final Provider<ScmPathInfoStore> scmPathInfoStore;
 
-  author = "SCM-Team"
-  category = "Workflow"
+  @Inject
+  public IndexLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore) {
+    this.scmPathInfoStore = scmPathInfoStore;
+  }
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  @Override
+  public void enrich(HalEnricherContext context, HalAppender appender) {
+    if (MirrorPermissions.hasGlobalMirrorPermission()) {
+      String globalConfigUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class)
+        .method("getGlobalMirrorConfiguration")
+        .parameters()
+        .href();
+
+      appender.appendLink("mirrorConfiguration", globalConfigUrl);
+    }
   }
 }

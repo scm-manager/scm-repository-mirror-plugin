@@ -22,28 +22,8 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
-
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
-
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
-
-  author = "SCM-Team"
-  category = "Workflow"
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
-  }
+interface PrivilegedMirrorRunner {
+  void exceptedFromReadOnly(Runnable runnable);
 }

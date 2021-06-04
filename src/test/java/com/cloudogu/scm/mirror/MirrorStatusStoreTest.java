@@ -22,28 +22,26 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import org.junit.jupiter.api.Test;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryTestData;
+import sonia.scm.store.InMemoryByteDataStoreFactory;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+import static com.cloudogu.scm.mirror.MirrorStatus.Result.SUCCESS;
+import static org.assertj.core.api.Assertions.assertThat;
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+class MirrorStatusStoreTest {
 
-  author = "SCM-Team"
-  category = "Workflow"
+  private InMemoryByteDataStoreFactory storeFactory = new InMemoryByteDataStoreFactory();
+  private MirrorStatusStore statusStore = new MirrorStatusStore(storeFactory);
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  @Test
+  void shouldStoreStatus() {
+    Repository repository = RepositoryTestData.createHeartOfGold();
+    statusStore.setStatus(repository, new MirrorStatus(SUCCESS));
+
+    assertThat(statusStore.getStatus(repository).getResult()).isEqualTo(SUCCESS);
   }
 }

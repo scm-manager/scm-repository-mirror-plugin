@@ -22,28 +22,40 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.HandlerEventType;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryEvent;
+import sonia.scm.repository.RepositoryTestData;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+import static com.google.inject.util.Providers.of;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+@ExtendWith(MockitoExtension.class)
+class MirrorCleanupHookTest {
 
-  author = "SCM-Team"
-  category = "Workflow"
+  private final Repository repository = RepositoryTestData.createHeartOfGold();
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  @Mock
+  private MirrorScheduler scheduler;
+
+  @Test
+  void shouldCancelScheduleForDeletedRepository() {
+    new MirrorCleanupHook(of(scheduler)).cleanupSchedules(new RepositoryEvent(HandlerEventType.DELETE, repository));
+
+    verify(scheduler).cancel(repository);
+  }
+
+  @Test
+  void shouldIgnoreOtherEvents() {
+    new MirrorCleanupHook(of(scheduler)).cleanupSchedules(new RepositoryEvent(HandlerEventType.BEFORE_DELETE, repository));
+
+    verify(scheduler, never()).cancel(repository);
   }
 }

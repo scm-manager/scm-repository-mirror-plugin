@@ -22,28 +22,29 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import org.apache.shiro.SecurityUtils;
+import sonia.scm.config.ConfigurationPermissions;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermissions;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+public final class MirrorPermissions {
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+  public static final String PERMISSION = "mirror";
 
-  author = "SCM-Team"
-  category = "Workflow"
+  private MirrorPermissions() {
+  }
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  static void checkRepositoryMirrorPermission(Repository repository) {
+    RepositoryPermissions.custom(PERMISSION, repository).check();
+  }
+
+  public static boolean hasRepositoryMirrorPermission(Repository repository) {
+    return RepositoryPermissions.custom(PERMISSION, repository).isPermitted();
+  }
+
+  public static boolean hasGlobalMirrorPermission() {
+    return ConfigurationPermissions.write(PERMISSION).isPermitted();
   }
 }

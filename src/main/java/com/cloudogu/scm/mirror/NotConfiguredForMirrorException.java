@@ -22,28 +22,22 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import sonia.scm.BadRequestException;
+import sonia.scm.repository.Repository;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+@SuppressWarnings("java:S110") // We accept deep hierarchy for exceptions
+public class NotConfiguredForMirrorException extends BadRequestException {
 
-  author = "SCM-Team"
-  category = "Workflow"
+  public NotConfiguredForMirrorException(Repository repository) {
+    super(entity(repository).build(), "repository not configured as a mirror");
+  }
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  @Override
+  public String getCode() {
+    return "9vSXNxLT01";
   }
 }

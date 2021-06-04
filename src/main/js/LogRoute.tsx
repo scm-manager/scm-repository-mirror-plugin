@@ -22,28 +22,20 @@
  * SOFTWARE.
  */
 
+import React, {FC} from "react";
+import {Repository} from "@scm-manager/ui-types";
+import {Route} from "react-router-dom";
+import Logs from "./Logs";
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+type Props = {
+  url: string;
+  repository: Repository;
+};
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+const LogRoute: FC<Props> = ({url, repository}) => (
+  <Route path={`${url}/mirror-logs`} exact>
+    <Logs repository={repository}/>
+  </Route>
+);
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
-
-  author = "SCM-Team"
-  category = "Workflow"
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
-  }
-}
+export default LogRoute;

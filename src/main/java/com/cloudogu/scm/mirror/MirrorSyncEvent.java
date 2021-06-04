@@ -22,28 +22,25 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import lombok.Getter;
+import sonia.scm.event.Event;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.MirrorCommandResult;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+@Event
+@Getter
+@SuppressWarnings("UnstableApiUsage")
+public class MirrorSyncEvent {
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+  private final Repository repository;
+  private final MirrorCommandResult result;
+  private final MirrorStatus status;
 
-  author = "SCM-Team"
-  category = "Workflow"
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  public MirrorSyncEvent(Repository repository, MirrorCommandResult result, MirrorStatus status) {
+    this.repository = repository;
+    this.result = result;
+    this.status = status;
   }
 }

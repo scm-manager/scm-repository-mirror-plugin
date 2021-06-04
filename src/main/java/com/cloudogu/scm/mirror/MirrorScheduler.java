@@ -22,28 +22,39 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import sonia.scm.repository.Repository;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+import javax.inject.Inject;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+class MirrorScheduler  {
 
-  author = "SCM-Team"
-  category = "Workflow"
+  private final MirrorWorker worker;
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  private final Map<String, MirrorWorker.CancelableSchedule> schedules = new ConcurrentHashMap<>();
+
+  @Inject
+  MirrorScheduler(MirrorWorker worker) {
+    this.worker = worker;
+  }
+
+  void scheduleNow(Repository repository, MirrorConfiguration configuration) {
+    schedule(repository, configuration, 5);
+  }
+
+  void schedule(Repository repository, MirrorConfiguration configuration) {
+    schedule(repository, configuration, configuration.getSynchronizationPeriod());
+  }
+
+  void cancel(Repository repository) {
+    schedules.getOrDefault(repository.getId(), () -> {}).cancel();
+  }
+
+  private void schedule(Repository repository, MirrorConfiguration configuration, int delay) {
+    cancel(repository);
+    schedules.put(repository.getId(), worker.scheduleUpdate(repository, configuration, delay));
   }
 }

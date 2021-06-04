@@ -22,10 +22,25 @@
  * SOFTWARE.
  */
 
-describe("frontend unit tests", () => {
+package com.cloudogu.scm.mirror.api;
 
-  it("some test", () => {
-    expect( 21 * 2 ).toBe(42);
-  });
+import lombok.Getter;
+import lombok.Setter;
 
-});
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+
+@Getter
+@Setter
+@SuppressWarnings("java:S2160") // Equals and Hashcode not needed for dto
+public class MirrorRequestDto extends MirrorConfigurationDto {
+
+  private String namespace;
+  @NotBlank
+  private String name;
+  @NotBlank
+  private String type;
+  @Email
+  private String contact;
+  private String description;
+}

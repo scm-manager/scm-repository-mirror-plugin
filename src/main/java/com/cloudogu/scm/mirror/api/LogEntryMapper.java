@@ -22,28 +22,21 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror.api;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import com.cloudogu.scm.mirror.LogEntry;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+import java.time.Duration;
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+@Mapper
+public interface LogEntryMapper {
 
-  author = "SCM-Team"
-  category = "Workflow"
+  @Mapping(ignore = true, target = "attributes")
+  LogEntryDto map(LogEntry entry);
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  default long map(Duration duration) {
+    return duration.toMillis();
   }
 }

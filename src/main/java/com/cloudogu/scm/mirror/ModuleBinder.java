@@ -22,28 +22,22 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import com.cloudogu.scm.mirror.api.GlobalMirrorConfigurationToGlobalConfigurationDtoMapper;
+import com.cloudogu.scm.mirror.api.MirrorConfigurationToConfigurationDtoMapper;
+import com.google.inject.AbstractModule;
+import org.mapstruct.factory.Mappers;
+import sonia.scm.plugin.Extension;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
-
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
-
-  author = "SCM-Team"
-  category = "Workflow"
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+@Extension
+public class ModuleBinder extends AbstractModule {
+  @Override
+  protected void configure() {
+    bind(PrivilegedMirrorRunner.class).to(MirrorReadOnlyCheck.class);
+    bind(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class)
+      .to(Mappers.getMapperClass(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class));
+    bind(MirrorConfigurationToConfigurationDtoMapper.class)
+      .to(Mappers.getMapperClass(MirrorConfigurationToConfigurationDtoMapper.class));
   }
 }

@@ -22,28 +22,16 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror.api;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import com.cloudogu.scm.mirror.MirrorStatus;
+import de.otto.edison.hal.HalRepresentation;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
-
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
-
-  author = "SCM-Team"
-  category = "Workflow"
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
-  }
+@Getter
+@AllArgsConstructor
+@SuppressWarnings("java:S2160") // equals not needed here
+public class MirrorStatusDto extends HalRepresentation {
+  private final MirrorStatus.Result result;
 }

@@ -1,5 +1,171 @@
 {
   "scm-repository-mirror-plugin": {
-
+    "settings": {
+      "navLink": "Spiegelung",
+      "title": "Globale Spiegel Konfiguration"
+    },
+    "create": {
+      "subtitle": "Ein existierendes Repository spiegeln"
+    },
+    "repositoryForm": {
+      "createButton": "Repository spiegeln"
+    },
+    "form": {
+      "subtitle": "Konfiguration der Spiegelung",
+      "withBaseAuth": {
+        "label": "Verwende Standard-Authentifizierung"
+      },
+      "withKeyAuth": {
+        "label": "Verwende zertifikats-basierte Authentifizierung (PKCS12)"
+      },
+      "url": {
+        "label": "Url",
+        "helpText": "Die URL des Repositories, welches gespiegelt werden sollte. Nach der Erstellung kann diese URL nicht mehr geändert werden.",
+        "errors": {
+          "required": "Die URL ist erforderlich",
+          "invalid": "Die URL ist inkorrekt"
+        }
+      },
+      "username": {
+        "label": "Benutzername",
+        "helpText": "Der Benutzer, welcher für die Authentifizierung verwendet werden soll."
+      },
+      "password": {
+        "label": "Passwort",
+        "helpText": "Das Passwort für den angegebenen Benutzer."
+      },
+      "certificate": {
+        "label": "Zertifikat mit Schlüssel (PKCS12)",
+        "helpText": "Ein PKCS12-Keystore welcher die Verbindung sichert.",
+        "password": {
+          "label": "Passwort",
+          "helpText": "Das Passwort für den Schlüssel, falls vorhanden."
+        }
+      },
+      "period": {
+        "label": "Aktualisierungsrate",
+        "helpText": "Intervall in welchem das gespiegelte Repository aktualisiert werden soll.",
+        "options": {
+          "fiveMinutes": "5 Minuten",
+          "fifteenMinutes": "15 Minuten",
+          "thirtyMinutes": "30 Minuten",
+          "oneHour": "1 Stunde",
+          "twoHours": "2 Stunden",
+          "fourHours": "4 Stunden",
+          "twelveHours": "12 Stunden",
+          "oneDay": "1 Tag"
+        }
+      },
+      "managingUsers": {
+        "label": "Notfallkontakte",
+        "helpText": "Diese Benutzer werden benachrichtigt, falls das Spiegeln fehlschlägt.",
+        "addButton": "Benutzer hinzufügen",
+        "autocompletePlaceholder": "Nutzer zum Benachrichtigen hinzufügen"
+      },
+      "manualSync": "Spiegelung jetzt aktualisieren",
+      "keyList": {
+        "displayName": "Anzeigename",
+        "delete": "Löschen",
+        "emptyNotification": "Keine Schlüssel definiert, bitte mindestens einen Schlüssel hinzufügen",
+        "new": {
+          "title": "Neuer Schlüssel",
+          "displayName": {
+            "label": "Anzeigename",
+            "helpText": "Ein beschreibender Name für den Schlüssel.",
+            "errors": {
+              "required": "Dies ist ein Pflichtfeld"
+            }
+          },
+          "raw": {
+            "label": "Schlüssel",
+            "helpText": "Der eigentliche GPG Schlüssel",
+            "errors": {
+              "required": "Dies ist ein Pflichtfeld"
+            }
+          },
+          "submit": "Schlüssel hinzufügen"
+        }
+      },
+      "gpgVerificationType": {
+        "options": {
+          "none": "Keine",
+          "signature": "Beliebige Signatur",
+          "scm_user_signature": "Signatur eines SCM-Manager Users",
+          "key_list": "Vorgegebene Liste"
+        },
+        "label": "GPG Verifikation",
+        "helpText": "Definiert, ob bzw. wie Signaturen von Commits und Tags überprüft werden."
+      },
+      "httpsOnly": {
+        "label": "Nur HTTPS",
+        "helpText": "Es werden nur HTTPS URLs akzeptiert."
+      },
+      "branchesAndTagsPatterns": {
+        "label": "Branches und Tags",
+        "helpText": "Komma-separierte Liste mit glob Patterns die besagt, welche Branches und Tags gespiegelt werden sollen. Bei einer leeren Liste werden alle Branches bzw. Tags gespiegelt."
+      },
+      "verificationFilters": "Filter",
+      "verificationFiltersHint": "Diese Filter haben keinen Einfluss auf die Spiegelung von SVN Repositories.",
+      "fastForwardOnly": {
+        "label": "Nur Fast-Forward",
+        "helpText": "Es werden nur Änderungen an Branches übernommen, die durch einen Fast-Forward entstanden sind."
+      }
+    },
+    "flag": {
+      "label": "Spiegel",
+      "success": "Letzte Synchronisation erfolgreich",
+      "failedUpdates": "Letzte Synchronisation teilweise fehlgeschlagen",
+      "failed": "Letzte Synchronisation fehlgeschlagen",
+      "notYetRun": "Noch nicht synchronisiert"
+    },
+    "logs": {
+      "navLink": "Protokoll der Spiegelung",
+      "subtitle": "Protokoll der Spiegelung",
+      "success": {
+        "label": "erfolgreich",
+        "title": "Synchronisation erfolgreich"
+      },
+      "failedUpdates": {
+        "label": "teilweise",
+        "title": "Synchronisation teilweise erfolgreich"
+      },
+      "failed": {
+        "label": "fehlgeschlagen",
+        "title": "Synchronisation fehlgeschlagen"
+      },
+      "finishedAt": "<0/> beendet",
+      "duration": "dauerte <0/>"
+    }
+  },
+  "notifications": {
+    "mirrorSuccess": "Das Spiegeln des Repository war erfolgreich.",
+    "mirrorUpdatesRejected": "Das Spiegeln des Repository ist teilweise fehlgeschlagen.",
+    "mirrorFailed": "Das Spiegeln des Repository ist fehlgeschlagen."
+  },
+  "permissions": {
+    "configuration": {
+      "read,write": {
+        "mirror": {
+          "displayName": "Globale Spiegel Konfiguration ändern",
+          "description": "Darf die globale Spiegel Konfiguration verändern"
+        }
+      }
+    },
+    "repository": {
+      "mirror": {
+        "*": {
+          "displayName": "Repository-spezifische Spiegel Konfiguration ändern",
+          "description": "Darf die repository-spezifischen Spiegel Konfiguration verändern"
+        }
+      }
+    }
+  },
+  "verbs": {
+    "repository": {
+      "mirror": {
+        "displayName": "Spiegel Konfiguration ändern",
+        "description": "Darf die Spiegel Konfiguration verändern"
+      }
+    }
   }
 }

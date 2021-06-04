@@ -22,28 +22,41 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import lombok.Getter;
+import sonia.scm.xml.XmlInstantAdapter;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+@Getter
+@XmlAccessorType(XmlAccessType.FIELD)
+public class LogEntry {
 
-  author = "SCM-Team"
-  category = "Workflow"
+  private MirrorStatus.Result result;
+  @XmlJavaTypeAdapter(XmlInstantAdapter.class)
+  private Instant started;
+  @XmlJavaTypeAdapter(XmlInstantAdapter.class)
+  private Instant ended;
+  private List<String> log;
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  private LogEntry() {
   }
+
+  public LogEntry(MirrorStatus status, String... log) {
+    this(status, Arrays.asList(log));
+  }
+
+  public LogEntry(MirrorStatus status, List<String> log) {
+    this.result = status.getResult();
+    this.started = status.getStarted();
+    this.ended = status.getEnded();
+    this.log = log;
+  }
+
 }

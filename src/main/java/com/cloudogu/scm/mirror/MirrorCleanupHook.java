@@ -22,28 +22,37 @@
  * SOFTWARE.
  */
 
+package com.cloudogu.scm.mirror;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import com.github.legman.Subscribe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sonia.scm.EagerSingleton;
+import sonia.scm.HandlerEventType;
+import sonia.scm.plugin.Extension;
+import sonia.scm.repository.RepositoryEvent;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+import javax.inject.Inject;
+import javax.inject.Provider;
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+@Extension
+@EagerSingleton
+public class MirrorCleanupHook {
 
-  author = "SCM-Team"
-  category = "Workflow"
+  private static final Logger LOG = LoggerFactory.getLogger(MirrorCleanupHook.class);
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  private final Provider<MirrorScheduler> scheduler;
+
+  @Inject
+  MirrorCleanupHook(Provider<MirrorScheduler> scheduler) {
+    this.scheduler = scheduler;
+  }
+
+  @Subscribe
+  public void cleanupSchedules(RepositoryEvent event) {
+    if (event.getEventType() == HandlerEventType.DELETE) {
+      LOG.debug("cleanup schedule for repository {} due to deletion", event.getItem());
+      scheduler.get().cancel(event.getItem());
+    }
   }
 }

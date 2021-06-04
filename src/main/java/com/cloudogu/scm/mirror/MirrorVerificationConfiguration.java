@@ -21,29 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.2'
-}
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import java.util.Collections;
+import java.util.List;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@XmlAccessorType(XmlAccessType.FIELD)
+public class MirrorVerificationConfiguration {
 
-scmPlugin {
-  scmVersion = "2.18.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+  private List<String> branchesAndTagsPatterns;
+  private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
+  private List<RawGpgKey> allowedGpgKeys;
+  private boolean fastForwardOnly = false;
 
-  author = "SCM-Team"
-  category = "Workflow"
+  public List<String> getBranchesAndTagsPatterns() {
+    return branchesAndTagsPatterns != null ? branchesAndTagsPatterns : Collections.emptyList();
+  }
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  public List<RawGpgKey> getAllowedGpgKeys() {
+    return allowedGpgKeys != null ? allowedGpgKeys : Collections.emptyList();
   }
 }

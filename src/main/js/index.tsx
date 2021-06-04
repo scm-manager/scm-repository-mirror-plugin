@@ -22,6 +22,48 @@
  * SOFTWARE.
  */
 
-import { binder } from "@scm-manager/ui-extensions";
+import { binder, extensionPoints } from "@scm-manager/ui-extensions";
+import { ConfigurationBinder as configurationBinder } from "@scm-manager/ui-components";
+import MirrorRepositoryCreator from "./MirrorRepositoryCreator";
+import RepositoryConfig from "./config/RepositoryConfig";
+import MirrorRepositoryFlag from "./MirrorRepositoryFlag";
+import GlobalConfig from "./config/GlobalConfig";
+import { Repository } from "@scm-manager/ui-types";
+import LogRoute from "./LogRoute";
+import LogNavLink from "./LogNavLink";
 
-binder.bind("", "");
+binder.bind<extensionPoints.RepositoryCreator>("repos.creator", {
+  subtitle: "scm-repository-mirror-plugin.create.subtitle",
+  path: "mirror",
+  icon: "copy",
+  label: "scm-repository-mirror-plugin.repositoryForm.createButton",
+  component: MirrorRepositoryCreator
+});
+
+configurationBinder.bindRepositorySetting(
+  "/mirror",
+  "scm-repository-mirror-plugin.settings.navLink",
+  "mirrorConfiguration",
+  RepositoryConfig
+);
+
+configurationBinder.bindGlobal(
+  "/mirror",
+  "scm-repository-mirror-plugin.settings.navLink",
+  "mirrorConfiguration",
+  GlobalConfig
+);
+
+binder.bind<extensionPoints.RepositoryFlags>("repository.flags", MirrorRepositoryFlag);
+
+type PredicateProps = {
+  repository: Repository;
+};
+
+const logPredicate = ({ repository }: PredicateProps) => {
+  return !!repository._links["mirrorLogs"];
+};
+
+binder.bind("repository.route", LogRoute, logPredicate);
+binder.bind("repository.navigation", LogNavLink, logPredicate);
+
