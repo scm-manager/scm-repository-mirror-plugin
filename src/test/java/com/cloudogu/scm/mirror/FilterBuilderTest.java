@@ -41,6 +41,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -159,6 +160,24 @@ class FilterBuilderTest {
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
       assertThat(filter.acceptTag(tagUpdate).isAccepted()).isTrue();
+    }
+
+    @Test
+    void shouldAcceptBranchDelete() {
+      MirrorFilter.BranchUpdate branchUpdate = mockBranchUpdate(null, "main");
+
+      MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
+
+      assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isTrue();
+    }
+
+    @Test
+    void shouldAcceptTagDelete() {
+      MirrorFilter.TagUpdate tag = mockTagUpdate(null);
+
+      MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
+
+      assertThat(filter.acceptTag(tag).isAccepted()).isTrue();
     }
   }
 
@@ -477,15 +496,15 @@ class FilterBuilderTest {
 
   private MirrorFilter.BranchUpdate mockBranchUpdate(Changeset changeset, String name) {
     MirrorFilter.BranchUpdate branchUpdate = mock(MirrorFilter.BranchUpdate.class);
-    when(branchUpdate.getChangeset()).thenReturn(changeset);
+    when(branchUpdate.getChangeset()).thenReturn(ofNullable(changeset));
     when(branchUpdate.getBranchName()).thenReturn(name);
     return branchUpdate;
   }
 
   private MirrorFilter.TagUpdate mockTagUpdate(Tag tag) {
-    String tagName = tag.getName();
+    String tagName = tag == null? "deleted": tag.getName();
     MirrorFilter.TagUpdate tagUpdate = mock(MirrorFilter.TagUpdate.class);
-    when(tagUpdate.getTag()).thenReturn(tag);
+    when(tagUpdate.getTag()).thenReturn(ofNullable(tag));
     when(tagUpdate.getTagName()).thenReturn(tagName);
     return tagUpdate;
   }
