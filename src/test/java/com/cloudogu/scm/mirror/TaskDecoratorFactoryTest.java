@@ -32,7 +32,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.web.security.AdministrationContext;
 import sonia.scm.web.security.PrivilegedAction;
 
-import static com.google.inject.util.Providers.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -42,8 +41,6 @@ class TaskDecoratorFactoryTest {
 
   @Mock
   private AdministrationContext administrationContext;
-  @Mock
-  private PrivilegedMirrorRunner privilegedMirrorRunner;
 
   private TaskDecoratorFactory factory;
 
@@ -51,7 +48,7 @@ class TaskDecoratorFactoryTest {
 
   @BeforeEach
   void createFactory() {
-    factory = new TaskDecoratorFactory(administrationContext, of(privilegedMirrorRunner));
+    factory = new TaskDecoratorFactory(administrationContext);
   }
 
   @BeforeEach
@@ -60,10 +57,6 @@ class TaskDecoratorFactoryTest {
       invocationOnMock.getArgument(0, PrivilegedAction.class).run();
       return null;
     }).when(administrationContext).runAsAdmin(any(PrivilegedAction.class));
-    doAnswer(invocationOnMock -> {
-      invocationOnMock.getArgument(0, Runnable.class).run();
-      return null;
-    }).when(privilegedMirrorRunner).exceptedFromReadOnly(any());
   }
 
   @Test

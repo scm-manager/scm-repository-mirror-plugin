@@ -36,7 +36,6 @@ import sonia.scm.store.ConfigurationStoreFactory;
 import sonia.scm.web.security.AdministrationContext;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.util.Optional;
 
@@ -54,15 +53,13 @@ public class MirrorConfigurationStore implements Initable {
   private final MirrorScheduler scheduler;
   private final RepositoryManager repositoryManager;
   private final AdministrationContext administrationContext;
-  private final Provider<PrivilegedMirrorRunner> privilegedMirrorRunner;
 
   @Inject
-  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory, MirrorScheduler scheduler, RepositoryManager repositoryManager, AdministrationContext administrationContext, Provider<PrivilegedMirrorRunner> privilegedMirrorRunner) {
+  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory, MirrorScheduler scheduler, RepositoryManager repositoryManager, AdministrationContext administrationContext) {
     this.storeFactory = storeFactory;
     this.scheduler = scheduler;
     this.repositoryManager = repositoryManager;
     this.administrationContext = administrationContext;
-    this.privilegedMirrorRunner = privilegedMirrorRunner;
     this.globalStore = storeFactory.withType(GlobalMirrorConfiguration.class).withName(STORE_NAME).build();
   }
 
@@ -74,16 +71,12 @@ public class MirrorConfigurationStore implements Initable {
   public void setConfiguration(Repository repository, MirrorConfiguration configuration) {
     MirrorPermissions.checkRepositoryMirrorPermission(repository);
     LOG.debug("setting new configuration for repository {}", repository);
-    privilegedMirrorRunner.get().exceptedFromReadOnly(
-      () -> {
-        ConfigurationStore<MirrorConfiguration> store = createConfigurationStore(repository);
-        store.getOptional().ifPresent(
-          existingConfig -> updateWithExisting(existingConfig, configuration)
-        );
-        store.set(configuration);
-        scheduler.schedule(repository, configuration);
-      }
+    ConfigurationStore<MirrorConfiguration> store = createConfigurationStore(repository);
+    store.getOptional().ifPresent(
+      existingConfig -> updateWithExisting(existingConfig, configuration)
     );
+    store.set(configuration);
+    scheduler.schedule(repository, configuration);
   }
 
   private void updateWithExisting(MirrorConfiguration existingConfig, MirrorConfiguration configuration) {

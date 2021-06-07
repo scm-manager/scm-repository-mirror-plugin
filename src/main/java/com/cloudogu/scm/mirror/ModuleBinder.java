@@ -34,7 +34,6 @@ import sonia.scm.plugin.Extension;
 public class ModuleBinder extends AbstractModule {
   @Override
   protected void configure() {
-    bind(PrivilegedMirrorRunner.class).to(MirrorReadOnlyCheck.class);
     bind(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class)
       .to(Mappers.getMapperClass(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class));
     bind(MirrorConfigurationToConfigurationDtoMapper.class)

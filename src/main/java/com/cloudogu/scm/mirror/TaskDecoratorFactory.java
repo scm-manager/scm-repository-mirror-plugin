@@ -29,25 +29,20 @@ import org.slf4j.LoggerFactory;
 import sonia.scm.web.security.AdministrationContext;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 class TaskDecoratorFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(TaskDecoratorFactory.class);
 
   private final AdministrationContext administrationContext;
-  private final Provider<PrivilegedMirrorRunner> privilegedMirrorRunner;
 
   @Inject
-  public TaskDecoratorFactory(AdministrationContext administrationContext, Provider<PrivilegedMirrorRunner> privilegedMirrorRunner) {
+  public TaskDecoratorFactory(AdministrationContext administrationContext) {
     this.administrationContext = administrationContext;
-    this.privilegedMirrorRunner = privilegedMirrorRunner;
   }
 
   Runnable decorate(Runnable runnable) {
-    return withTryCatch(
-      asAdmin(
-        withMirrorPrivileges(runnable)));
+    return withTryCatch(asAdmin(runnable));
   }
 
   private Runnable withTryCatch(Runnable runnable) {
@@ -62,9 +57,5 @@ class TaskDecoratorFactory {
 
   private Runnable asAdmin(Runnable runnable) {
     return () -> administrationContext.runAsAdmin(runnable::run);
-  }
-
-  private Runnable withMirrorPrivileges(Runnable runnable) {
-    return () -> privilegedMirrorRunner.get().exceptedFromReadOnly(runnable);
   }
 }
