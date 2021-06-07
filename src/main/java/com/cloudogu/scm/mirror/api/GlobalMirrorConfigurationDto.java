@@ -35,6 +35,7 @@ import lombok.Setter;
 public class GlobalMirrorConfigurationDto extends MirrorVerificationConfigurationDto {
 
   private boolean httpsOnly;
+  private boolean disableRepositoryFilterOverwrite;
 
   GlobalMirrorConfigurationDto(Links links) {
     super(links);

@@ -23,7 +23,7 @@
  */
 
 import React, { FC, useEffect } from "react";
-import { Checkbox, ConfigurationForm, InputField, Title } from "@scm-manager/ui-components";
+import { Checkbox, ConfigurationForm, InputField, Notification, Title } from "@scm-manager/ui-components";
 import { GlobalConfigurationDto } from "../types";
 import { useForm } from "react-hook-form";
 import { useConfigLink } from "@scm-manager/ui-api";
@@ -60,6 +60,15 @@ const GlobalConfig: FC<Props> = ({ link }) => {
         helpText={t("scm-repository-mirror-plugin.form.httpsOnly.helpText")}
         disabled={isReadonly}
         {...register("httpsOnly")}
+      />
+      <hr />
+      <h2 className="subtitle">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h2>
+      <Notification type="inherit">{t("scm-repository-mirror-plugin.form.verificationFiltersHint")}</Notification>
+      <Checkbox
+        label={t("scm-repository-mirror-plugin.form.disableRepositoryFilterOverwrite.label")}
+        helpText={t("scm-repository-mirror-plugin.form.disableRepositoryFilterOverwrite.helpText")}
+        disabled={isReadonly}
+        {...register("disableRepositoryFilterOverwrite")}
       />
       <InputField
         label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}

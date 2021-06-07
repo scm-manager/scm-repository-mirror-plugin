@@ -109,6 +109,10 @@
       "fastForwardOnly": {
         "label": "Nur Fast-Forward",
         "helpText": "Es werden nur Änderungen an Branches übernommen, die durch einen Fast-Forward entstanden sind."
+      },
+      "disableRepositoryFilterOverwrite": {
+        "label": "Überschreiben der Filterkonfiguration durch Repositories deaktivieren",
+        "helpText": "Repository Owner dürfen die Filterkonfiguration für Spiegelungen nicht mehr überschreiben."
       }
     },
     "flag": {

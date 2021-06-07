@@ -41,5 +41,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class GlobalMirrorConfiguration extends MirrorVerificationConfiguration {
 
   private boolean httpsOnly = false;
+  private boolean disableRepositoryFilterOverwrite = false;
 
 }

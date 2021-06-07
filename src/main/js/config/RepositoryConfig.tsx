@@ -128,7 +128,7 @@ const RepositoryConfig: FC<Props> = ({ link }) => {
         <ManagingUsersControl control={control} isReadonly={isReadonly} />
       </Columns>
       <hr />
-      <h4 className="subtitle is-4">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h4>
+      <h2 className="subtitle">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h2>
       <Notification type={"inherit"}>{t("scm-repository-mirror-plugin.form.verificationFiltersHint")}</Notification>
       <Checkbox
         label={t("scm-repository-mirror-plugin.form.fastForwardOnly.label")}
