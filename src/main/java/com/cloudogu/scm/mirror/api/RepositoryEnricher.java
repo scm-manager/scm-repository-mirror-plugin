@@ -74,7 +74,7 @@ public class RepositoryEnricher implements HalEnricher {
   }
 
   private void appendConfigurationLink(HalAppender appender, LinkBuilder linkBuilder) {
-    String configurationUrl = linkBuilder.method("getMirrorConfiguration").parameters().href();
+    String configurationUrl = linkBuilder.method("getAccessConfiguration").parameters().href();
     appender.appendLink("mirrorConfiguration", configurationUrl);
   }
 

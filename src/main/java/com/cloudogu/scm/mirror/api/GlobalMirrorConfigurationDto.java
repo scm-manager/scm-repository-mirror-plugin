@@ -32,7 +32,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @SuppressWarnings("java:S2160") // equals not needed here
-public class GlobalMirrorConfigurationDto extends MirrorVerificationConfigurationDto {
+public class GlobalMirrorConfigurationDto extends MirrorFilterConfigurationDto {
 
   private boolean httpsOnly;
   private boolean disableRepositoryFilterOverwrite;

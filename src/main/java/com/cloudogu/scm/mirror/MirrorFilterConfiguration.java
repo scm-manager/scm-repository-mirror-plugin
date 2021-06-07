@@ -23,33 +23,17 @@
  */
 package com.cloudogu.scm.mirror;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import java.util.Collections;
 import java.util.List;
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@XmlAccessorType(XmlAccessType.FIELD)
-public class MirrorVerificationConfiguration {
+public interface MirrorFilterConfiguration {
 
-  private List<String> branchesAndTagsPatterns;
-  private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
-  private List<RawGpgKey> allowedGpgKeys;
-  private boolean fastForwardOnly = false;
+  List<String> getBranchesAndTagsPatterns();
 
-  public List<String> getBranchesAndTagsPatterns() {
-    return branchesAndTagsPatterns != null ? branchesAndTagsPatterns : Collections.emptyList();
-  }
+  MirrorGpgVerificationType getGpgVerificationType();
 
-  public List<RawGpgKey> getAllowedGpgKeys() {
-    return allowedGpgKeys != null ? allowedGpgKeys : Collections.emptyList();
-  }
+  List<RawGpgKey> getAllowedGpgKeys();
+
+  boolean isFastForwardOnly();
+
+  boolean isOverwriteGlobalConfiguration();
 }

@@ -21,33 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.MirrorGpgVerificationType;
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.cloudogu.scm.mirror.MirrorAccessConfigurationImpl;
+import com.cloudogu.scm.mirror.MirrorConfiguration;
+import org.mapstruct.Mapper;
 
-import javax.validation.constraints.NotNull;
-import java.util.List;
+import java.util.Base64;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@SuppressWarnings("java:S2160") // equals not needed here
-public class MirrorVerificationConfigurationDto extends HalRepresentation {
+@Mapper
+abstract class MirrorAccessConfigurationDtoToConfigurationMapper {
 
-  private String branchesAndTagsPatterns;
+  abstract MirrorAccessConfigurationImpl map(MirrorAccessConfigurationDto configurationDto);
 
-  @NotNull
-  private MirrorGpgVerificationType gpgVerificationType;
-  private List<RawGpgKeyDto> allowedGpgKeys;
-  private boolean fastForwardOnly;
+  abstract MirrorConfiguration.UsernamePasswordCredential map(UsernamePasswordCredentialDto credentialDto);
+  abstract MirrorConfiguration.CertificateCredential map(CertificateCredentialDto credentialDto);
 
-  MirrorVerificationConfigurationDto(Links links) {
-    super(links);
+  @SuppressWarnings("java:S1168") // we want to signal that the certificate is not set and null signals this much better as an empty array
+  byte[] mapBase64(String base64encoded) {
+    if (base64encoded != null) {
+      return Base64.getDecoder().decode(base64encoded.replace("\n", ""));
+    }
+    return null;
   }
-
 }

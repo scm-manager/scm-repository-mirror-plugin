@@ -22,20 +22,38 @@
  * SOFTWARE.
  */
 
-package com.cloudogu.scm.mirror.api;
+package com.cloudogu.scm.mirror;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import sonia.scm.repository.Repository;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import sonia.scm.xml.XmlCipherByteArrayAdapter;
+import sonia.scm.xml.XmlCipherStringAdapter;
 
-@Mapper
-public interface MirrorRequestDtoToRepositoryMapper {
-  @Mapping(target = "properties", ignore = true)
-  @Mapping(target = "permissions", ignore = true)
-  @Mapping(target = "lastModified", ignore = true)
-  @Mapping(target = "id", ignore = true)
-  @Mapping(target = "healthCheckFailures", ignore = true)
-  @Mapping(target = "creationDate", ignore = true)
-  @Mapping(target = "archived", ignore = true)
-  Repository map(MirrorRequestDto requestDto);
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.Collections;
+import java.util.List;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@XmlRootElement(name = "mirror-configuration")
+@XmlAccessorType(XmlAccessType.FIELD)
+public class MirrorAccessConfigurationImpl implements MirrorAccessConfiguration {
+
+  private String url;
+  private int synchronizationPeriod;
+  private List<String> managingUsers;
+
+  private MirrorAccessConfiguration.UsernamePasswordCredential usernamePasswordCredential;
+  private MirrorAccessConfiguration.CertificateCredential certificateCredential;
+
+  public List<String> getManagingUsers() {
+    return managingUsers != null ? managingUsers : Collections.emptyList();
+  }
 }

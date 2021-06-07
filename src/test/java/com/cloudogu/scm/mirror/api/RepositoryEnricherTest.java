@@ -137,6 +137,7 @@ class RepositoryEnricherTest {
       verify(appender, never()).appendLink(any(), any());
     }
 
+    // TODO: Do we need filterConfiguration link ? Why is this based on accessConfiguration ?
     @Test
     void shouldAppendLinkForRepositoryThatIsAMirror() {
       HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
@@ -145,7 +146,7 @@ class RepositoryEnricherTest {
 
       enricher.enrich(context, appender);
 
-      verify(appender).appendLink("mirrorConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
+      verify(appender).appendLink("mirrorConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
     }
 
     @Test

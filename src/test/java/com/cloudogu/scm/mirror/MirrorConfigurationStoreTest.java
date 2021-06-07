@@ -24,8 +24,6 @@
 
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.MirrorConfiguration.CertificateCredential;
-import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
@@ -52,7 +50,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -97,9 +94,9 @@ class MirrorConfigurationStoreTest {
 
   @Test
   void shouldFailToSetConfigurationWithoutPermission() {
-    MirrorConfiguration configuration = new MirrorConfiguration();
+    MirrorAccessConfiguration configuration = new MirrorAccessConfigurationImpl();
     assertThrows(UnauthorizedException.class,
-      () -> store.setConfiguration(REPOSITORY, configuration));
+      () -> store.setAccessConfiguration(REPOSITORY, configuration));
   }
 
   @Nested
@@ -128,31 +125,33 @@ class MirrorConfigurationStoreTest {
 
     @Test
     void shouldSetConfiguration() {
-      MirrorConfiguration newConfiguration = new MirrorConfiguration();
+      MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
+      MirrorAccessConfiguration newConfiguration = new MirrorAccessConfigurationImpl();
 
-      store.setConfiguration(REPOSITORY, newConfiguration);
+      storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
 
       Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
-      assertThat(configurationFromStore).isSameAs(newConfiguration);
-      verify(scheduler).schedule(REPOSITORY, newConfiguration);
+      assertThat(configurationFromStore).isSameAs(existingMirrorConfiguration);
+      verify(scheduler).schedule(REPOSITORY, existingMirrorConfiguration);
     }
 
     @Test
-    void shouldOverwriteDummyCredentialsWithExistingCredentials() {
+    void shouldIgnoreDummyCredentialsAndEmptyCertificate() {
       MirrorConfiguration existingConfiguration = new MirrorConfiguration();
-      existingConfiguration.setUsernamePasswordCredential(new UsernamePasswordCredential("dent", "oldUsernamePassword"));
-      existingConfiguration.setCertificateCredential(new CertificateCredential(new byte[] {1, 2, 3}, "oldCertPassword"));
+      existingConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "oldUsernamePassword"));
+      existingConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential(new byte[] {1, 2, 3}, "oldCertPassword"));
       mockExistingConfiguration(existingConfiguration);
 
-      MirrorConfiguration newConfiguration = new MirrorConfiguration();
-      newConfiguration.setUsernamePasswordCredential(new UsernamePasswordCredential("dent", "_DUMMY_"));
-      newConfiguration.setCertificateCredential(new CertificateCredential(null, "_DUMMY_"));
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "_DUMMY_"));
+      newConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential(null, "_DUMMY_"));
 
-      store.setConfiguration(REPOSITORY, newConfiguration);
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
 
-      assertThat(newConfiguration.getUsernamePasswordCredential().getPassword()).isEqualTo("oldUsernamePassword");
-      assertThat(newConfiguration.getCertificateCredential().getPassword()).isEqualTo("oldCertPassword");
-      assertThat(newConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
+      assertThat(existingConfiguration.getUsernamePasswordCredential().getPassword()).isEqualTo("oldUsernamePassword");
+      assertThat(existingConfiguration.getCertificateCredential().getPassword()).isEqualTo("oldCertPassword");
+      assertThat(existingConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
     }
 
     @Test
@@ -161,10 +160,10 @@ class MirrorConfigurationStoreTest {
       existingConfiguration.setUrl("http://hog.net/");
       mockExistingConfiguration(existingConfiguration);
 
-      MirrorConfiguration newConfiguration = new MirrorConfiguration();
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
       newConfiguration.setUrl("http://magrathea.com/");
 
-      assertThrows(ScmConstraintViolationException.class, () -> store.setConfiguration(REPOSITORY, newConfiguration));
+      assertThrows(ScmConstraintViolationException.class, () -> store.setAccessConfiguration(REPOSITORY, newConfiguration));
     }
   }
 

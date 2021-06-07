@@ -21,25 +21,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror.api;
 
-package com.cloudogu.scm.mirror;
+import com.cloudogu.scm.mirror.MirrorGpgVerificationType;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import com.cloudogu.scm.mirror.api.GlobalMirrorConfigurationToGlobalConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorAccessConfigurationToConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorFilterConfigurationToDtoMapper;
-import com.google.inject.AbstractModule;
-import org.mapstruct.factory.Mappers;
-import sonia.scm.plugin.Extension;
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
-@Extension
-public class ModuleBinder extends AbstractModule {
-  @Override
-  protected void configure() {
-    bind(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class));
-    bind(MirrorAccessConfigurationToConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorAccessConfigurationToConfigurationDtoMapper.class));
-    bind(MirrorFilterConfigurationToDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorFilterConfigurationToDtoMapper.class));
-  }
+@Getter
+@Setter
+@NoArgsConstructor
+public class MirrorCreationDto {
+
+  private String namespace;
+  @NotBlank
+  private String name;
+  @NotBlank
+  private String type;
+  @Email
+  private String contact;
+  private String description;
+
+  private boolean overwriteGlobalConfiguration;
+
+  private String branchesAndTagsPatterns;
+
+  @NotNull
+  private MirrorGpgVerificationType gpgVerificationType;
+  private List<RawGpgKeyDto> allowedGpgKeys;
+  private boolean fastForwardOnly;
+
+  @NotBlank
+  private String url;
+  @NotNull
+  @Min(5)
+  private Integer synchronizationPeriod;
+  private List<String> managingUsers;
+
+  @Valid
+  private UsernamePasswordCredentialDto usernamePasswordCredential;
+  @Valid
+  private CertificateCredentialDto certificateCredential;
+
 }

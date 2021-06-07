@@ -45,9 +45,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SubjectAware(value = "trillian")
 @ExtendWith(ShiroExtension.class)
-class MirrorConfigurationToConfigurationDtoMapperTest {
+class MirrorFilterConfigurationToDtoMapperTest {
+
   private Repository repository;
-  private final MirrorAccessConfigurationToConfigurationDtoMapper mapper = Mappers.getMapper(MirrorAccessConfigurationToConfigurationDtoMapper.class);
+  private final MirrorFilterConfigurationToDtoMapper mapper = Mappers.getMapper(MirrorFilterConfigurationToDtoMapper.class);
 
   @BeforeEach
   void setup() {
@@ -73,32 +74,29 @@ class MirrorConfigurationToConfigurationDtoMapperTest {
     input.setAllowedGpgKeys(ImmutableList.of(new RawGpgKey("foo", "bar")));
     input.setFastForwardOnly(true);
 
-    final MirrorAccessConfigurationDto output = mapper.map(input, repository);
+    final MirrorFilterConfigurationDto output = mapper.map(input, repository);
 
-    assertThat(output.getUrl()).isEqualTo("https://foo.bar");
-    assertThat(output.getManagingUsers()).contains("freddy", "bernard", "harold");
-    assertThat(output.getSynchronizationPeriod()).isEqualTo(42);
-    assertThat(output.getUsernamePasswordCredential()).isNotNull();
-    assertThat(output.getUsernamePasswordCredential().getPassword()).isEqualTo("_DUMMY_");
-    assertThat(output.getUsernamePasswordCredential().getUsername()).isEqualTo("trillian");
-    assertThat(output.getCertificateCredential()).isNotNull();
-    assertThat(output.getCertificateCredential().getPassword()).isEqualTo("_DUMMY_");
-    assertThat(output.getCertificateCredential().getCertificate()).isNull();
+    assertThat(output.getBranchesAndTagsPatterns()).contains("default", "feature/*");
+    assertThat(output.getGpgVerificationType()).isEqualTo(MirrorGpgVerificationType.KEY_LIST);
+    assertThat(output.getAllowedGpgKeys().get(0).getDisplayName()).isEqualTo("foo");
+    assertThat(output.getAllowedGpgKeys().get(0).getRaw()).isEqualTo("bar");
+    assertThat(output.isFastForwardOnly()).isTrue();
   }
 
   @SubjectAware(permissions = "repository:mirror:42")
   @Test
   void shouldAppendUpdateLink() {
     MirrorConfiguration input = new MirrorConfiguration();
-    final MirrorAccessConfigurationDto output = mapper.map(input, repository);
+    final MirrorFilterConfigurationDto output = mapper.map(input, repository);
     assertThat(output.getLinks().getLinkBy("update"))
-      .hasValueSatisfying(link -> assertThat(link.getHref()).isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration"));
+      .hasValueSatisfying(link -> assertThat(link.getHref()).isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/filterConfiguration"));
   }
 
   @Test
   void shouldNotAppendUpdateLink() {
     MirrorConfiguration input = new MirrorConfiguration();
-    final MirrorAccessConfigurationDto output = mapper.map(input, repository);
+    final MirrorFilterConfigurationDto output = mapper.map(input, repository);
     assertThat(output.getLinks().getLinkBy("update")).isNotPresent();
   }
+
 }

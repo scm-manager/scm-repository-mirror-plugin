@@ -56,9 +56,7 @@ public class MirrorRootResource {
   private final MirrorConfigurationStore configurationService;
   private final GlobalMirrorConfigurationDtoToGlobalConfigurationMapper fromDtoMapper = getMapper(GlobalMirrorConfigurationDtoToGlobalConfigurationMapper.class);
   private final GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper;
-
-  private final MirrorRequestDtoToRepositoryMapper requestDtoToRepositoryMapper = Mappers.getMapper(MirrorRequestDtoToRepositoryMapper.class);
-  private final MirrorConfigurationDtoToConfigurationMapper requestDtoToRequestMapper = Mappers.getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
+  private final MirrorCreationDtoMapper mirrorCreationDtoMapper = Mappers.getMapper(MirrorCreationDtoMapper.class);
 
   @Inject
   public MirrorRootResource(Provider<MirrorResource> mirrorResource, RepositoryLinkProvider repositoryLinkProvider, MirrorService mirrorService, MirrorConfigurationStore configurationService, GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper) {
@@ -72,9 +70,9 @@ public class MirrorRootResource {
   @POST
   @Path("/repositories")
   @Consumes("application/json")
-  public Response createMirrorRepository(@Valid MirrorRequestDto requestDto) {
-    Repository repository = requestDtoToRepositoryMapper.map(requestDto);
-    MirrorConfiguration configuration = requestDtoToRequestMapper.map(requestDto);
+  public Response createMirrorRepository(@Valid MirrorCreationDto requestDto) {
+    Repository repository = mirrorCreationDtoMapper.mapToRepository(requestDto);
+    MirrorConfiguration configuration = mirrorCreationDtoMapper.mapToConfiguration(requestDto);
     Repository mirror = mirrorService.createMirror(configuration, repository);
     return Response.created(URI.create(repositoryLinkProvider.get(mirror.getNamespaceAndName()))).build();
   }

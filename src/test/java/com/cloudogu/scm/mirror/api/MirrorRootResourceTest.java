@@ -26,8 +26,8 @@ package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.LogEntry;
 import com.cloudogu.scm.mirror.LogStore;
+import com.cloudogu.scm.mirror.MirrorAccessConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
-import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
 import com.cloudogu.scm.mirror.MirrorStatus;
@@ -96,13 +96,15 @@ class MirrorRootResourceTest {
   private LogStore logStore;
 
   private final GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper = Mappers.getMapper(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class);
-  private final MirrorConfigurationToConfigurationDtoMapper configurationToConfigurationDtoMapper = Mappers.getMapper(MirrorConfigurationToConfigurationDtoMapper.class);
+  private final MirrorAccessConfigurationToConfigurationDtoMapper configurationToConfigurationDtoMapper = Mappers.getMapper(MirrorAccessConfigurationToConfigurationDtoMapper.class);
+  private final MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper = Mappers.getMapper(MirrorFilterConfigurationToDtoMapper.class);
 
   @BeforeEach
   void initResource() {
-    MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, configurationToConfigurationDtoMapper, logStore);
+    MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, configurationToConfigurationDtoMapper, logStore, toFiltersDtoMapper);
     configurationToConfigurationDtoMapper.setScmPathInfoStore(forUri("/"));
     toDtoMapper.setScmPathInfoStore(forUri("/"));
+    toFiltersDtoMapper.setScmPathInfoStore(forUri("/"));
     dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService, configurationStore, toDtoMapper));
   }
 
@@ -184,8 +186,8 @@ class MirrorRootResourceTest {
   }
 
   @Test
-  void shouldFailToGetConfigurationForMissingRepository() throws URISyntaxException {
-    MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
+  void shouldFailToGetAccessConfigurationForMissingRepository() throws URISyntaxException {
+    MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
     MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
@@ -194,10 +196,8 @@ class MirrorRootResourceTest {
   }
 
   @Test
-  void shouldFailToSetConfigurationForMissingRepository() throws URISyntaxException {
-    JsonMockHttpRequest request = JsonMockHttpRequest
-      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
-      .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'gpgVerificationType':'NONE'}");
+  void shouldFailToGetFilterConfigurationForMissingRepository() throws URISyntaxException {
+    MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/filterConfiguration");
     MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
@@ -206,16 +206,53 @@ class MirrorRootResourceTest {
   }
 
   @Test
-  void shouldValidateNewConfiguration() throws URISyntaxException {
+  void shouldFailToSetAccessConfigurationForMissingRepository() throws URISyntaxException {
     JsonMockHttpRequest request = JsonMockHttpRequest
-      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
+      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
+      .json("{'url':'http://hog/scm', 'synchronizationPeriod':42}");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(404);
+  }
+
+  @Test
+  void shouldFailToSetFilterConfigurationForMissingRepository() throws URISyntaxException {
+    JsonMockHttpRequest request = JsonMockHttpRequest
+      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/filterConfiguration")
+      .json("{'gpgVerificationType':'NONE'}");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(404);
+  }
+
+  @Test
+  void shouldValidateNewAccessConfiguration() throws URISyntaxException {
+    JsonMockHttpRequest request = JsonMockHttpRequest
+      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
       .json("{}");
     MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(400);
-    verify(configurationStore, never()).setConfiguration(any(), any());
+    verify(configurationStore, never()).setAccessConfiguration(any(), any());
+  }
+
+  @Test
+  void shouldValidateNewFilterConfiguration() throws URISyntaxException {
+    JsonMockHttpRequest request = JsonMockHttpRequest
+      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/filterConfiguration")
+      .json("{}");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(400);
+    verify(configurationStore, never()).setFilterConfiguration(any(), any());
   }
 
   @Test
@@ -242,17 +279,17 @@ class MirrorRootResourceTest {
     }
 
     @Test
-    void shouldSetUrlAndPeriodInConfiguration() throws URISyntaxException {
+    void shouldSetUrlAndPeriodInAccessConfiguration() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest
-        .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
-        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'gpgVerificationType':'NONE'}");
+        .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
+        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
 
       assertThat(response.getStatus()).isEqualTo(204);
       verify(configurationStore)
-        .setConfiguration(
+        .setAccessConfiguration(
           eq(repository),
           argThat(configuration -> {
             assertThat(configuration.getUrl()).isEqualTo("http://hog/scm");
@@ -262,17 +299,17 @@ class MirrorRootResourceTest {
     }
 
     @Test
-    void shouldSetUsernamePasswordCredentialInConfiguration() throws URISyntaxException {
+    void shouldSetUsernamePasswordCredentialInAccessConfiguration() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest
-        .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration")
-        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'dent', 'password':'hg2g'}, 'gpgVerificationType':'NONE'}");
+        .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
+        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'dent', 'password':'hg2g'}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
 
       assertThat(response.getStatus()).isEqualTo(204);
       verify(configurationStore)
-        .setConfiguration(
+        .setAccessConfiguration(
           any(),
           argThat(configuration -> {
             assertThat(configuration.getUsernamePasswordCredential().getUsername()).isEqualTo("dent");
@@ -302,28 +339,28 @@ class MirrorRootResourceTest {
             "http://hog/",
             42,
             emptyList(),
-            new UsernamePasswordCredential("dent", "hog"),
+            new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "hog"),
             new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"));
         when(configurationStore.getConfiguration(repository))
           .thenReturn(Optional.of(existingConfiguration));
       }
 
       @Test
-      void shouldGetConfiguration() throws URISyntaxException {
-        MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
+      void shouldGetAccessConfiguration() throws URISyntaxException {
+        MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
         JsonMockHttpResponse response = new JsonMockHttpResponse();
 
         dispatcher.invoke(request, response);
 
         assertThat(response.getStatus()).isEqualTo(200);
-        MirrorConfigurationDto configurationDto = response.getContentAs(MirrorConfigurationDto.class);
+        MirrorAccessConfigurationDto configurationDto = response.getContentAs(MirrorAccessConfigurationDto.class);
         assertThat(configurationDto.getUrl()).isEqualTo("http://hog/");
         assertThat(configurationDto.getUsernamePasswordCredential().getUsername()).isEqualTo("dent");
         assertThat(configurationDto.getUsernamePasswordCredential().getPassword()).isEqualTo("_DUMMY_");
         assertThat(configurationDto.getCertificateCredential().getCertificate()).isNull();
         assertThat(configurationDto.getCertificateCredential().getPassword()).isEqualTo("_DUMMY_");
         assertThat(configurationDto.getLinks().getLinkBy("self")).get().extracting("href")
-          .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
+          .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
       }
 
       @Test
@@ -336,20 +373,19 @@ class MirrorRootResourceTest {
           new MirrorConfiguration("http://hog/", 42, emptyList(), null, null);
         when(configurationStore.getConfiguration(repository))
           .thenReturn(Optional.of(existingConfiguration));
-        MirrorConfigurationDto mirrorConfigurationDto = new MirrorConfigurationDto(new Links.Builder().build());
+        MirrorAccessConfigurationDto mirrorConfigurationDto = new MirrorAccessConfigurationDto(new Links.Builder().build());
         mirrorConfigurationDto.setUrl("http://hog/");
         mirrorConfigurationDto.setSynchronizationPeriod(42);
-        mirrorConfigurationDto.setAllowedGpgKeys(emptyList());
 
-        MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
+        MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
         JsonMockHttpResponse response = new JsonMockHttpResponse();
 
         dispatcher.invoke(request, response);
 
         assertThat(response.getStatus()).isEqualTo(200);
-        MirrorConfigurationDto configurationDto = response.getContentAs(MirrorConfigurationDto.class);
+        MirrorAccessConfigurationDto configurationDto = response.getContentAs(MirrorAccessConfigurationDto.class);
         assertThat(configurationDto.getLinks().getLinkBy("update")).get().extracting("href")
-          .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
+          .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
       }
     }
   }

@@ -21,72 +21,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.cloudogu.scm.mirror;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import sonia.scm.xml.XmlCipherByteArrayAdapter;
-import sonia.scm.xml.XmlCipherStringAdapter;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.Collections;
 import java.util.List;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@XmlRootElement(name = "mirror-configuration")
-@XmlAccessorType(XmlAccessType.FIELD)
-public class MirrorConfiguration extends MirrorVerificationConfiguration {
+@AllArgsConstructor
+public class MirrorConfiguration implements MirrorAccessConfiguration, MirrorFilterConfiguration {
 
   private String url;
   private int synchronizationPeriod;
   private List<String> managingUsers;
+  private MirrorAccessConfiguration.UsernamePasswordCredential usernamePasswordCredential;
+  private MirrorAccessConfiguration.CertificateCredential certificateCredential;
+  private List<String> branchesAndTagsPatterns;
+  private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
+  private List<RawGpgKey> allowedGpgKeys;
+  private boolean fastForwardOnly = false;
+  private boolean overwriteGlobalConfiguration = false;
 
-  private UsernamePasswordCredential usernamePasswordCredential;
-  private CertificateCredential certificateCredential;
-
-  @Getter
-  @Setter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  @XmlAccessorType(XmlAccessType.FIELD)
-  public static class UsernamePasswordCredential implements sonia.scm.repository.api.UsernamePasswordCredential {
-    private String username;
-    @XmlJavaTypeAdapter(XmlCipherStringAdapter.class)
-    private String password;
-
-    @Override
-    public String username() {
-      return username;
-    }
-
-    @Override
-    public char[] password() {
-      return password.toCharArray();
-    }
-  }
-
-  @Getter
-  @Setter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  @XmlAccessorType(XmlAccessType.FIELD)
-  public static class CertificateCredential {
-    @XmlJavaTypeAdapter(XmlCipherByteArrayAdapter.class)
-    private byte[] certificate;
-    @XmlJavaTypeAdapter(XmlCipherStringAdapter.class)
-    private String password;
+  public MirrorConfiguration(String url, int synchronizationPeriod, List<String> managingUsers, UsernamePasswordCredential usernamePasswordCredential, CertificateCredential certificateCredential) {
+    this.url = url;
+    this.synchronizationPeriod = synchronizationPeriod;
+    this.managingUsers = managingUsers;
+    this.usernamePasswordCredential = usernamePasswordCredential;
+    this.certificateCredential = certificateCredential;
   }
 
   public List<String> getManagingUsers() {
     return managingUsers != null ? managingUsers : Collections.emptyList();
   }
+
+  public List<String> getBranchesAndTagsPatterns() {
+    return branchesAndTagsPatterns != null ? branchesAndTagsPatterns : Collections.emptyList();
+  }
+
+  public List<RawGpgKey> getAllowedGpgKeys() {
+    return allowedGpgKeys != null ? allowedGpgKeys : Collections.emptyList();
+  }
+
 }
