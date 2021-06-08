@@ -113,6 +113,10 @@
       "disableRepositoryFilterOverwrite": {
         "label": "Do not allow repository filter overwrite",
         "helpText": "Do not allow repository owners to overwrite the mirror filters."
+      },
+      "overwriteGlobalConfiguration": {
+        "label": "Overwrite Global Filter Configuration",
+        "helpText": "Replaces the global filter configuration for this repository."
       }
     },
     "flag": {

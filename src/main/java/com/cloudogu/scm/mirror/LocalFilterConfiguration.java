@@ -21,30 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.mirror.api;
+package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.LocalFilterConfigurationImpl;
-import com.cloudogu.scm.mirror.MirrorFilterConfigurationImpl;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
-import java.util.List;
-
-import static java.util.Collections.emptyList;
-
-@Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
-public abstract class MirrorFilterConfigurationDtoToDaoMapper {
-
-  abstract LocalFilterConfigurationImpl map(LocalMirrorFilterConfigurationDto configurationDto);
-
-  @Mapping(target = "branchesAndTagsPatterns")
-  List<String> map(String value) {
-    if (Strings.isNullOrEmpty(value)) {
-      return emptyList();
-    }
-    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
-  }
-
+public interface LocalFilterConfiguration extends MirrorFilterConfiguration {
+  boolean isOverwriteGlobalConfiguration();
 }

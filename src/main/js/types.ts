@@ -42,29 +42,34 @@ export type CertificateCredentialForm = CertificateCredentialDto & {
   enabled: boolean;
 };
 
-export type MirrorVerificationConfigurationDto = {
+export type MirrorFilterConfigurationDto = HalRepresentation & {
   branchesAndTagsPatterns: string;
   gpgVerificationType: MirrorGpgVerificationType;
   allowedGpgKeys?: PublicKey[];
   fastForwardOnly?: boolean;
 };
-export type MirrorConfigurationDto = HalRepresentation &
-  MirrorVerificationConfigurationDto & {
-    url: string;
-    synchronizationPeriod: number;
-    managingUsers: string[];
-    usernamePasswordCredential?: UsernamePasswordCredentialDto;
-    certificateCredential?: CertificateCredentialDto;
-  };
 
-export type MirrorConfigurationForm = MirrorConfigurationDto & {
+export type LocalMirrorFilterConfigurationDto = MirrorFilterConfigurationDto & {
+  overwriteGlobalConfiguration?: boolean;
+};
+
+export type MirrorAccessConfigurationDto = HalRepresentation & {
+  url: string;
+  synchronizationPeriod: number;
+  managingUsers: string[];
+  usernamePasswordCredential?: UsernamePasswordCredentialDto;
+  certificateCredential?: CertificateCredentialDto;
+};
+
+export type MirrorAccessConfigurationForm = MirrorAccessConfigurationDto & {
   usernamePasswordCredential?: UsernamePasswordCredentialForm;
   certificateCredential?: CertificateCredentialForm;
 };
 
-export type MirrorRequestDto = MirrorConfigurationDto & RepositoryCreation;
+export type MirrorCreationDto = MirrorAccessConfigurationDto & LocalMirrorFilterConfigurationDto & RepositoryCreation;
+export type MirrorCreationForm = MirrorAccessConfigurationForm & LocalMirrorFilterConfigurationDto & RepositoryCreation;
 
-export type GlobalConfigurationDto = MirrorVerificationConfigurationDto & {
+export type GlobalConfigurationDto = MirrorFilterConfigurationDto & {
   httpsOnly: boolean;
   disableRepositoryFilterOverwrite: boolean;
 };

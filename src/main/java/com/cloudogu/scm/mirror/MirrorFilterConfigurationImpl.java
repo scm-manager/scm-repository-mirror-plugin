@@ -23,7 +23,6 @@
  */
 package com.cloudogu.scm.mirror;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,7 +34,6 @@ import java.util.List;
 
 @Setter
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 @XmlAccessorType(XmlAccessType.FIELD)
 public class MirrorFilterConfigurationImpl implements MirrorFilterConfiguration {
@@ -44,7 +42,6 @@ public class MirrorFilterConfigurationImpl implements MirrorFilterConfiguration 
   private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
   private List<RawGpgKey> allowedGpgKeys;
   private boolean fastForwardOnly = false;
-  private boolean overwriteGlobalConfiguration = false;
 
   public List<String> getBranchesAndTagsPatterns() {
     return branchesAndTagsPatterns != null ? branchesAndTagsPatterns : Collections.emptyList();

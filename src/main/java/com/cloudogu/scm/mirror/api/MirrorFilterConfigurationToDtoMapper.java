@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.LocalFilterConfiguration;
 import com.cloudogu.scm.mirror.MirrorPermissions;
 import com.cloudogu.scm.mirror.MirrorFilterConfiguration;
 import com.google.common.annotations.VisibleForTesting;
@@ -53,11 +54,11 @@ public abstract class MirrorFilterConfigurationToDtoMapper {
   }
 
   @Mapping(ignore = true, target = "attributes")
-  abstract MirrorFilterConfigurationDto map(MirrorFilterConfiguration configuration, @Context Repository repository);
+  abstract LocalMirrorFilterConfigurationDto map(LocalFilterConfiguration configuration, @Context Repository repository);
 
   @ObjectFactory
-  MirrorFilterConfigurationDto createConfigurationDto(@Context Repository repository) {
-    return new MirrorFilterConfigurationDto(createLinks(repository));
+  LocalMirrorFilterConfigurationDto createConfigurationDto(@Context Repository repository) {
+    return new LocalMirrorFilterConfigurationDto(createLinks(repository));
   }
 
   private Links createLinks(Repository repository) {

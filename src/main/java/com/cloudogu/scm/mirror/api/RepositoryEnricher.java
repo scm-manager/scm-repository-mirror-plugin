@@ -62,7 +62,7 @@ public class RepositoryEnricher implements HalEnricher {
       appendStatusEmbedded(appender, repository);
       if (MirrorPermissions.hasRepositoryMirrorPermission(repository)) {
         LinkBuilder linkBuilder = linkBuilder(repository);
-        appendConfigurationLink(appender, linkBuilder);
+        appendConfigurationLinks(appender, linkBuilder);
         appendLogsLink(appender, linkBuilder);
       }
     }
@@ -73,9 +73,13 @@ public class RepositoryEnricher implements HalEnricher {
     appender.appendEmbedded("mirrorStatus", new MirrorStatusDto(status.getResult()));
   }
 
-  private void appendConfigurationLink(HalAppender appender, LinkBuilder linkBuilder) {
-    String configurationUrl = linkBuilder.method("getAccessConfiguration").parameters().href();
-    appender.appendLink("mirrorConfiguration", configurationUrl);
+  private void appendConfigurationLinks(HalAppender appender, LinkBuilder linkBuilder) {
+    String accessConfigurationLink = linkBuilder.method("getAccessConfiguration").parameters().href();
+    appender.appendLink("mirrorAccessConfiguration", accessConfigurationLink);
+    if (!configurationService.getGlobalConfiguration().isDisableRepositoryFilterOverwrite()) {
+      String filterConfigurationLink = linkBuilder.method("getFilterConfiguration").parameters().href();
+      appender.appendLink("mirrorFilterConfiguration", filterConfigurationLink);
+    }
   }
 
   private void appendLogsLink(HalAppender appender, LinkBuilder linkBuilder) {

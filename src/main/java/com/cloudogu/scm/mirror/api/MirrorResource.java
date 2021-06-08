@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.LocalFilterConfiguration;
 import com.cloudogu.scm.mirror.LogEntry;
 import com.cloudogu.scm.mirror.LogStore;
 import com.cloudogu.scm.mirror.MirrorAccessConfiguration;
@@ -123,8 +124,8 @@ public class MirrorResource {
   @PUT
   @Path("/filterConfiguration")
   @Consumes("application/json")
-  public void setFilterConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid MirrorFilterConfigurationDto filtersDto) {
-    MirrorFilterConfiguration configuration = fromFiltersDtoMapper.map(filtersDto);
+  public void setFilterConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid LocalMirrorFilterConfigurationDto filtersDto) {
+    LocalFilterConfiguration configuration = fromFiltersDtoMapper.map(filtersDto);
     Repository repository = loadRepository(namespace, name);
     configurationService.setFilterConfiguration(repository, configuration);
   }

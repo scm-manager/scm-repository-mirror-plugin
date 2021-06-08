@@ -35,5 +35,4 @@ public interface MirrorFilterConfiguration {
 
   boolean isFastForwardOnly();
 
-  boolean isOverwriteGlobalConfiguration();
 }

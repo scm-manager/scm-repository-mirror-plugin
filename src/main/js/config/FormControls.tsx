@@ -24,9 +24,9 @@
 
 import { Control, useController, useForm, useWatch } from "react-hook-form";
 import {
-  MirrorConfigurationForm,
+  MirrorAccessConfigurationForm,
   mirrorGpgVerificationTypes,
-  MirrorVerificationConfigurationDto,
+  MirrorFilterConfigurationDto,
   PublicKey
 } from "../types";
 import React, { ChangeEvent, FC, useEffect } from "react";
@@ -54,13 +54,13 @@ const Column = styled.div`
   margin-bottom: 0.5rem;
 `;
 
-export type MirrorConfigControlProps = { control: Control<MirrorConfigurationForm>; isReadonly: boolean };
-export type MirrorVerificationConfigControlProps = {
-  control: Control<MirrorVerificationConfigurationDto>;
+export type MirrorAccessConfigControlProps = { control: Control<MirrorAccessConfigurationForm>; isReadonly: boolean };
+export type MirrorFilterConfigControlProps = {
+  control: Control<MirrorFilterConfigurationDto>;
   isReadonly?: boolean;
 };
 
-export const ManagingUsersControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
+export const ManagingUsersControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
   const userSuggestions = useUserSuggestions();
   const { field } = useController({ control, name: "managingUsers" });
   const [t] = useTranslation("plugins");
@@ -91,7 +91,7 @@ export const ManagingUsersControl: FC<MirrorConfigControlProps> = ({ control, is
   );
 };
 
-export const FileInputControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
+export const FileInputControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
   const { field } = useController({ control, name: "certificateCredential.certificate" });
   const [t] = useTranslation("plugins");
 
@@ -111,7 +111,7 @@ export const FileInputControl: FC<MirrorConfigControlProps> = ({ control, isRead
   );
 };
 
-export const CredentialsControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
+export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field: enabledField } = useController({ control, name: "usernamePasswordCredential.enabled" });
   const { field: usernameField } = useController({ control, name: "usernamePasswordCredential.username" });
@@ -204,7 +204,7 @@ export const createPeriodOptions: (t: (key: string) => string) => SelectItem[] =
   }
 ];
 
-export const SynchronizationPeriodControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
+export const SynchronizationPeriodControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field } = useController({ control, name: "synchronizationPeriod", defaultValue: 60 });
 
@@ -221,7 +221,7 @@ export const SynchronizationPeriodControl: FC<MirrorConfigControlProps> = ({ con
   );
 };
 
-export const UrlControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }) => {
+export const UrlControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field, fieldState } = useController({
     control,
@@ -252,8 +252,8 @@ export const UrlControl: FC<MirrorConfigControlProps> = ({ control, isReadonly }
   );
 };
 
-export const coalesceFormValue = <T extends MirrorConfigurationForm>(value: T): T => {
-  const output: MirrorConfigurationForm = { ...value };
+export const coalesceFormValue = <T extends MirrorAccessConfigurationForm>(value: T): T => {
+  const output: MirrorAccessConfigurationForm = { ...value };
 
   if (!output.usernamePasswordCredential?.enabled || !output.usernamePasswordCredential?.username) {
     delete output.usernamePasswordCredential;
@@ -269,7 +269,7 @@ const VerticalAlignCell = styled.td`
   vertical-align: middle !important;
 `;
 
-export const PublicKeysControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
+export const PublicKeysControl: FC<MirrorFilterConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field } = useController({
     control,
@@ -368,7 +368,7 @@ export const createGpgVerificationTypeOptions: (t: (key: string) => string) => S
     value: mirrorGpgVerificationType
   }));
 
-export const GpgVerificationControl: FC<MirrorVerificationConfigControlProps> = ({ control, isReadonly }) => {
+export const GpgVerificationControl: FC<MirrorFilterConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field: verificationTypeField } = useController({
     control,

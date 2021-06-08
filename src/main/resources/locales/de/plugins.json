@@ -113,6 +113,10 @@
       "disableRepositoryFilterOverwrite": {
         "label": "Überschreiben der Filterkonfiguration durch Repositories deaktivieren",
         "helpText": "Repository Owner dürfen die Filterkonfiguration für Spiegelungen nicht mehr überschreiben."
+      },
+      "overwriteGlobalConfiguration": {
+        "label": "Globale Filterkonfiguration überschreiben",
+        "helpText": "Ersetzt die globale Filterkonfiguration für dieses Repository."
       }
     },
     "flag": {

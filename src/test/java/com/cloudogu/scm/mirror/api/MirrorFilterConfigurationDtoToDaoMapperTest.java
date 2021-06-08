@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.LocalFilterConfiguration;
 import com.cloudogu.scm.mirror.MirrorFilterConfiguration;
 import com.cloudogu.scm.mirror.MirrorGpgVerificationType;
 import com.google.common.collect.ImmutableList;
@@ -37,13 +38,13 @@ class MirrorFilterConfigurationDtoToDaoMapperTest {
 
   @Test
   void shouldMapToDao() {
-    final MirrorFilterConfigurationDto input = new MirrorFilterConfigurationDto();
+    final LocalMirrorFilterConfigurationDto input = new LocalMirrorFilterConfigurationDto();
     input.setBranchesAndTagsPatterns("default, feature/*, ,,,");
     input.setGpgVerificationType(MirrorGpgVerificationType.KEY_LIST);
     input.setAllowedGpgKeys(ImmutableList.of(new RawGpgKeyDto("foo", "bar")));
     input.setFastForwardOnly(true);
 
-    final MirrorFilterConfiguration output = mapper.map(input);
+    final LocalFilterConfiguration output = mapper.map(input);
 
     assertThat(output.getBranchesAndTagsPatterns()).contains("default", "feature/*");
     assertThat(output.getGpgVerificationType()).isEqualTo(MirrorGpgVerificationType.KEY_LIST);
@@ -54,7 +55,7 @@ class MirrorFilterConfigurationDtoToDaoMapperTest {
 
   @Test
   void shouldHandleEmptyPatternList() {
-    final MirrorFilterConfigurationDto input = new MirrorFilterConfigurationDto();
+    final LocalMirrorFilterConfigurationDto input = new LocalMirrorFilterConfigurationDto();
     input.setBranchesAndTagsPatterns(null);
     input.setGpgVerificationType(MirrorGpgVerificationType.NONE);
 

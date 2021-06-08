@@ -28,6 +28,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,7 +38,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MirrorConfiguration implements MirrorAccessConfiguration, MirrorFilterConfiguration {
+@XmlRootElement(name = "mirror-configuration")
+@XmlAccessorType(XmlAccessType.FIELD)
+public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilterConfiguration {
 
   private String url;
   private int synchronizationPeriod;

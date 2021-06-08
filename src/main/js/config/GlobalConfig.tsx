@@ -36,7 +36,7 @@ type Props = {
 
 const GlobalConfig: FC<Props> = ({ link }) => {
   const [t] = useTranslation("plugins");
-  const { initialConfiguration, update, isReadonly, ...formProps } = useConfigLink<GlobalConfigurationDto>(link);
+  const { initialConfiguration, update, isReadOnly, ...formProps } = useConfigLink<GlobalConfigurationDto>(link);
   const { formState, handleSubmit, register, reset, control } = useForm<GlobalConfigurationDto>({
     mode: "onChange"
   });
@@ -50,7 +50,7 @@ const GlobalConfig: FC<Props> = ({ link }) => {
   return (
     <ConfigurationForm
       isValid={formState.isValid}
-      isReadonly={isReadonly}
+      isReadOnly={isReadOnly}
       onSubmit={handleSubmit(update)}
       {...formProps}
     >
@@ -58,7 +58,7 @@ const GlobalConfig: FC<Props> = ({ link }) => {
       <Checkbox
         label={t("scm-repository-mirror-plugin.form.httpsOnly.label")}
         helpText={t("scm-repository-mirror-plugin.form.httpsOnly.helpText")}
-        disabled={isReadonly}
+        disabled={isReadOnly}
         {...register("httpsOnly")}
       />
       <hr />
@@ -67,16 +67,16 @@ const GlobalConfig: FC<Props> = ({ link }) => {
       <Checkbox
         label={t("scm-repository-mirror-plugin.form.disableRepositoryFilterOverwrite.label")}
         helpText={t("scm-repository-mirror-plugin.form.disableRepositoryFilterOverwrite.helpText")}
-        disabled={isReadonly}
+        disabled={isReadOnly}
         {...register("disableRepositoryFilterOverwrite")}
       />
       <InputField
         label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
         helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
-        disabled={isReadonly}
+        disabled={isReadOnly}
         {...register("branchesAndTagsPatterns")}
       />
-      <GpgVerificationControl control={control} isReadonly={isReadonly} />
+      <GpgVerificationControl control={control} isReadonly={isReadOnly} />
     </ConfigurationForm>
   );
 };

@@ -97,7 +97,7 @@ class MirrorServiceTest {
   void shouldCallUpdateCommand() {
     repository.setId("42");
     MirrorConfiguration configuration = mock(MirrorConfiguration.class);
-    when(configurationStore.getConfiguration(repository)).thenReturn(of(configuration));
+    when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
     service.updateMirror(repository);
 
@@ -110,7 +110,7 @@ class MirrorServiceTest {
   )
   void shouldFailUpdateCommandWhenNotConfiguredAsMirror() {
     repository.setId("42");
-    when(configurationStore.getConfiguration(repository)).thenReturn(empty());
+    when(configurationStore.getApplicableConfiguration(repository)).thenReturn(empty());
 
     assertThrows(NotConfiguredForMirrorException.class, () -> service.updateMirror(repository));
   }

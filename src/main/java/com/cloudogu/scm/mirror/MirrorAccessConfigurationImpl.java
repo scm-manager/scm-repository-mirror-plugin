@@ -42,8 +42,6 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@XmlRootElement(name = "mirror-configuration")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class MirrorAccessConfigurationImpl implements MirrorAccessConfiguration {
 
   private String url;

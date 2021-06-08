@@ -23,28 +23,21 @@
  */
 package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.LocalFilterConfigurationImpl;
-import com.cloudogu.scm.mirror.MirrorFilterConfigurationImpl;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import de.otto.edison.hal.Links;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.List;
+@Getter
+@Setter
+@NoArgsConstructor
+@SuppressWarnings("java:S2160") // equals not needed here
+public class LocalMirrorFilterConfigurationDto extends MirrorFilterConfigurationDto {
 
-import static java.util.Collections.emptyList;
+  private boolean overwriteGlobalConfiguration;
 
-@Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
-public abstract class MirrorFilterConfigurationDtoToDaoMapper {
-
-  abstract LocalFilterConfigurationImpl map(LocalMirrorFilterConfigurationDto configurationDto);
-
-  @Mapping(target = "branchesAndTagsPatterns")
-  List<String> map(String value) {
-    if (Strings.isNullOrEmpty(value)) {
-      return emptyList();
+  LocalMirrorFilterConfigurationDto(Links links) {
+      super(links);
     }
-    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
-  }
 
 }

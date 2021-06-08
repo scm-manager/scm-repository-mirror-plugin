@@ -24,7 +24,7 @@
 
 import { Checkbox, InputField, Level, Notification, SubmitButton } from "@scm-manager/ui-components";
 import React, { FC, useEffect, useState } from "react";
-import { MirrorConfigurationDto, MirrorRequestDto } from "./types";
+import { MirrorCreationDto, MirrorCreationForm } from "./types";
 import { useForm } from "react-hook-form";
 import { RepositoryCreation } from "@scm-manager/ui-types";
 import styled from "styled-components";
@@ -43,7 +43,7 @@ const Columns = styled.div`
 `;
 
 type Props = {
-  onSubmit: (output: MirrorRequestDto) => void;
+  onSubmit: (output: MirrorCreationDto) => void;
   disabled: boolean;
   InformationForm: extensionPoints.RepositoryCreatorComponentProps["informationForm"];
   NameForm: extensionPoints.RepositoryCreatorComponentProps["nameForm"];
@@ -52,7 +52,7 @@ type Props = {
 
 const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, NameForm, InformationForm }) => {
   const [t] = useTranslation("plugins");
-  const { handleSubmit, formState, getValues, control, register } = useForm<MirrorConfigurationDto>({
+  const { handleSubmit, formState, getValues, control, register } = useForm<MirrorCreationForm>({
     mode: "onChange"
   });
   const [repository, setRepository] = useState<RepositoryCreation>({
@@ -67,7 +67,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
   const { isValid: isFormValid, touchedFields } = formState;
 
   useEffect(() => {
-    const url = getValues("url")
+    const url = getValues("url");
     if (url && touchedFields.url && !repository.name) {
       // If the repository name is not fill we set a name suggestion
       const match = url.match(/([^\/]+?)(?:.git)?$/);
@@ -78,8 +78,8 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
   }, [getValues, touchedFields.url]);
 
   const isValid = () => Object.values(valid).every(v => v) && isFormValid;
-  const innerOnSubmit = (configFormValue: MirrorConfigurationDto) => {
-    const request: MirrorRequestDto = {
+  const innerOnSubmit = (configFormValue: MirrorCreationForm) => {
+    const request: MirrorCreationForm = {
       ...configFormValue,
       ...repository,
       type: repositoryType

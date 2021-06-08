@@ -24,12 +24,12 @@
 
 import { useMutation, useQueryClient } from "react-query";
 import { Repository } from "@scm-manager/ui-types";
-import { MirrorRequestDto } from "./types";
+import { MirrorCreationDto } from "./types";
 import { apiClient } from "@scm-manager/ui-components";
 
 type UseCreateRepositoryRequest = {
   link: string;
-  payload: MirrorRequestDto;
+  payload: MirrorCreationDto;
 };
 
 const mirrorRepository = ({ link, payload }: UseCreateRepositoryRequest) => {
@@ -57,7 +57,7 @@ export const useMirrorRepository = () => {
     }
   );
   return {
-    mirror: (link: string, payload: MirrorRequestDto) => {
+    mirror: (link: string, payload: MirrorCreationDto) => {
       mutate({ link, payload });
     },
     isLoading,

@@ -64,13 +64,30 @@ public class MirrorConfigurationStore implements Initable {
     this.globalStore = storeFactory.withType(GlobalMirrorConfiguration.class).withName(STORE_NAME).build();
   }
 
+  public Optional<MirrorConfiguration> getApplicableConfiguration(Repository repository) {
+    final Optional<MirrorConfiguration> localConfiguration = getConfiguration(repository);
+    return localConfiguration.map(it -> applyFilterConfiguration(it, getApplicableFilterConfiguration(repository)));
+  }
+
+  public MirrorFilterConfiguration getApplicableFilterConfiguration(Repository repository) {
+    final GlobalMirrorConfiguration globalConfiguration = getGlobalConfiguration();
+    if (globalConfiguration.isDisableRepositoryFilterOverwrite()) {
+      return globalConfiguration;
+    }
+    final Optional<MirrorConfiguration> localConfiguration = getConfiguration(repository);
+    if (localConfiguration.isPresent() && localConfiguration.get().isOverwriteGlobalConfiguration()) {
+      return localConfiguration.get();
+    }
+    return globalConfiguration;
+  }
+
   public Optional<MirrorConfiguration> getConfiguration(Repository repository) {
     MirrorPermissions.checkRepositoryMirrorPermission(repository);
     return createConfigurationStore(repository).getOptional();
   }
 
-  public void setFilterConfiguration(Repository repository, MirrorFilterConfiguration filterConfiguration) {
-    setConfiguration(repository, it -> applyFilterConfiguration(it, filterConfiguration));
+  public void setFilterConfiguration(Repository repository, LocalFilterConfiguration filterConfiguration) {
+    setConfiguration(repository, it -> applyLocalFilterConfiguration(it, filterConfiguration));
   }
 
   public void setAccessConfiguration(Repository repository, MirrorAccessConfiguration accessConfiguration) {
@@ -80,7 +97,7 @@ public class MirrorConfigurationStore implements Initable {
   void setConfiguration(Repository repository, MirrorConfiguration mirrorConfiguration) {
     setConfiguration(repository, it -> {
       applyAccessConfiguration(it, mirrorConfiguration);
-      applyFilterConfiguration(it, mirrorConfiguration);
+      applyLocalFilterConfiguration(it, mirrorConfiguration);
       return it;
     });
   }
@@ -94,12 +111,16 @@ public class MirrorConfigurationStore implements Initable {
     scheduler.schedule(repository, newConfiguration);
   }
 
+  private MirrorConfiguration applyLocalFilterConfiguration(MirrorConfiguration existingConfiguration, LocalFilterConfiguration newFilterConfiguration) {
+    existingConfiguration.setOverwriteGlobalConfiguration(newFilterConfiguration.isOverwriteGlobalConfiguration());
+    return applyFilterConfiguration(existingConfiguration, newFilterConfiguration);
+  }
+
   private MirrorConfiguration applyFilterConfiguration(MirrorConfiguration existingConfiguration, MirrorFilterConfiguration newFilterConfiguration) {
     existingConfiguration.setFastForwardOnly(newFilterConfiguration.isFastForwardOnly());
     existingConfiguration.setGpgVerificationType(newFilterConfiguration.getGpgVerificationType());
     existingConfiguration.setAllowedGpgKeys(newFilterConfiguration.getAllowedGpgKeys());
     existingConfiguration.setBranchesAndTagsPatterns(newFilterConfiguration.getBranchesAndTagsPatterns());
-    existingConfiguration.setOverwriteGlobalConfiguration(newFilterConfiguration.isOverwriteGlobalConfiguration());
     return existingConfiguration;
   }
 
