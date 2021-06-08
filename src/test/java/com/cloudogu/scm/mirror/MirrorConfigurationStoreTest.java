@@ -42,6 +42,7 @@ import sonia.scm.store.InMemoryConfigurationStoreFactory;
 import sonia.scm.web.security.AdministrationContext;
 import sonia.scm.web.security.PrivilegedAction;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
@@ -165,6 +166,103 @@ class MirrorConfigurationStoreTest {
 
       assertThrows(ScmConstraintViolationException.class, () -> store.setAccessConfiguration(REPOSITORY, newConfiguration));
     }
+
+    @Test
+    void shouldReturnEmptyIfLocalConfigurationIsNotSet() {
+      final Optional<MirrorConfiguration> applicableConfiguration = store.getApplicableConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration).isNotPresent();
+    }
+
+    @Test
+    void shouldReturnGlobalFiltersIfLocalAreNotPresent() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setFastForwardOnly(true);
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final MirrorFilterConfiguration applicableConfiguration = store.getApplicableFilterConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration.isFastForwardOnly()).isTrue();
+    }
+
+    @Test
+    void shouldKeepNonFilterValues() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setFastForwardOnly(true);
+      globalMirrorConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop,feature/*"));
+
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final MirrorConfiguration mirrorConfiguration = new MirrorConfiguration();
+      mirrorConfiguration.setUrl("test");
+      mirrorConfiguration.setSynchronizationPeriod(100);
+      mirrorConfiguration.setManagingUsers(Collections.singletonList("trillian"));
+      mirrorConfiguration.setFastForwardOnly(false);
+      mirrorConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop"));
+      mockExistingConfiguration(mirrorConfiguration);
+
+      final Optional<MirrorConfiguration> applicableConfiguration = store.getApplicableConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration).hasValueSatisfying(it -> {
+        assertThat(it.getUrl()).isEqualTo("test");
+        assertThat(it.getSynchronizationPeriod()).isEqualTo(100);
+        assertThat(it.getManagingUsers()).containsExactly("trillian");
+        assertThat(it.isFastForwardOnly()).isTrue();
+        assertThat(it.getBranchesAndTagsPatterns()).containsExactly("develop,feature/*");
+      });
+    }
+
+    @Test
+    void shouldUseGlobalFiltersIfLocalAreNotAllowed() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setFastForwardOnly(true);
+      globalMirrorConfiguration.setDisableRepositoryFilterOverwrite(true);
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final LocalFilterConfigurationImpl localFilterConfiguration = new LocalFilterConfigurationImpl();
+      localFilterConfiguration.setFastForwardOnly(false);
+      localFilterConfiguration.setOverwriteGlobalConfiguration(true);
+      mockFilterConfiguration(localFilterConfiguration);
+
+      final MirrorFilterConfiguration applicableConfiguration = store.getApplicableFilterConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration.isFastForwardOnly()).isTrue();
+    }
+
+    @Test
+    void shouldUseGlobalFiltersIfLocalAreNotOverwritten() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setFastForwardOnly(true);
+      globalMirrorConfiguration.setDisableRepositoryFilterOverwrite(false);
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final LocalFilterConfigurationImpl localFilterConfiguration = new LocalFilterConfigurationImpl();
+      localFilterConfiguration.setFastForwardOnly(false);
+      localFilterConfiguration.setOverwriteGlobalConfiguration(false);
+      mockFilterConfiguration(localFilterConfiguration);
+
+      final MirrorFilterConfiguration applicableConfiguration = store.getApplicableFilterConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration.isFastForwardOnly()).isTrue();
+    }
+
+    @Test
+    void shouldUseLocalFiltersIfOverwritten() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setFastForwardOnly(false);
+      globalMirrorConfiguration.setDisableRepositoryFilterOverwrite(false);
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final LocalFilterConfigurationImpl localFilterConfiguration = new LocalFilterConfigurationImpl();
+      localFilterConfiguration.setFastForwardOnly(true);
+      localFilterConfiguration.setOverwriteGlobalConfiguration(true);
+      mockFilterConfiguration(localFilterConfiguration);
+
+      final MirrorFilterConfiguration applicableConfiguration = store.getApplicableFilterConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration.isFastForwardOnly()).isTrue();
+    }
+
   }
 
   @Test
@@ -199,5 +297,13 @@ class MirrorConfigurationStoreTest {
   @SuppressWarnings("unchecked")
   private void mockExistingConfiguration(MirrorConfiguration existingConfiguration, Repository repository) {
     storeFactory.get("mirror", repository.getId()).set(existingConfiguration);
+  }
+
+  private void mockGlobalConfiguration(GlobalMirrorConfiguration globalMirrorConfiguration) {
+    store.setGlobalConfiguration(globalMirrorConfiguration);
+  }
+
+  private void mockFilterConfiguration(LocalFilterConfiguration localFilterConfiguration) {
+    store.setFilterConfiguration(REPOSITORY, localFilterConfiguration);
   }
 }
