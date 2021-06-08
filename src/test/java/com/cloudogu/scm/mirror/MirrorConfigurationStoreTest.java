@@ -46,7 +46,6 @@ import sonia.scm.web.security.PrivilegedAction;
 
 import java.util.Optional;
 
-import static com.google.inject.util.Providers.of;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -75,8 +74,6 @@ class MirrorConfigurationStoreTest {
   private RepositoryManager repositoryManager;
   @Mock
   private AdministrationContext administrationContext;
-  @Mock
-  private PrivilegedMirrorRunner privilegedMirrorRunner;
 
   private MirrorConfigurationStore store;
   private InMemoryConfigurationStoreFactory storeFactory;
@@ -84,7 +81,7 @@ class MirrorConfigurationStoreTest {
   @BeforeEach
   void createService() {
     storeFactory = new InMemoryConfigurationStoreFactory();
-    store = new MirrorConfigurationStore(storeFactory, scheduler, repositoryManager, administrationContext, of(privilegedMirrorRunner));
+    store = new MirrorConfigurationStore(storeFactory, scheduler, repositoryManager, administrationContext);
   }
 
   @BeforeAll
@@ -111,16 +108,6 @@ class MirrorConfigurationStoreTest {
     permissions = "repository:mirror:42"
   )
   class WithPermission {
-
-    @BeforeEach
-    void mockPrivilegeRunner() {
-      lenient().doAnswer(
-        invocation -> {
-          invocation.getArgument(0, Runnable.class).run();
-          return null;
-        }
-      ).when(privilegedMirrorRunner).exceptedFromReadOnly(any());
-    }
 
     @Test
     void shouldReturnEmptyOptionalForUnknownRepository() {

@@ -35,12 +35,11 @@ import static java.util.Arrays.asList;
 
 @Extension
 @Singleton
-class MirrorReadOnlyCheck implements ReadOnlyCheck, PrivilegedMirrorRunner {
+class MirrorReadOnlyCheck implements ReadOnlyCheck {
 
-  private static final Collection<String> ALLOWED_PERMISSIONS = asList("delete", "modify", "permissionWrite");
+  private static final Collection<String> FORBIDDEN_PERMISSIONS = asList("push", "archive", "createPullRequest");
 
   private final MirrorConfigurationStore configurationStore;
-  private final ThreadLocal<Boolean> excepted = ThreadLocal.withInitial(() -> false);
 
   @Inject
   MirrorReadOnlyCheck(MirrorConfigurationStore configurationStore) {
@@ -54,21 +53,12 @@ class MirrorReadOnlyCheck implements ReadOnlyCheck, PrivilegedMirrorRunner {
 
   @Override
   public boolean isReadOnly(String repositoryId) {
-    return !excepted.get() && configurationStore.hasConfiguration(repositoryId);
+    return false;
   }
 
   @Override
   public boolean isReadOnly(String permission, String repositoryId) {
-    return !ALLOWED_PERMISSIONS.contains(permission) && isReadOnly(repositoryId);
-  }
-
-  @Override
-  public void exceptedFromReadOnly(Runnable runnable) {
-    excepted.set(true);
-    try {
-      runnable.run();
-    } finally {
-      excepted.remove();
-    }
+    return FORBIDDEN_PERMISSIONS.contains(permission)
+      && configurationStore.hasConfiguration(repositoryId);
   }
 }

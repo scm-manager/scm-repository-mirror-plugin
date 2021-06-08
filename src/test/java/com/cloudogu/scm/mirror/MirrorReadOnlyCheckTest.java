@@ -26,6 +26,8 @@ package com.cloudogu.scm.mirror;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -54,7 +56,7 @@ class MirrorReadOnlyCheckTest {
   void shouldBeReadOnlyForRepositoryWithConfiguration() {
     when(configurationStore.hasConfiguration("mirror")).thenReturn(true);
 
-    boolean readOnly = check.isReadOnly("mirror");
+    boolean readOnly = check.isReadOnly("push", "mirror");
 
     assertThat(readOnly).isTrue();
   }
@@ -63,36 +65,17 @@ class MirrorReadOnlyCheckTest {
   void shouldNotBeReadOnlyForRepositoryWithConfigurationButWithException() {
     lenient().when(configurationStore.hasConfiguration("mirror")).thenReturn(true);
 
-    check.exceptedFromReadOnly(() -> {
-      boolean readOnly = check.isReadOnly("mirror");
+    boolean readOnly = check.isReadOnly("push");
 
-      assertThat(readOnly).isFalse();
-    });
+    assertThat(readOnly).isFalse();
   }
 
-  @Test
-  void shouldBeDeletableEvenWithConfiguration() {
+  @ParameterizedTest
+  @ValueSource(strings = {"delete", "permissionWrite", "pull", "modify"})
+  void shouldHaveNormalPermissionsEvenWithConfiguration(String permission) {
     lenient().when(configurationStore.hasConfiguration("mirror")).thenReturn(true);
 
     boolean readOnly = check.isReadOnly("delete", "mirror");
-
-    assertThat(readOnly).isFalse();
-  }
-
-  @Test
-  void shouldBeModifiableEvenWithConfiguration() {
-    lenient().when(configurationStore.hasConfiguration("mirror")).thenReturn(true);
-
-    boolean readOnly = check.isReadOnly("modify", "mirror");
-
-    assertThat(readOnly).isFalse();
-  }
-
-  @Test
-  void shouldBePermissionWritableEvenWithConfiguration() {
-    lenient().when(configurationStore.hasConfiguration("mirror")).thenReturn(true);
-
-    boolean readOnly = check.isReadOnly("permissionWrite", "mirror");
 
     assertThat(readOnly).isFalse();
   }
