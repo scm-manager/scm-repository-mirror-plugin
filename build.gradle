@@ -34,12 +34,16 @@ dependencies {
 }
 
 scmPlugin {
-  scmVersion = "2.19.0"
+  scmVersion = "2.19.1-SNAPSHOT"
   displayName = "Repository Mirror Plugin"
   description = "Mirror external repositories into SCM-Manager"
 
   author = "SCM-Team"
   category = "Workflow"
+
+  run {
+    loggingConfiguration = "src/main/conf/logging.xml"
+  }
 
   openapi {
     packages = [
