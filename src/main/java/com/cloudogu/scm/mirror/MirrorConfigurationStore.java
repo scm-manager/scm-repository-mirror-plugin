@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,8 @@ public class MirrorConfigurationStore implements Initable {
     return localConfiguration.map(it -> applyFilterConfiguration(it, getApplicableFilterConfiguration(repository)));
   }
 
-  public MirrorFilterConfiguration getApplicableFilterConfiguration(Repository repository) {
+  @VisibleForTesting
+  MirrorFilterConfiguration getApplicableFilterConfiguration(Repository repository) {
     final GlobalMirrorConfiguration globalConfiguration = getGlobalConfiguration();
     if (globalConfiguration.isDisableRepositoryFilterOverwrite()) {
       return globalConfiguration;
