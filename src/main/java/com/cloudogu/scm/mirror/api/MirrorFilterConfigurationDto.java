@@ -41,7 +41,6 @@ public class MirrorFilterConfigurationDto extends HalRepresentation {
 
   private String branchesAndTagsPatterns;
 
-  @NotNull
   private MirrorGpgVerificationType gpgVerificationType;
   private List<RawGpgKeyDto> allowedGpgKeys;
   private boolean fastForwardOnly;

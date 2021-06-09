@@ -101,6 +101,7 @@ class MirrorServiceTest {
 
     service.updateMirror(repository);
 
+    verify(configurationStore).getApplicableConfiguration(repository);
     verify(mirrorWorker).startUpdate(repository, configuration);
   }
 
@@ -171,11 +172,13 @@ class MirrorServiceTest {
       @Test
       void shouldCallMirrorCommand() {
         MirrorConfiguration configuration = createConfiguration();
+        when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
         service.createMirror(configuration, repository);
 
         verify(configurationStore).setConfiguration(repository, configuration);
         verify(mirrorWorker).startInitialSync(repository, configuration);
+        verify(configurationStore).getApplicableConfiguration(repository);
       }
     }
   }

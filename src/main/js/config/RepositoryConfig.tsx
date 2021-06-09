@@ -145,46 +145,53 @@ const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
     mode: "onChange"
   });
   const showFilterForm = watch("overwriteGlobalConfiguration");
+
   useEffect(() => {
     if (initialConfiguration) {
       reset(initialConfiguration);
     }
   }, [initialConfiguration]);
 
+  const onSubmit = handleSubmit(formValue =>
+    // Because the url field is disabled (sets url to undefined) but the dto expects the url to be present in the request,
+    // we have to manually set the url to the initial configuration
+    update(
+      !formValue.overwriteGlobalConfiguration
+        ? ({ ...initialConfiguration, overwriteGlobalConfiguration: false } as LocalMirrorFilterConfigurationDto)
+        : formValue
+    )
+  );
+
   return (
     <>
       <hr />
       <h2 className="subtitle">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h2>
-      <Notification type={"inherit"}>{t("scm-repository-mirror-plugin.form.verificationFiltersHint")}</Notification>
       <Checkbox
         label={t("scm-repository-mirror-plugin.form.overwriteGlobalConfiguration.label")}
         helpText={t("scm-repository-mirror-plugin.form.overwriteGlobalConfiguration.helpText")}
         disabled={isReadOnly}
         {...register("overwriteGlobalConfiguration")}
       />
-      {showFilterForm ? (
-        <ConfigurationForm
-          isValid={formState.isValid}
-          isReadOnly={isReadOnly}
-          onSubmit={handleSubmit(update)}
-          {...formProps}
-        >
-          <hr />
-          <Checkbox
-            label={t("scm-repository-mirror-plugin.form.fastForwardOnly.label")}
-            helpText={t("scm-repository-mirror-plugin.form.fastForwardOnly.helpText")}
-            disabled={isReadOnly}
-            {...register("fastForwardOnly")}
-          />
-          <InputField
-            label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
-            helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
-            disabled={isReadOnly}
-            {...register("branchesAndTagsPatterns")}
-          />
-          <GpgVerificationControl control={control} isReadonly={isReadOnly} />
-        </ConfigurationForm>
-      ) : null}
+      <ConfigurationForm isValid={formState.isValid} isReadOnly={isReadOnly} onSubmit={onSubmit} {...formProps}>
+        {showFilterForm ? (
+          <>
+            <hr />
+            <Checkbox
+              label={t("scm-repository-mirror-plugin.form.fastForwardOnly.label")}
+              helpText={t("scm-repository-mirror-plugin.form.fastForwardOnly.helpText")}
+              disabled={isReadOnly}
+              {...register("fastForwardOnly", { shouldUnregister: true })}
+            />
+            <InputField
+              label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
+              helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
+              disabled={isReadOnly}
+              {...register("branchesAndTagsPatterns", { shouldUnregister: true })}
+            />
+            <GpgVerificationControl control={control} isReadonly={isReadOnly} />
+          </>
+        ) : null}
+      </ConfigurationForm>
     </>
   );
 };

@@ -43,7 +43,7 @@ import java.util.List;
 public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilterConfiguration {
 
   private String url;
-  private int synchronizationPeriod;
+  private int synchronizationPeriod = 5;
   private List<String> managingUsers;
   private MirrorAccessConfiguration.UsernamePasswordCredential usernamePasswordCredential;
   private MirrorAccessConfiguration.CertificateCredential certificateCredential;

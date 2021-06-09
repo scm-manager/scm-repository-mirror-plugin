@@ -73,7 +73,7 @@ const MirrorRepositoryCreator: extensionPoints.RepositoryCreatorExtension["compo
       {repositoryType ? (
         <MirrorRepositoryForm
           onSubmit={requestPayload => mirror(mirrorLink, requestPayload)}
-          repositoryType={repositoryType?.name}
+          repositoryType={repositoryType}
           disabled={loading}
           NameForm={NameForm}
           InformationForm={InformationForm}

@@ -373,7 +373,8 @@ export const GpgVerificationControl: FC<MirrorFilterConfigControlProps> = ({ con
   const { field: verificationTypeField } = useController({
     control,
     name: "gpgVerificationType",
-    defaultValue: "NONE"
+    defaultValue: "NONE",
+    shouldUnregister: true
   });
   const { value } = verificationTypeField;
   const showKeyList = value === "KEY_LIST";

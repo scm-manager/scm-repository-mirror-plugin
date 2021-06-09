@@ -49,15 +49,6 @@ public class MirrorCreationDto {
   private String contact;
   private String description;
 
-  private boolean overwriteGlobalConfiguration;
-
-  private String branchesAndTagsPatterns;
-
-  @NotNull
-  private MirrorGpgVerificationType gpgVerificationType;
-  private List<RawGpgKeyDto> allowedGpgKeys;
-  private boolean fastForwardOnly;
-
   @NotBlank
   private String url;
   @NotNull
@@ -69,5 +60,11 @@ public class MirrorCreationDto {
   private UsernamePasswordCredentialDto usernamePasswordCredential;
   @Valid
   private CertificateCredentialDto certificateCredential;
+
+  private boolean overwriteGlobalConfiguration;
+  private String branchesAndTagsPatterns;
+  private MirrorGpgVerificationType gpgVerificationType;
+  private List<RawGpgKeyDto> allowedGpgKeys;
+  private boolean fastForwardOnly;
 
 }
