@@ -14,3 +14,11 @@ Die Details zu den anderen Einstellungen finden sich in der [Dokumentation zur E
 ![Konfiguration der Spiegelung](assets/mirror-configuration.png)
 
 [^1]: Es laufen grundsätzlich höchstens vier Synchronisationen gleichzeitig.
+
+## Globale Konfiguration
+
+In den Administrationseinstellungen können zusätzliche Einstellungen vorgenommen
+und Standardwerte für Filter definiert werden. Außerdem kann die lokale Konfiguration
+der Filter unterbunden werden.
+
+![Konfiguration der Spiegelung](assets/global-mirror-configuration.png)
