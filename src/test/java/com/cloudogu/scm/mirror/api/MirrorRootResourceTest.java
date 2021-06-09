@@ -243,19 +243,6 @@ class MirrorRootResourceTest {
   }
 
   @Test
-  void shouldValidateNewFilterConfiguration() throws URISyntaxException {
-    JsonMockHttpRequest request = JsonMockHttpRequest
-      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/filterConfiguration")
-      .json("{}");
-    MockHttpResponse response = new MockHttpResponse();
-
-    dispatcher.invoke(request, response);
-
-    assertThat(response.getStatus()).isEqualTo(400);
-    verify(configurationStore, never()).setFilterConfiguration(any(), any());
-  }
-
-  @Test
   void shouldRetrieveGlobalConfigurationFromService() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest
       .get("/v2/mirror/configuration");

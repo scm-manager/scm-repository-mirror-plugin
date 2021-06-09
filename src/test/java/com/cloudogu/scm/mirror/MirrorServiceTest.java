@@ -156,6 +156,7 @@ class MirrorServiceTest {
       @Test
       void shouldSetOwnerPermissionForCurrentUser() {
         MirrorConfiguration configuration = createConfiguration();
+        when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
         Repository createdRepository = service.createMirror(configuration, repository);
 
