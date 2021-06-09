@@ -139,6 +139,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
           ) : null}
         </>
       ) : null}
+      <hr />
       <Level
         right={
           <SubmitButton
