@@ -42,6 +42,7 @@ import sonia.scm.store.InMemoryConfigurationStoreFactory;
 import sonia.scm.web.security.AdministrationContext;
 import sonia.scm.web.security.PrivilegedAction;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -49,6 +50,7 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -125,16 +127,87 @@ class MirrorConfigurationStoreTest {
     }
 
     @Test
-    void shouldSetConfiguration() {
+    void shouldSetAccessConfigurationButNotFilters() {
       MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
-      MirrorAccessConfiguration newConfiguration = new MirrorAccessConfigurationImpl();
+      existingMirrorConfiguration.setOverwriteGlobalConfiguration(true);
+      existingMirrorConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop,feature/*"));
+      existingMirrorConfiguration.setGpgVerificationType(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
+      existingMirrorConfiguration.setFastForwardOnly(true);
+
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setManagingUsers(Collections.singletonList("trillian"));
+      newConfiguration.setUrl("https://scm-manager.org");
+      newConfiguration.setSynchronizationPeriod(10);
+      newConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential("hello".getBytes(StandardCharsets.UTF_8), "secret"));
+      newConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("scm-manager", "scm-manager"));
 
       storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
       store.setAccessConfiguration(REPOSITORY, newConfiguration);
 
       Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
       assertThat(configurationFromStore).isSameAs(existingMirrorConfiguration);
-      verify(scheduler).schedule(REPOSITORY, existingMirrorConfiguration);
+      verify(scheduler).schedule(eq(REPOSITORY), argThat(it -> {
+        // Filter config should remain the same
+        assertThat(it.getGpgVerificationType()).isEqualTo(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
+        assertThat(it.isFastForwardOnly()).isTrue();
+        assertThat(it.isOverwriteGlobalConfiguration()).isTrue();
+        assertThat(it.getBranchesAndTagsPatterns()).containsExactly("develop,feature/*");
+
+        // Access config should be overwritten
+        assertThat(it.getManagingUsers()).containsExactly("trillian");
+        assertThat(it.getUrl()).isEqualTo("https://scm-manager.org");
+        assertThat(it.getSynchronizationPeriod()).isEqualTo(10);
+        assertThat(it.getCertificateCredential()).matches(certificateCredential -> {
+          assertThat(certificateCredential).isNotNull();
+          assertThat(certificateCredential.getPassword()).isEqualTo("secret");
+          assertThat(certificateCredential.getCertificate()).asString().isEqualTo("hello");
+          return true;
+        });
+        assertThat(it.getUsernamePasswordCredential()).matches(usernamePasswordCredential -> {
+          assertThat(usernamePasswordCredential).isNotNull();
+          assertThat(usernamePasswordCredential.getPassword()).isEqualTo("scm-manager");
+          assertThat(usernamePasswordCredential.getUsername()).isEqualTo("scm-manager");
+          return true;
+        });
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldSetFilterConfiguration() {
+      MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
+      existingMirrorConfiguration.setUrl("https://scm-manager.org");
+      existingMirrorConfiguration.setManagingUsers(Collections.singletonList("trillian"));
+      existingMirrorConfiguration.setSynchronizationPeriod(100);
+      existingMirrorConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential());
+      existingMirrorConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential());
+
+      LocalFilterConfigurationImpl newConfiguration = new LocalFilterConfigurationImpl();
+      newConfiguration.setOverwriteGlobalConfiguration(true);
+      newConfiguration.setFastForwardOnly(true);
+      newConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop,feature/*"));
+      newConfiguration.setGpgVerificationType(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
+
+      storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
+      store.setFilterConfiguration(REPOSITORY, newConfiguration);
+
+      Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
+      assertThat(configurationFromStore).isSameAs(existingMirrorConfiguration);
+      verify(scheduler).schedule(eq(REPOSITORY), argThat(it -> {
+        // Access config should remain the same
+        assertThat(it.getUrl()).isEqualTo("https://scm-manager.org");
+        assertThat(it.getManagingUsers()).containsExactly("trillian");
+        assertThat(it.getSynchronizationPeriod()).isEqualTo(100);
+        assertThat(it.getUsernamePasswordCredential()).isNotNull();
+        assertThat(it.getCertificateCredential()).isNotNull();
+
+        // Filters should be overwritten
+        assertThat(it.isOverwriteGlobalConfiguration()).isTrue();
+        assertThat(it.isFastForwardOnly()).isTrue();
+        assertThat(it.getGpgVerificationType()).isEqualTo(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
+        assertThat(it.getBranchesAndTagsPatterns()).containsExactly("develop,feature/*");
+        return true;
+      }));
     }
 
     @Test
@@ -153,6 +226,20 @@ class MirrorConfigurationStoreTest {
       assertThat(existingConfiguration.getUsernamePasswordCredential().getPassword()).isEqualTo("oldUsernamePassword");
       assertThat(existingConfiguration.getCertificateCredential().getPassword()).isEqualTo("oldCertPassword");
       assertThat(existingConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
+    }
+
+    @Test
+    void shouldDeleteUsernamePasswordCredentialsIfNewUsernameIsNullOrEmpty() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      existingConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "oldUsernamePassword"));
+      mockExistingConfiguration(existingConfiguration);
+
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("", "_DUMMY_"));
+
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
+
+      assertThat(existingConfiguration.getUsernamePasswordCredential()).isNull();
     }
 
     @Test

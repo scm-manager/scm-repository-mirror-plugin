@@ -127,6 +127,15 @@ public class MirrorConfigurationStore implements Initable {
   }
 
   private MirrorConfiguration applyAccessConfiguration(MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
+    updateUrl(existingConfiguration, newMirrorAccessConfiguration);
+    updateUsernamePasswordCredentials(existingConfiguration, newMirrorAccessConfiguration);
+    updateCertificateCredentials(existingConfiguration, newMirrorAccessConfiguration);
+    existingConfiguration.setManagingUsers(newMirrorAccessConfiguration.getManagingUsers());
+    existingConfiguration.setSynchronizationPeriod(newMirrorAccessConfiguration.getSynchronizationPeriod());
+    return existingConfiguration;
+  }
+
+  private void updateUrl(MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
     if (Strings.isNullOrEmpty(existingConfiguration.getUrl())) {
       existingConfiguration.setUrl(newMirrorAccessConfiguration.getUrl());
     } else {
@@ -134,21 +143,49 @@ public class MirrorConfigurationStore implements Initable {
         .violation("url must not be changed", "url")
         .when(!existingConfiguration.getUrl().equals(newMirrorAccessConfiguration.getUrl()));
     }
-    if (shouldUpdatePassword(existingConfiguration, newMirrorAccessConfiguration)) {
-      LOG.trace("updating password for username");
-      existingConfiguration.getUsernamePasswordCredential().setPassword(newMirrorAccessConfiguration.getUsernamePasswordCredential().getPassword());
-    }
-    if (existingConfiguration.getCertificateCredential() != null && newMirrorAccessConfiguration.getCertificateCredential() != null) {
-      if (!DUMMY_PASSWORD.equals(newMirrorAccessConfiguration.getCertificateCredential().getPassword())) {
+  }
+
+  private void updateCertificateCredentials(MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
+    if (newMirrorAccessConfiguration.getCertificateCredential() != null) {
+      final boolean shouldUpdatePassword = !DUMMY_PASSWORD.equals(newMirrorAccessConfiguration.getCertificateCredential().getPassword());
+      final boolean shouldUpdateCertificate = newMirrorAccessConfiguration.getCertificateCredential().getCertificate() != null;
+      if (existingConfiguration.getCertificateCredential() == null && (shouldUpdatePassword || shouldUpdateCertificate)) {
+        existingConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential());
+      }
+      if (shouldUpdatePassword) {
         LOG.trace("updating password for certificate");
         existingConfiguration.getCertificateCredential().setPassword(newMirrorAccessConfiguration.getCertificateCredential().getPassword());
       }
-      if (newMirrorAccessConfiguration.getCertificateCredential().getCertificate() != null) {
+      if (shouldUpdateCertificate) {
         LOG.trace("updating certificate");
         existingConfiguration.getCertificateCredential().setCertificate(newMirrorAccessConfiguration.getCertificateCredential().getCertificate());
       }
+    } else {
+      existingConfiguration.setCertificateCredential(null);
     }
-    return existingConfiguration;
+  }
+
+  private void updateUsernamePasswordCredentials(MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
+    if (newMirrorAccessConfiguration.getUsernamePasswordCredential() != null) {
+      final boolean shouldUpdatePassword = !DUMMY_PASSWORD.equals(newMirrorAccessConfiguration.getUsernamePasswordCredential().getPassword());
+      final boolean usernameIsNullOrEmpty = Strings.isNullOrEmpty(newMirrorAccessConfiguration.getUsernamePasswordCredential().getUsername());
+      if (usernameIsNullOrEmpty) {
+        LOG.trace("empty username, deleting username-password-credentials");
+        existingConfiguration.setUsernamePasswordCredential(null);
+      } else {
+        if (existingConfiguration.getUsernamePasswordCredential() == null) {
+          existingConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential());
+        }
+        LOG.trace("updating username");
+        existingConfiguration.getUsernamePasswordCredential().setUsername(newMirrorAccessConfiguration.getUsernamePasswordCredential().getUsername());
+        if (shouldUpdatePassword) {
+          LOG.trace("updating password for username");
+          existingConfiguration.getUsernamePasswordCredential().setPassword(newMirrorAccessConfiguration.getUsernamePasswordCredential().getPassword());
+        }
+      }
+    } else {
+      existingConfiguration.setUsernamePasswordCredential(null);
+    }
   }
 
   public boolean hasConfiguration(String repositoryId) {
@@ -173,12 +210,6 @@ public class MirrorConfigurationStore implements Initable {
   private void init(Repository repository) {
     getConfiguration(repository)
       .ifPresent(configuration -> scheduler.scheduleNow(repository, configuration));
-  }
-
-  private boolean shouldUpdatePassword(MirrorConfiguration existingConfig, MirrorAccessConfiguration configuration) {
-    return configuration.getUsernamePasswordCredential() != null
-      && existingConfig.getUsernamePasswordCredential() != null
-      && !DUMMY_PASSWORD.equals(configuration.getUsernamePasswordCredential().getPassword());
   }
 
   private ConfigurationStore<MirrorConfiguration> createConfigurationStore(Repository repository) {
