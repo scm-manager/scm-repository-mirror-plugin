@@ -31,6 +31,7 @@ import lombok.Setter;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,6 +53,9 @@ public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilt
   private List<RawGpgKey> allowedGpgKeys;
   private boolean fastForwardOnly = false;
   private boolean overwriteGlobalConfiguration = false;
+
+  @XmlTransient
+  private boolean httpsOnly = false;
 
   public MirrorConfiguration(String url, int synchronizationPeriod, List<String> managingUsers, UsernamePasswordCredential usernamePasswordCredential, CertificateCredential certificateCredential) {
     this.url = url;

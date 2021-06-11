@@ -67,7 +67,11 @@ public class MirrorConfigurationStore implements Initable {
 
   public Optional<MirrorConfiguration> getApplicableConfiguration(Repository repository) {
     final Optional<MirrorConfiguration> localConfiguration = getConfiguration(repository);
-    return localConfiguration.map(it -> applyFilterConfiguration(it, getApplicableFilterConfiguration(repository)));
+    return localConfiguration.map(it -> {
+      final GlobalMirrorConfiguration globalConfiguration = getGlobalConfiguration();
+      it.setHttpsOnly(globalConfiguration.isHttpsOnly());
+      return applyFilterConfiguration(it, getApplicableFilterConfiguration(repository));
+    });
   }
 
   @VisibleForTesting
@@ -93,12 +97,12 @@ public class MirrorConfigurationStore implements Initable {
   }
 
   public void setAccessConfiguration(Repository repository, MirrorAccessConfiguration accessConfiguration) {
-    setConfiguration(repository, it -> applyAccessConfiguration(it, accessConfiguration));
+    setConfiguration(repository, it -> applyAccessConfiguration(repository, it, accessConfiguration));
   }
 
   void setConfiguration(Repository repository, MirrorConfiguration mirrorConfiguration) {
     setConfiguration(repository, it -> {
-      applyAccessConfiguration(it, mirrorConfiguration);
+      applyAccessConfiguration(repository, it, mirrorConfiguration);
       applyLocalFilterConfiguration(it, mirrorConfiguration);
       return it;
     });
@@ -126,7 +130,10 @@ public class MirrorConfigurationStore implements Initable {
     return existingConfiguration;
   }
 
-  private MirrorConfiguration applyAccessConfiguration(MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
+  private MirrorConfiguration applyAccessConfiguration(Repository repository, MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
+    if (getGlobalConfiguration().isHttpsOnly() && !newMirrorAccessConfiguration.getUrl().startsWith("https")) {
+      throw new InsecureConnectionNotAllowedException(repository);
+    }
     updateUrl(existingConfiguration, newMirrorAccessConfiguration);
     updateUsernamePasswordCredentials(existingConfiguration, newMirrorAccessConfiguration);
     updateCertificateCredentials(existingConfiguration, newMirrorAccessConfiguration);

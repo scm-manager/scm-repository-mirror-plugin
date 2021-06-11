@@ -175,5 +175,11 @@
         "description": "May modify the repository specific mirror configurations"
       }
     }
+  },
+  "errors": {
+    "23SZx2QZE1": {
+      "displayName": "Url is not using HTTPS",
+      "description": "Mirror connections are globally configured as https-only, but the provided url is not secure."
+    }
   }
 }

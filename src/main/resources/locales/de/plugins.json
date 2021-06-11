@@ -175,5 +175,11 @@
         "description": "Darf die Spiegel Konfiguration verändern"
       }
     }
+  },
+  "errors": {
+    "23SZx2QZE1": {
+      "displayName": "Url verwendet kein HTTPS",
+      "description": "Gespiegelte Verbindungen sind global als ausschließlich gesichert konfiguriert, aber die angegebene Url verwendet kein HTTPS."
+    }
   }
 }

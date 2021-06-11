@@ -273,6 +273,23 @@ class MirrorConfigurationStoreTest {
     }
 
     @Test
+    void shouldApplyExclusivelyGlobalSettings() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setHttpsOnly(true);
+
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final MirrorConfiguration mirrorConfiguration = new MirrorConfiguration();
+      mockExistingConfiguration(mirrorConfiguration);
+
+      final Optional<MirrorConfiguration> applicableConfiguration = store.getApplicableConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration).hasValueSatisfying(it -> {
+        assertThat(it.isHttpsOnly()).isTrue();
+      });
+    }
+
+    @Test
     void shouldKeepNonFilterValues() {
       final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
       globalMirrorConfiguration.setFastForwardOnly(true);
