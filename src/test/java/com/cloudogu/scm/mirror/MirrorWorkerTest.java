@@ -24,8 +24,6 @@
 
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.MirrorConfiguration.CertificateCredential;
-import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import com.google.common.collect.ImmutableList;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
@@ -345,7 +343,7 @@ class MirrorWorkerTest {
     return createMirrorConfig(emptyList(), null, null);
   }
 
-  private MirrorConfiguration createMirrorConfig(List<String> managingUsers, UsernamePasswordCredential upc, CertificateCredential cc) {
+  private MirrorConfiguration createMirrorConfig(List<String> managingUsers, MirrorAccessConfiguration.UsernamePasswordCredential upc, MirrorAccessConfiguration.CertificateCredential cc) {
     return new MirrorConfiguration("https://hog/", 42, managingUsers, upc, cc);
   }
 }

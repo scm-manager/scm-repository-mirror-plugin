@@ -24,22 +24,34 @@
 
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.api.GlobalMirrorConfigurationToGlobalConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorAccessConfigurationToConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorFilterConfigurationToDtoMapper;
-import com.google.inject.AbstractModule;
-import org.mapstruct.factory.Mappers;
-import sonia.scm.plugin.Extension;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import sonia.scm.xml.XmlCipherByteArrayAdapter;
+import sonia.scm.xml.XmlCipherStringAdapter;
 
-@Extension
-public class ModuleBinder extends AbstractModule {
-  @Override
-  protected void configure() {
-    bind(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class));
-    bind(MirrorAccessConfigurationToConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorAccessConfigurationToConfigurationDtoMapper.class));
-    bind(MirrorFilterConfigurationToDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorFilterConfigurationToDtoMapper.class));
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.Collections;
+import java.util.List;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class MirrorAccessConfigurationImpl implements MirrorAccessConfiguration {
+
+  private String url;
+  private int synchronizationPeriod;
+  private List<String> managingUsers;
+
+  private MirrorAccessConfiguration.UsernamePasswordCredential usernamePasswordCredential;
+  private MirrorAccessConfiguration.CertificateCredential certificateCredential;
+
+  public List<String> getManagingUsers() {
+    return managingUsers != null ? managingUsers : Collections.emptyList();
   }
 }

@@ -21,35 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.mirror;
 
+package com.cloudogu.scm.mirror.api;
+
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import java.util.Collections;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
-@Setter
 @Getter
-@AllArgsConstructor
+@Setter
 @NoArgsConstructor
-@XmlAccessorType(XmlAccessType.FIELD)
-public class MirrorVerificationConfiguration {
+@SuppressWarnings("java:S2160") // Equals and Hashcode not needed for dto
+public class MirrorAccessConfigurationDto extends HalRepresentation {
 
-  private List<String> branchesAndTagsPatterns;
-  private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
-  private List<RawGpgKey> allowedGpgKeys;
-  private boolean fastForwardOnly = false;
+  @NotBlank
+  private String url;
+  @NotNull
+  @Min(5)
+  private Integer synchronizationPeriod;
+  private List<String> managingUsers;
 
-  public List<String> getBranchesAndTagsPatterns() {
-    return branchesAndTagsPatterns != null ? branchesAndTagsPatterns : Collections.emptyList();
+  @Valid
+  private UsernamePasswordCredentialDto usernamePasswordCredential;
+  @Valid
+  private CertificateCredentialDto certificateCredential;
+
+  MirrorAccessConfigurationDto(Links links) {
+    super(links);
   }
 
-  public List<RawGpgKey> getAllowedGpgKeys() {
-    return allowedGpgKeys != null ? allowedGpgKeys : Collections.emptyList();
-  }
 }

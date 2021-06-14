@@ -21,25 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.api.GlobalMirrorConfigurationToGlobalConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorAccessConfigurationToConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorFilterConfigurationToDtoMapper;
-import com.google.inject.AbstractModule;
-import org.mapstruct.factory.Mappers;
-import sonia.scm.plugin.Extension;
+import java.util.List;
 
-@Extension
-public class ModuleBinder extends AbstractModule {
-  @Override
-  protected void configure() {
-    bind(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class));
-    bind(MirrorAccessConfigurationToConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorAccessConfigurationToConfigurationDtoMapper.class));
-    bind(MirrorFilterConfigurationToDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorFilterConfigurationToDtoMapper.class));
-  }
+public interface MirrorFilterConfiguration {
+
+  List<String> getBranchesAndTagsPatterns();
+
+  MirrorGpgVerificationType getGpgVerificationType();
+
+  List<RawGpgKey> getAllowedGpgKeys();
+
+  boolean isFastForwardOnly();
+
 }

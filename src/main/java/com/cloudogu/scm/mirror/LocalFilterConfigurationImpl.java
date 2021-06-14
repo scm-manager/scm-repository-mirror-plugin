@@ -21,25 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.api.GlobalMirrorConfigurationToGlobalConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorAccessConfigurationToConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorFilterConfigurationToDtoMapper;
-import com.google.inject.AbstractModule;
-import org.mapstruct.factory.Mappers;
-import sonia.scm.plugin.Extension;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Extension
-public class ModuleBinder extends AbstractModule {
-  @Override
-  protected void configure() {
-    bind(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class));
-    bind(MirrorAccessConfigurationToConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorAccessConfigurationToConfigurationDtoMapper.class));
-    bind(MirrorFilterConfigurationToDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorFilterConfigurationToDtoMapper.class));
-  }
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@XmlAccessorType(XmlAccessType.FIELD)
+public class LocalFilterConfigurationImpl extends MirrorFilterConfigurationImpl implements LocalFilterConfiguration {
+  private boolean overwriteGlobalConfiguration = false;
 }

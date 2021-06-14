@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorStatus;
 import com.cloudogu.scm.mirror.MirrorStatusStore;
@@ -139,17 +140,42 @@ class RepositoryEnricherTest {
 
     @Test
     void shouldAppendLinkForRepositoryThatIsAMirror() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setDisableRepositoryFilterOverwrite(false);
+      when(configurationService.getGlobalConfiguration()).thenReturn(globalMirrorConfiguration);
+
       HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
       when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
       when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
       enricher.enrich(context, appender);
 
-      verify(appender).appendLink("mirrorConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/configuration");
+      verify(appender).appendLink("mirrorAccessConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
+      verify(appender).appendLink("mirrorFilterConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/filterConfiguration");
+    }
+
+    @Test
+    void shouldNotAppendFilterLinkIfLokalConfigurationIsDisabledGlobally() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setDisableRepositoryFilterOverwrite(true);
+      when(configurationService.getGlobalConfiguration()).thenReturn(globalMirrorConfiguration);
+
+      HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
+      when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
+      when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
+
+      enricher.enrich(context, appender);
+
+      verify(appender).appendLink("mirrorAccessConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
+      verify(appender, never()).appendLink("mirrorFilterConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/filterConfiguration");
     }
 
     @Test
     void shouldAppendLogLinks() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setDisableRepositoryFilterOverwrite(true);
+      when(configurationService.getGlobalConfiguration()).thenReturn(globalMirrorConfiguration);
+
       HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
       when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
       when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));

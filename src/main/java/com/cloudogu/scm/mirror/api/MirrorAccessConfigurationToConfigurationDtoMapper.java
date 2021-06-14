@@ -40,38 +40,31 @@ import sonia.scm.repository.Repository;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import java.util.List;
-
 import static de.otto.edison.hal.Link.link;
 
-@Mapper(uses = RawGpgKeyToKeyDtoMapper.class)
-public abstract class MirrorConfigurationToConfigurationDtoMapper {
+@Mapper
+public abstract class MirrorAccessConfigurationToConfigurationDtoMapper {
 
   @Inject
   Provider<ScmPathInfoStore> scmPathInfoStore;
 
   @Mapping(ignore = true, target = "attributes")
-  abstract MirrorConfigurationDto map(MirrorConfiguration configuration, @Context Repository repository);
-
-  @Mapping(target = "branchesAndTagsPatterns")
-  String map(List<String> value) {
-    return String.join(",", value);
-  }
+  abstract MirrorAccessConfigurationDto map(MirrorConfiguration configuration, @Context Repository repository);
 
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
-  abstract MirrorConfigurationDto.UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
+  abstract UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
 
   @Mapping(target = "certificate", expression = "java(null)")
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
-  abstract MirrorConfigurationDto.CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
+  abstract CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
 
   @ObjectFactory
-  MirrorConfigurationDto createConfigurationDto(@Context Repository repository) {
-    return new MirrorConfigurationDto(createLinks(repository));
+  MirrorAccessConfigurationDto createConfigurationDto(@Context Repository repository) {
+    return new MirrorAccessConfigurationDto(createLinks(repository));
   }
 
   private Links createLinks(Repository repository) {
-    String configurationUrl = createUrl(repository, "getMirrorConfiguration");
+    String configurationUrl = createUrl(repository, "getAccessConfiguration");
     String manualSyncUrl = createUrl(repository, "syncMirror");
 
     Links.Builder builder = Links.linkingTo().self(configurationUrl);

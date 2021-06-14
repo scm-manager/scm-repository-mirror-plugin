@@ -43,7 +43,7 @@ binder.bind<extensionPoints.RepositoryCreator>("repos.creator", {
 configurationBinder.bindRepositorySetting(
   "/mirror",
   "scm-repository-mirror-plugin.settings.navLink",
-  "mirrorConfiguration",
+  "mirrorAccessConfiguration",
   RepositoryConfig
 );
 
@@ -66,4 +66,3 @@ const logPredicate = ({ repository }: PredicateProps) => {
 
 binder.bind("repository.route", LogRoute, logPredicate);
 binder.bind("repository.navigation", LogNavLink, logPredicate);
-

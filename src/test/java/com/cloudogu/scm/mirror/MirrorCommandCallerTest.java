@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +46,9 @@ import java.util.Collection;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,8 +75,8 @@ class MirrorCommandCallerTest {
 
   @BeforeEach
   void supportMirrorCommand() {
-    when(repositoryServiceFactory.create(repository)).thenReturn(repositoryService);
-    when(repositoryService.getMirrorCommand()).thenReturn(mirrorCommandBuilder);
+    lenient().when(repositoryServiceFactory.create(repository)).thenReturn(repositoryService);
+    lenient().when(repositoryService.getMirrorCommand()).thenReturn(mirrorCommandBuilder);
   }
 
   @Test
@@ -89,6 +92,22 @@ class MirrorCommandCallerTest {
       assertThat(filter).isSameAs(expectedFilter);
       return true;
     }));
+  }
+
+  @Test
+  void shouldThrowErrorIfHttpsOnlyIsSetButUrlIsInsecure() {
+    MirrorConfiguration configuration = createMirrorConfig();
+    configuration.setHttpsOnly(true);
+    configuration.setUrl("http://hog/");
+    Assert.assertThrows(InsecureConnectionNotAllowedException.class, () -> invokeCaller(configuration, null));
+  }
+
+  @Test
+  void shouldNotThrowErrorIfHttpsOnlyIsSetAndUrlIsSecure() {
+    MirrorConfiguration configuration = createMirrorConfig();
+    configuration.setHttpsOnly(true);
+    invokeCaller(configuration, null);
+    // No Assertions necessary, it just shouldnt throw an exception
   }
 
   @Test

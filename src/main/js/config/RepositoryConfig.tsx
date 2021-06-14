@@ -33,7 +33,11 @@ import {
   Subtitle
 } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
-import { MirrorConfigurationDto, MirrorConfigurationForm } from "../types";
+import {
+  LocalMirrorFilterConfigurationDto,
+  MirrorAccessConfigurationDto,
+  MirrorAccessConfigurationForm
+} from "../types";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
 import {
@@ -44,7 +48,7 @@ import {
   SynchronizationPeriodControl,
   UrlControl
 } from "./FormControls";
-import { Link } from "@scm-manager/ui-types";
+import { Link, Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";
 
 const Columns = styled.div`
@@ -52,6 +56,7 @@ const Columns = styled.div`
 `;
 
 type Props = {
+  repository: Repository;
   link: string;
 };
 
@@ -84,16 +89,16 @@ export const TriggerButton: FC<{ link: string }> = ({ link }) => {
   );
 };
 
-const RepositoryConfig: FC<Props> = ({ link }) => {
+const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => {
   const [t] = useTranslation("plugins");
-  const { initialConfiguration, update, isReadonly, ...formProps } = useConfigLink<MirrorConfigurationDto>(link);
-  const { formState, handleSubmit, control, reset, register } = useForm<MirrorConfigurationForm>({
+  const { initialConfiguration, update, isReadOnly, ...formProps } = useConfigLink<MirrorAccessConfigurationDto>(link);
+  const { formState, handleSubmit, control, reset } = useForm<MirrorAccessConfigurationForm>({
     mode: "onChange"
   });
 
   useEffect(() => {
     if (initialConfiguration) {
-      const form = { ...initialConfiguration };
+      const form = { ...initialConfiguration } as MirrorAccessConfigurationForm;
       if (initialConfiguration.usernamePasswordCredential) {
         form.usernamePasswordCredential = {
           ...initialConfiguration.usernamePasswordCredential,
@@ -113,37 +118,91 @@ const RepositoryConfig: FC<Props> = ({ link }) => {
   const onSubmit = handleSubmit(formValue =>
     // Because the url field is disabled (sets url to undefined) but the dto expects the url to be present in the request,
     // we have to manually set the url to the initial configuration
-    update(coalesceFormValue({ ...formValue, url: initialConfiguration.url }))
+    update(coalesceFormValue({ ...formValue, url: initialConfiguration?.url || "" }))
   );
 
   return (
-    <ConfigurationForm isValid={formState.isValid} isReadonly={isReadonly} onSubmit={onSubmit} {...formProps}>
+    <ConfigurationForm isValid={formState.isValid} isReadOnly={isReadOnly} onSubmit={onSubmit} {...formProps}>
       <TriggerButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />
       <hr />
       <Subtitle subtitle={t("scm-repository-mirror-plugin.form.subtitle")} />
       <Columns className="columns is-multiline">
         <UrlControl control={control} isReadonly={true} />
-        <CredentialsControl control={control} isReadonly={isReadonly} />
-        <SynchronizationPeriodControl control={control} isReadonly={isReadonly} />
-        <ManagingUsersControl control={control} isReadonly={isReadonly} />
+        <CredentialsControl control={control} isReadonly={isReadOnly} />
+        <SynchronizationPeriodControl control={control} isReadonly={isReadOnly} />
+        <ManagingUsersControl control={control} isReadonly={isReadOnly} />
       </Columns>
-      <hr />
-      <h4 className="subtitle is-4">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h4>
-      <Notification type={"inherit"}>{t("scm-repository-mirror-plugin.form.verificationFiltersHint")}</Notification>
-      <Checkbox
-        label={t("scm-repository-mirror-plugin.form.fastForwardOnly.label")}
-        helpText={t("scm-repository-mirror-plugin.form.fastForwardOnly.helpText")}
-        disabled={isReadonly}
-        {...register("fastForwardOnly")}
-      />
-      <InputField
-        label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
-        helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
-        disabled={isReadonly}
-        {...register("branchesAndTagsPatterns")}
-      />
-      <GpgVerificationControl control={control} isReadonly={isReadonly} />
     </ConfigurationForm>
+  );
+};
+
+const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => {
+  const [t] = useTranslation("plugins");
+  const { initialConfiguration, update, isReadOnly, ...formProps } = useConfigLink<LocalMirrorFilterConfigurationDto>(
+    link
+  );
+  const { formState, handleSubmit, control, reset, register, watch } = useForm<LocalMirrorFilterConfigurationDto>({
+    mode: "onChange"
+  });
+  const showFilterForm = watch("overwriteGlobalConfiguration");
+
+  useEffect(() => {
+    if (initialConfiguration) {
+      reset(initialConfiguration);
+    }
+  }, [initialConfiguration]);
+
+  const onSubmit = handleSubmit(formValue =>
+    // Because the url field is disabled (sets url to undefined) but the dto expects the url to be present in the request,
+    // we have to manually set the url to the initial configuration
+    update(
+      !formValue.overwriteGlobalConfiguration
+        ? ({ ...initialConfiguration, overwriteGlobalConfiguration: false } as LocalMirrorFilterConfigurationDto)
+        : formValue
+    )
+  );
+
+  return (
+    <>
+      <hr />
+      <h2 className="subtitle">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h2>
+      <Checkbox
+        label={t("scm-repository-mirror-plugin.form.overwriteGlobalConfiguration.label")}
+        helpText={t("scm-repository-mirror-plugin.form.overwriteGlobalConfiguration.helpText")}
+        disabled={isReadOnly}
+        {...register("overwriteGlobalConfiguration")}
+      />
+      <ConfigurationForm isValid={formState.isValid} isReadOnly={isReadOnly} onSubmit={onSubmit} {...formProps}>
+        {showFilterForm ? (
+          <>
+            <hr />
+            <Checkbox
+              label={t("scm-repository-mirror-plugin.form.fastForwardOnly.label")}
+              helpText={t("scm-repository-mirror-plugin.form.fastForwardOnly.helpText")}
+              disabled={isReadOnly}
+              {...register("fastForwardOnly", { shouldUnregister: true })}
+            />
+            <InputField
+              label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
+              helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
+              disabled={isReadOnly}
+              {...register("branchesAndTagsPatterns", { shouldUnregister: true })}
+            />
+            <GpgVerificationControl control={control} isReadonly={isReadOnly} />
+          </>
+        ) : null}
+      </ConfigurationForm>
+    </>
+  );
+};
+
+const RepositoryConfig: FC<Props> = ({ link, repository }) => {
+  const filtersLink = repository._links["mirrorFilterConfiguration"];
+  return (
+    <>
+      <RepositoryMirrorAccessConfigForm link={link} />
+      {filtersLink ? <RepositoryMirrorFilterConfigForm link={(filtersLink as Link).href} /> : null}
+    </>
   );
 };
 

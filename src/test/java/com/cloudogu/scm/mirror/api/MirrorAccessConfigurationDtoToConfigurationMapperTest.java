@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.MirrorAccessConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorGpgVerificationType;
 import com.google.common.collect.ImmutableList;
@@ -33,24 +34,20 @@ import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class MirrorConfigurationDtoToConfigurationMapperTest {
+class MirrorAccessConfigurationDtoToConfigurationMapperTest {
 
-  private final MirrorConfigurationDtoToConfigurationMapper mapper = Mappers.getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
+  private final MirrorAccessConfigurationDtoToConfigurationMapper mapper = Mappers.getMapper(MirrorAccessConfigurationDtoToConfigurationMapper.class);
 
   @Test
   void shouldMapToDao() {
-    final MirrorConfigurationDto input = new MirrorConfigurationDto();
+    final MirrorAccessConfigurationDto input = new MirrorAccessConfigurationDto();
     input.setUrl("https://foo.bar");
     input.setManagingUsers(ImmutableList.of("freddy", "bernard", "harold"));
     input.setSynchronizationPeriod(42);
-    input.setUsernamePasswordCredential(new MirrorConfigurationDto.UsernamePasswordCredentialDto("trillian", "secretpassword"));
-    input.setCertificateCredential(new MirrorConfigurationDto.CertificateCredentialDto("aGVsbG8=", "evenmoresecretpassword"));
-    input.setBranchesAndTagsPatterns("default, feature/*, ,,,");
-    input.setGpgVerificationType(MirrorGpgVerificationType.KEY_LIST);
-    input.setAllowedGpgKeys(ImmutableList.of(new RawGpgKeyDto("foo", "bar")));
-    input.setFastForwardOnly(true);
+    input.setUsernamePasswordCredential(new UsernamePasswordCredentialDto("trillian", "secretpassword"));
+    input.setCertificateCredential(new CertificateCredentialDto("aGVsbG8=", "evenmoresecretpassword"));
 
-    final MirrorConfiguration output = mapper.map(input);
+    final MirrorAccessConfiguration output = mapper.map(input);
 
     assertThat(output.getUrl()).isEqualTo("https://foo.bar");
     assertThat(output.getManagingUsers()).contains("freddy", "bernard", "harold");
@@ -61,22 +58,7 @@ class MirrorConfigurationDtoToConfigurationMapperTest {
     assertThat(output.getCertificateCredential()).isNotNull();
     assertThat(output.getCertificateCredential().getPassword()).isEqualTo("evenmoresecretpassword");
     assertThat(output.getCertificateCredential().getCertificate()).isEqualTo("hello".getBytes(StandardCharsets.UTF_8));
-    assertThat(output.getBranchesAndTagsPatterns()).contains("default", "feature/*");
-    assertThat(output.getGpgVerificationType()).isEqualTo(MirrorGpgVerificationType.KEY_LIST);
-    assertThat(output.getAllowedGpgKeys().get(0).getDisplayName()).isEqualTo("foo");
-    assertThat(output.getAllowedGpgKeys().get(0).getRaw()).isEqualTo("bar");
-    assertThat(output.isFastForwardOnly()).isTrue();
   }
 
-  @Test
-  void shouldHandleEmptyPatternList() {
-    final MirrorConfigurationDto input = new MirrorConfigurationDto();
-    input.setUrl("https://foo.bar");
-    input.setBranchesAndTagsPatterns(null);
-    input.setGpgVerificationType(MirrorGpgVerificationType.NONE);
 
-    final MirrorConfiguration output = mapper.map(input);
-
-    assertThat(output.getBranchesAndTagsPatterns()).isEmpty();
-  }
 }

@@ -21,25 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.api.GlobalMirrorConfigurationToGlobalConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorAccessConfigurationToConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorFilterConfigurationToDtoMapper;
-import com.google.inject.AbstractModule;
-import org.mapstruct.factory.Mappers;
-import sonia.scm.plugin.Extension;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Extension
-public class ModuleBinder extends AbstractModule {
-  @Override
-  protected void configure() {
-    bind(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class));
-    bind(MirrorAccessConfigurationToConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorAccessConfigurationToConfigurationDtoMapper.class));
-    bind(MirrorFilterConfigurationToDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorFilterConfigurationToDtoMapper.class));
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import java.util.Collections;
+import java.util.List;
+
+@Setter
+@Getter
+@NoArgsConstructor
+@XmlAccessorType(XmlAccessType.FIELD)
+public class MirrorFilterConfigurationImpl implements MirrorFilterConfiguration {
+
+  private List<String> branchesAndTagsPatterns;
+  private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
+  private List<RawGpgKey> allowedGpgKeys;
+  private boolean fastForwardOnly = false;
+
+  public List<String> getBranchesAndTagsPatterns() {
+    return branchesAndTagsPatterns != null ? branchesAndTagsPatterns : Collections.emptyList();
+  }
+
+  public List<RawGpgKey> getAllowedGpgKeys() {
+    return allowedGpgKeys != null ? allowedGpgKeys : Collections.emptyList();
   }
 }

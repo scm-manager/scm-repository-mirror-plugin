@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
@@ -42,10 +43,12 @@ import javax.inject.Provider;
 public class RepositoryTypeEnricher implements HalEnricher {
 
   private final Provider<ScmPathInfoStore> scmPathInfoStore;
+  private final MirrorConfigurationStore configurationService;
 
   @Inject
-  public RepositoryTypeEnricher(Provider<ScmPathInfoStore> scmPathInfoStore) {
+  public RepositoryTypeEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, MirrorConfigurationStore configurationService) {
     this.scmPathInfoStore = scmPathInfoStore;
+    this.configurationService = configurationService;
   }
 
   @Override
@@ -54,6 +57,11 @@ public class RepositoryTypeEnricher implements HalEnricher {
     if (repositoryType.getSupportedCommands().contains(Command.MIRROR)) {
       String createUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class).method("createMirrorRepository").parameters().href();
       appender.appendLink("mirror", createUrl);
+      if (repositoryType.getName().equals("git") && !configurationService.getGlobalConfiguration().isDisableRepositoryFilterOverwrite()) {
+        String filterConfigurationLink = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
+          .method("repository").parameters("{namespace}", "{name}").method("getFilterConfiguration").parameters().href();
+        appender.appendLink("mirrorFilterConfiguration", filterConfigurationLink);
+      }
     }
   }
 }

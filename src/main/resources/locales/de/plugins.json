@@ -109,6 +109,14 @@
       "fastForwardOnly": {
         "label": "Nur Fast-Forward",
         "helpText": "Es werden nur Änderungen an Branches übernommen, die durch einen Fast-Forward entstanden sind."
+      },
+      "disableRepositoryFilterOverwrite": {
+        "label": "Überschreiben der Filterkonfiguration durch Repositories deaktivieren",
+        "helpText": "Repository Owner dürfen die Filterkonfiguration für Spiegelungen nicht mehr überschreiben."
+      },
+      "overwriteGlobalConfiguration": {
+        "label": "Globale Filterkonfiguration überschreiben",
+        "helpText": "Ersetzt die globale Filterkonfiguration für dieses Repository."
       }
     },
     "flag": {
@@ -166,6 +174,12 @@
         "displayName": "Spiegel Konfiguration ändern",
         "description": "Darf die Spiegel Konfiguration verändern"
       }
+    }
+  },
+  "errors": {
+    "23SZx2QZE1": {
+      "displayName": "Url verwendet kein HTTPS",
+      "description": "Gespiegelte Verbindungen sind global als ausschließlich gesichert konfiguriert, aber die angegebene Url verwendet kein HTTPS."
     }
   }
 }

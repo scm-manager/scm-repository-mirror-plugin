@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-import { Checkbox, InputField, Level, Notification, SubmitButton } from "@scm-manager/ui-components";
+import { Checkbox, InputField, Level, SubmitButton } from "@scm-manager/ui-components";
 import React, { FC, useEffect, useState } from "react";
-import { MirrorConfigurationDto, MirrorRequestDto } from "./types";
+import { MirrorCreationDto, MirrorCreationForm } from "./types";
 import { useForm } from "react-hook-form";
-import { RepositoryCreation } from "@scm-manager/ui-types";
+import { RepositoryCreation, RepositoryType } from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { extensionPoints } from "@scm-manager/ui-extensions";
@@ -43,16 +43,16 @@ const Columns = styled.div`
 `;
 
 type Props = {
-  onSubmit: (output: MirrorRequestDto) => void;
+  onSubmit: (output: MirrorCreationDto) => void;
   disabled: boolean;
   InformationForm: extensionPoints.RepositoryCreatorComponentProps["informationForm"];
   NameForm: extensionPoints.RepositoryCreatorComponentProps["nameForm"];
-  repositoryType: string;
+  repositoryType: RepositoryType;
 };
 
 const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, NameForm, InformationForm }) => {
   const [t] = useTranslation("plugins");
-  const { handleSubmit, formState, getValues, control, register } = useForm<MirrorConfigurationDto>({
+  const { handleSubmit, formState, getValues, control, register, watch } = useForm<MirrorCreationForm>({
     mode: "onChange"
   });
   const [repository, setRepository] = useState<RepositoryCreation>({
@@ -65,9 +65,11 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
   });
   const [valid, setValid] = useState({ namespaceAndName: false, contact: true });
   const { isValid: isFormValid, touchedFields } = formState;
+  const showFilterForm = watch("overwriteGlobalConfiguration");
+  const allowLocalFilterConfiguration = !!repositoryType._links["mirrorFilterConfiguration"];
 
   useEffect(() => {
-    const url = getValues("url")
+    const url = getValues("url");
     if (url && touchedFields.url && !repository.name) {
       // If the repository name is not fill we set a name suggestion
       const match = url.match(/([^\/]+?)(?:.git)?$/);
@@ -78,11 +80,11 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
   }, [getValues, touchedFields.url]);
 
   const isValid = () => Object.values(valid).every(v => v) && isFormValid;
-  const innerOnSubmit = (configFormValue: MirrorConfigurationDto) => {
-    const request: MirrorRequestDto = {
+  const innerOnSubmit = (configFormValue: MirrorCreationForm) => {
+    const request: MirrorCreationForm = {
       ...configFormValue,
       ...repository,
-      type: repositoryType
+      type: repositoryType?.name
     };
     onSubmit(coalesceFormValue(request));
   };
@@ -107,22 +109,37 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
         disabled={disabled}
         setValid={(contact: boolean) => setValid({ ...valid, contact })}
       />
+      {allowLocalFilterConfiguration ? (
+        <>
+          <hr />
+          <h4 className="subtitle is-4">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h4>
+          <Checkbox
+            label={t("scm-repository-mirror-plugin.form.overwriteGlobalConfiguration.label")}
+            helpText={t("scm-repository-mirror-plugin.form.overwriteGlobalConfiguration.helpText")}
+            disabled={disabled}
+            {...register("overwriteGlobalConfiguration")}
+          />
+          {showFilterForm ? (
+            <>
+              <hr />
+              <Checkbox
+                label={t("scm-repository-mirror-plugin.form.fastForwardOnly.label")}
+                helpText={t("scm-repository-mirror-plugin.form.fastForwardOnly.helpText")}
+                disabled={disabled}
+                {...register("fastForwardOnly", { shouldUnregister: true })}
+              />
+              <InputField
+                label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
+                helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
+                disabled={disabled}
+                {...register("branchesAndTagsPatterns", { shouldUnregister: true })}
+              />
+              <GpgVerificationControl control={control} isReadonly={disabled} />
+            </>
+          ) : null}
+        </>
+      ) : null}
       <hr />
-      <h4 className="subtitle is-4">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h4>
-      <Notification type={"inherit"}>{t("scm-repository-mirror-plugin.form.verificationFiltersHint")}</Notification>
-      <Checkbox
-        label={t("scm-repository-mirror-plugin.form.fastForwardOnly.label")}
-        helpText={t("scm-repository-mirror-plugin.form.fastForwardOnly.helpText")}
-        disabled={disabled}
-        {...register("fastForwardOnly")}
-      />
-      <InputField
-        label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
-        helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
-        disabled={disabled}
-        {...register("branchesAndTagsPatterns")}
-      />
-      <GpgVerificationControl control={control} isReadonly={disabled} />
       <Level
         right={
           <SubmitButton

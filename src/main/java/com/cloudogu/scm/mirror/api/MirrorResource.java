@@ -24,12 +24,15 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.LocalFilterConfiguration;
 import com.cloudogu.scm.mirror.LogEntry;
 import com.cloudogu.scm.mirror.LogStore;
+import com.cloudogu.scm.mirror.MirrorAccessConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
 import com.cloudogu.scm.mirror.NotConfiguredForMirrorException;
+import com.google.common.base.Strings;
 import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
@@ -54,6 +57,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.mapstruct.factory.Mappers.getMapper;
+import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 public class MirrorResource {
 
@@ -62,43 +66,74 @@ public class MirrorResource {
   private final RepositoryManager repositoryManager;
   private final LogStore logStore;
 
-  private final MirrorConfigurationDtoToConfigurationMapper fromDtoMapper = getMapper(MirrorConfigurationDtoToConfigurationMapper.class);
-  private final MirrorConfigurationToConfigurationDtoMapper toDtoMapper;
+  private final MirrorAccessConfigurationDtoToConfigurationMapper fromAccessConfigurationDtoMapper = getMapper(MirrorAccessConfigurationDtoToConfigurationMapper.class);
+  private final MirrorAccessConfigurationToConfigurationDtoMapper toAccessConfigurationDtoMapper;
+  private final MirrorFilterConfigurationDtoToDaoMapper fromFiltersDtoMapper = getMapper(MirrorFilterConfigurationDtoToDaoMapper.class);
+  private final MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper;
   private final LogEntryMapper logEntryMapper = getMapper(LogEntryMapper.class);
 
   @Inject
   public MirrorResource(MirrorConfigurationStore configurationService,
                         MirrorService mirrorService,
                         RepositoryManager repositoryManager,
-                        MirrorConfigurationToConfigurationDtoMapper toDtoMapper,
-                        LogStore logStore) {
+                        MirrorAccessConfigurationToConfigurationDtoMapper toAccessConfigurationDtoMapper,
+                        LogStore logStore, MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper) {
     this.configurationService = configurationService;
     this.mirrorService = mirrorService;
     this.repositoryManager = repositoryManager;
     this.logStore = logStore;
-    this.toDtoMapper = toDtoMapper;
+    this.toAccessConfigurationDtoMapper = toAccessConfigurationDtoMapper;
+    this.toFiltersDtoMapper = toFiltersDtoMapper;
   }
 
   @GET
-  @Path("/configuration")
+  @Path("/accessConfiguration")
   @Produces("application/json")
-  public Response getMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name) {
+  public Response getAccessConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name) {
     Repository repository = loadRepository(namespace, name);
     MirrorConfiguration configuration =
       configurationService.getConfiguration(repository)
       .orElseThrow(() -> new NotConfiguredForMirrorException(repository));return Response
       .status(200)
-      .entity(toDtoMapper.map(configuration, repository))
+      .entity(toAccessConfigurationDtoMapper.map(configuration, repository))
       .build();
   }
 
   @PUT
-  @Path("/configuration")
+  @Path("/accessConfiguration")
   @Consumes("application/json")
-  public void setMirrorConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid MirrorConfigurationDto configurationDto) {
-    MirrorConfiguration configuration = fromDtoMapper.map(configurationDto);
+  public void setAccessConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid MirrorAccessConfigurationDto configurationDto) {
+    doThrow().violation("certificate must not be empty")
+      .when(
+        configurationDto.getCertificateCredential() != null && Strings.isNullOrEmpty(configurationDto.getCertificateCredential().getCertificate())
+      );
+
+    MirrorAccessConfiguration configuration = fromAccessConfigurationDtoMapper.map(configurationDto);
     Repository repository = loadRepository(namespace, name);
-    configurationService.setConfiguration(repository, configuration);
+    configurationService.setAccessConfiguration(repository, configuration);
+  }
+
+  @GET
+  @Path("/filterConfiguration")
+  @Produces("application/json")
+  public Response getFilterConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name) {
+    Repository repository = loadRepository(namespace, name);
+    MirrorConfiguration configuration =
+      configurationService.getConfiguration(repository)
+        .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
+    return Response
+      .status(200)
+      .entity(toFiltersDtoMapper.map(configuration, repository))
+      .build();
+  }
+
+  @PUT
+  @Path("/filterConfiguration")
+  @Consumes("application/json")
+  public void setFilterConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid LocalMirrorFilterConfigurationDto filtersDto) {
+    LocalFilterConfiguration configuration = fromFiltersDtoMapper.map(filtersDto);
+    Repository repository = loadRepository(namespace, name);
+    configurationService.setFilterConfiguration(repository, configuration);
   }
 
   @POST

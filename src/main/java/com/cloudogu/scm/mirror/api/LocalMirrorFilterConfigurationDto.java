@@ -21,25 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror.api;
 
-package com.cloudogu.scm.mirror;
+import de.otto.edison.hal.Links;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import com.cloudogu.scm.mirror.api.GlobalMirrorConfigurationToGlobalConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorAccessConfigurationToConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorFilterConfigurationToDtoMapper;
-import com.google.inject.AbstractModule;
-import org.mapstruct.factory.Mappers;
-import sonia.scm.plugin.Extension;
+@Getter
+@Setter
+@NoArgsConstructor
+@SuppressWarnings("java:S2160") // equals not needed here
+public class LocalMirrorFilterConfigurationDto extends MirrorFilterConfigurationDto {
 
-@Extension
-public class ModuleBinder extends AbstractModule {
-  @Override
-  protected void configure() {
-    bind(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class));
-    bind(MirrorAccessConfigurationToConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorAccessConfigurationToConfigurationDtoMapper.class));
-    bind(MirrorFilterConfigurationToDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorFilterConfigurationToDtoMapper.class));
-  }
+  private boolean overwriteGlobalConfiguration;
+
+  LocalMirrorFilterConfigurationDto(Links links) {
+      super(links);
+    }
+
 }

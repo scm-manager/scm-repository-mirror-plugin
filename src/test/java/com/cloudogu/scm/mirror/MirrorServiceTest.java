@@ -97,10 +97,11 @@ class MirrorServiceTest {
   void shouldCallUpdateCommand() {
     repository.setId("42");
     MirrorConfiguration configuration = mock(MirrorConfiguration.class);
-    when(configurationStore.getConfiguration(repository)).thenReturn(of(configuration));
+    when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
     service.updateMirror(repository);
 
+    verify(configurationStore).getApplicableConfiguration(repository);
     verify(mirrorWorker).startUpdate(repository, configuration);
   }
 
@@ -110,7 +111,7 @@ class MirrorServiceTest {
   )
   void shouldFailUpdateCommandWhenNotConfiguredAsMirror() {
     repository.setId("42");
-    when(configurationStore.getConfiguration(repository)).thenReturn(empty());
+    when(configurationStore.getApplicableConfiguration(repository)).thenReturn(empty());
 
     assertThrows(NotConfiguredForMirrorException.class, () -> service.updateMirror(repository));
   }
@@ -155,6 +156,7 @@ class MirrorServiceTest {
       @Test
       void shouldSetOwnerPermissionForCurrentUser() {
         MirrorConfiguration configuration = createConfiguration();
+        when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
         Repository createdRepository = service.createMirror(configuration, repository);
 
@@ -171,11 +173,13 @@ class MirrorServiceTest {
       @Test
       void shouldCallMirrorCommand() {
         MirrorConfiguration configuration = createConfiguration();
+        when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
         service.createMirror(configuration, repository);
 
         verify(configurationStore).setConfiguration(repository, configuration);
         verify(mirrorWorker).startInitialSync(repository, configuration);
+        verify(configurationStore).getApplicableConfiguration(repository);
       }
     }
   }

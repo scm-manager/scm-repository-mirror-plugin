@@ -65,6 +65,11 @@ class MirrorCommandCaller {
   <T> CallResult<T> call(Repository repository, MirrorConfiguration configuration, Function<MirrorCommandBuilder, T> callback) {
     ConfigurableFilter filter;
     T result;
+
+    if (configuration.isHttpsOnly() && !configuration.getUrl().startsWith("https")) {
+      throw new InsecureConnectionNotAllowedException(repository);
+    }
+
     try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
       LOG.debug("using url {}", configuration.getUrl());
 

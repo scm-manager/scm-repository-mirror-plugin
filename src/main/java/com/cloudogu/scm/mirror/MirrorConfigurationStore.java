@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ import sonia.scm.web.security.AdministrationContext;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
@@ -63,43 +65,133 @@ public class MirrorConfigurationStore implements Initable {
     this.globalStore = storeFactory.withType(GlobalMirrorConfiguration.class).withName(STORE_NAME).build();
   }
 
+  public Optional<MirrorConfiguration> getApplicableConfiguration(Repository repository) {
+    final Optional<MirrorConfiguration> localConfiguration = getConfiguration(repository);
+    return localConfiguration.map(it -> {
+      final GlobalMirrorConfiguration globalConfiguration = getGlobalConfiguration();
+      it.setHttpsOnly(globalConfiguration.isHttpsOnly());
+      return applyFilterConfiguration(it, getApplicableFilterConfiguration(repository));
+    });
+  }
+
+  @VisibleForTesting
+  MirrorFilterConfiguration getApplicableFilterConfiguration(Repository repository) {
+    final GlobalMirrorConfiguration globalConfiguration = getGlobalConfiguration();
+    if (globalConfiguration.isDisableRepositoryFilterOverwrite()) {
+      return globalConfiguration;
+    }
+    final Optional<MirrorConfiguration> localConfiguration = getConfiguration(repository);
+    if (localConfiguration.isPresent() && localConfiguration.get().isOverwriteGlobalConfiguration()) {
+      return localConfiguration.get();
+    }
+    return globalConfiguration;
+  }
+
   public Optional<MirrorConfiguration> getConfiguration(Repository repository) {
     MirrorPermissions.checkRepositoryMirrorPermission(repository);
     return createConfigurationStore(repository).getOptional();
   }
 
-  public void setConfiguration(Repository repository, MirrorConfiguration configuration) {
+  public void setFilterConfiguration(Repository repository, LocalFilterConfiguration filterConfiguration) {
+    setConfiguration(repository, it -> applyLocalFilterConfiguration(it, filterConfiguration));
+  }
+
+  public void setAccessConfiguration(Repository repository, MirrorAccessConfiguration accessConfiguration) {
+    setConfiguration(repository, it -> applyAccessConfiguration(repository, it, accessConfiguration));
+  }
+
+  void setConfiguration(Repository repository, MirrorConfiguration mirrorConfiguration) {
+    setConfiguration(repository, it -> {
+      applyAccessConfiguration(repository, it, mirrorConfiguration);
+      applyLocalFilterConfiguration(it, mirrorConfiguration);
+      return it;
+    });
+  }
+
+  private void setConfiguration(Repository repository, UnaryOperator<MirrorConfiguration> applicator) {
     MirrorPermissions.checkRepositoryMirrorPermission(repository);
     LOG.debug("setting new configuration for repository {}", repository);
     ConfigurationStore<MirrorConfiguration> store = createConfigurationStore(repository);
-    store.getOptional().ifPresent(
-      existingConfig -> updateWithExisting(existingConfig, configuration)
-    );
-    store.set(configuration);
-    scheduler.schedule(repository, configuration);
+    MirrorConfiguration newConfiguration = store.getOptional().map(applicator).orElseGet(() -> applicator.apply(new MirrorConfiguration()));
+    store.set(newConfiguration);
+    scheduler.schedule(repository, newConfiguration);
   }
 
-  private void updateWithExisting(MirrorConfiguration existingConfig, MirrorConfiguration configuration) {
-    if (Strings.isNullOrEmpty(configuration.getUrl())) {
-      configuration.setUrl(existingConfig.getUrl());
+  private MirrorConfiguration applyLocalFilterConfiguration(MirrorConfiguration existingConfiguration, LocalFilterConfiguration newFilterConfiguration) {
+    existingConfiguration.setOverwriteGlobalConfiguration(newFilterConfiguration.isOverwriteGlobalConfiguration());
+    return applyFilterConfiguration(existingConfiguration, newFilterConfiguration);
+  }
+
+  private MirrorConfiguration applyFilterConfiguration(MirrorConfiguration existingConfiguration, MirrorFilterConfiguration newFilterConfiguration) {
+    existingConfiguration.setFastForwardOnly(newFilterConfiguration.isFastForwardOnly());
+    existingConfiguration.setGpgVerificationType(newFilterConfiguration.getGpgVerificationType());
+    existingConfiguration.setAllowedGpgKeys(newFilterConfiguration.getAllowedGpgKeys());
+    existingConfiguration.setBranchesAndTagsPatterns(newFilterConfiguration.getBranchesAndTagsPatterns());
+    return existingConfiguration;
+  }
+
+  private MirrorConfiguration applyAccessConfiguration(Repository repository, MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
+    if (getGlobalConfiguration().isHttpsOnly() && !newMirrorAccessConfiguration.getUrl().startsWith("https")) {
+      throw new InsecureConnectionNotAllowedException(repository);
+    }
+    updateUrl(existingConfiguration, newMirrorAccessConfiguration);
+    updateUsernamePasswordCredentials(existingConfiguration, newMirrorAccessConfiguration);
+    updateCertificateCredentials(existingConfiguration, newMirrorAccessConfiguration);
+    existingConfiguration.setManagingUsers(newMirrorAccessConfiguration.getManagingUsers());
+    existingConfiguration.setSynchronizationPeriod(newMirrorAccessConfiguration.getSynchronizationPeriod());
+    return existingConfiguration;
+  }
+
+  private void updateUrl(MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
+    if (Strings.isNullOrEmpty(existingConfiguration.getUrl())) {
+      existingConfiguration.setUrl(newMirrorAccessConfiguration.getUrl());
     } else {
       doThrow()
         .violation("url must not be changed", "url")
-        .when(!existingConfig.getUrl().equals(configuration.getUrl()));
+        .when(!existingConfiguration.getUrl().equals(newMirrorAccessConfiguration.getUrl()));
     }
-    if (shouldUpdatePasswordWithExisting(existingConfig, configuration)) {
-      LOG.trace("keeping password for username from existing configuration");
-      configuration.getUsernamePasswordCredential().setPassword(existingConfig.getUsernamePasswordCredential().getPassword());
+  }
+
+  private void updateCertificateCredentials(MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
+    if (newMirrorAccessConfiguration.getCertificateCredential() != null) {
+      final boolean shouldUpdatePassword = !DUMMY_PASSWORD.equals(newMirrorAccessConfiguration.getCertificateCredential().getPassword());
+      final boolean shouldUpdateCertificate = newMirrorAccessConfiguration.getCertificateCredential().getCertificate() != null;
+      if (existingConfiguration.getCertificateCredential() == null && (shouldUpdatePassword || shouldUpdateCertificate)) {
+        existingConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential());
+      }
+      if (shouldUpdatePassword) {
+        LOG.trace("updating password for certificate");
+        existingConfiguration.getCertificateCredential().setPassword(newMirrorAccessConfiguration.getCertificateCredential().getPassword());
+      }
+      if (shouldUpdateCertificate) {
+        LOG.trace("updating certificate");
+        existingConfiguration.getCertificateCredential().setCertificate(newMirrorAccessConfiguration.getCertificateCredential().getCertificate());
+      }
+    } else {
+      existingConfiguration.setCertificateCredential(null);
     }
-    if (configuration.getCertificateCredential() != null && existingConfig.getCertificateCredential() != null) {
-      if (DUMMY_PASSWORD.equals(configuration.getCertificateCredential().getPassword())) {
-        LOG.trace("keeping password for certificate from existing configuration");
-        configuration.getCertificateCredential().setPassword(existingConfig.getCertificateCredential().getPassword());
+  }
+
+  private void updateUsernamePasswordCredentials(MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
+    if (newMirrorAccessConfiguration.getUsernamePasswordCredential() != null) {
+      final boolean shouldUpdatePassword = !DUMMY_PASSWORD.equals(newMirrorAccessConfiguration.getUsernamePasswordCredential().getPassword());
+      final boolean usernameIsNullOrEmpty = Strings.isNullOrEmpty(newMirrorAccessConfiguration.getUsernamePasswordCredential().getUsername());
+      if (usernameIsNullOrEmpty) {
+        LOG.trace("empty username, deleting username-password-credentials");
+        existingConfiguration.setUsernamePasswordCredential(null);
+      } else {
+        if (existingConfiguration.getUsernamePasswordCredential() == null) {
+          existingConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential());
+        }
+        LOG.trace("updating username");
+        existingConfiguration.getUsernamePasswordCredential().setUsername(newMirrorAccessConfiguration.getUsernamePasswordCredential().getUsername());
+        if (shouldUpdatePassword) {
+          LOG.trace("updating password for username");
+          existingConfiguration.getUsernamePasswordCredential().setPassword(newMirrorAccessConfiguration.getUsernamePasswordCredential().getPassword());
+        }
       }
-      if (configuration.getCertificateCredential().getCertificate() == null) {
-        LOG.trace("keeping certificate from existing configuration");
-        configuration.getCertificateCredential().setCertificate(existingConfig.getCertificateCredential().getCertificate());
-      }
+    } else {
+      existingConfiguration.setUsernamePasswordCredential(null);
     }
   }
 
@@ -125,12 +217,6 @@ public class MirrorConfigurationStore implements Initable {
   private void init(Repository repository) {
     getConfiguration(repository)
       .ifPresent(configuration -> scheduler.scheduleNow(repository, configuration));
-  }
-
-  private boolean shouldUpdatePasswordWithExisting(MirrorConfiguration existingConfig, MirrorConfiguration configuration) {
-    return configuration.getUsernamePasswordCredential() != null
-      && existingConfig.getUsernamePasswordCredential() != null
-      && DUMMY_PASSWORD.equals(configuration.getUsernamePasswordCredential().getPassword());
   }
 
   private ConfigurationStore<MirrorConfiguration> createConfigurationStore(Repository repository) {

@@ -21,60 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.cloudogu.scm.mirror.api;
 
-import de.otto.edison.hal.Links;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.cloudogu.scm.mirror.LocalFilterConfigurationImpl;
+import com.cloudogu.scm.mirror.MirrorFilterConfigurationImpl;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@SuppressWarnings("java:S2160") // Equals and Hashcode not needed for dto
-public class MirrorConfigurationDto extends MirrorVerificationConfigurationDto {
+import static java.util.Collections.emptyList;
 
-  @NotBlank
-  private String url;
-  @NotNull
-  @Min(5)
-  private Integer synchronizationPeriod;
-  private List<String> managingUsers;
+@Mapper( uses = RawGpgKeyDtoToKeyMapper.class)
+public abstract class MirrorFilterConfigurationDtoToDaoMapper {
 
-  @Valid
-  private UsernamePasswordCredentialDto usernamePasswordCredential;
-  @Valid
-  private CertificateCredentialDto certificateCredential;
+  abstract LocalFilterConfigurationImpl map(LocalMirrorFilterConfigurationDto configurationDto);
 
-  MirrorConfigurationDto(Links links) {
-    super(links);
+  @Mapping(target = "branchesAndTagsPatterns")
+  List<String> map(String value) {
+    if (Strings.isNullOrEmpty(value)) {
+      return emptyList();
+    }
+    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
   }
 
-  @Getter
-  @Setter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  static class UsernamePasswordCredentialDto {
-    @NotBlank
-    private String username;
-    @NotBlank
-    private String password;
-  }
-
-  @Getter
-  @Setter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  static class CertificateCredentialDto {
-    private String certificate;
-    private String password;
-  }
 }

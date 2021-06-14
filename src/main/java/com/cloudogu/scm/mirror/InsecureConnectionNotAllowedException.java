@@ -24,22 +24,20 @@
 
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.api.GlobalMirrorConfigurationToGlobalConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorAccessConfigurationToConfigurationDtoMapper;
-import com.cloudogu.scm.mirror.api.MirrorFilterConfigurationToDtoMapper;
-import com.google.inject.AbstractModule;
-import org.mapstruct.factory.Mappers;
-import sonia.scm.plugin.Extension;
+import sonia.scm.ExceptionWithContext;
+import sonia.scm.repository.Repository;
 
-@Extension
-public class ModuleBinder extends AbstractModule {
+import static sonia.scm.ContextEntry.ContextBuilder.entity;
+
+@SuppressWarnings("java:S110") // We accept deep hierarchy for exceptions
+public class InsecureConnectionNotAllowedException extends ExceptionWithContext {
+
+  public InsecureConnectionNotAllowedException(Repository repository) {
+    super(entity(repository).build(), "mirror connections are configured as https only but url is not secure");
+  }
+
   @Override
-  protected void configure() {
-    bind(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class));
-    bind(MirrorAccessConfigurationToConfigurationDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorAccessConfigurationToConfigurationDtoMapper.class));
-    bind(MirrorFilterConfigurationToDtoMapper.class)
-      .to(Mappers.getMapperClass(MirrorFilterConfigurationToDtoMapper.class));
+  public String getCode() {
+    return "23SZx2QZE1";
   }
 }

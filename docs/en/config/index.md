@@ -14,3 +14,10 @@ The details for the other settings can be found in the [documentation for the cr
 ![Mirror_Configuration for a mirrored repository](assets/mirror-configuration.png)
 
 [^1]: Please note, that at most four synchronisations will run in parallel.
+
+## Global Configuration
+
+Further settings are available in the administration settings and default filters can
+be defined. Additionally, local filter configuration can be disabled.
+
+![Global_Mirror_Configuration](assets/global-mirror-configuration.png)

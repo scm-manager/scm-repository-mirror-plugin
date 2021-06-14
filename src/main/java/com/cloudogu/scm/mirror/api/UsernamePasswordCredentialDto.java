@@ -21,26 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.cloudogu.scm.mirror.api;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
-@SuppressWarnings("java:S2160") // Equals and Hashcode not needed for dto
-public class MirrorRequestDto extends MirrorConfigurationDto {
-
-  private String namespace;
+@AllArgsConstructor
+@NoArgsConstructor
+class UsernamePasswordCredentialDto {
   @NotBlank
-  private String name;
+  private String username;
   @NotBlank
-  private String type;
-  @Email
-  private String contact;
-  private String description;
+  private String password;
 }

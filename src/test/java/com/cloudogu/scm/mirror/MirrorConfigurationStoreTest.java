@@ -24,8 +24,6 @@
 
 package com.cloudogu.scm.mirror;
 
-import com.cloudogu.scm.mirror.MirrorConfiguration.CertificateCredential;
-import com.cloudogu.scm.mirror.MirrorConfiguration.UsernamePasswordCredential;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
@@ -44,15 +42,17 @@ import sonia.scm.store.InMemoryConfigurationStoreFactory;
 import sonia.scm.web.security.AdministrationContext;
 import sonia.scm.web.security.PrivilegedAction;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -97,9 +97,9 @@ class MirrorConfigurationStoreTest {
 
   @Test
   void shouldFailToSetConfigurationWithoutPermission() {
-    MirrorConfiguration configuration = new MirrorConfiguration();
+    MirrorAccessConfiguration configuration = new MirrorAccessConfigurationImpl();
     assertThrows(UnauthorizedException.class,
-      () -> store.setConfiguration(REPOSITORY, configuration));
+      () -> store.setAccessConfiguration(REPOSITORY, configuration));
   }
 
   @Nested
@@ -127,32 +127,149 @@ class MirrorConfigurationStoreTest {
     }
 
     @Test
-    void shouldSetConfiguration() {
-      MirrorConfiguration newConfiguration = new MirrorConfiguration();
+    void shouldSetAccessConfigurationButNotFilters() {
+      MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
+      existingMirrorConfiguration.setOverwriteGlobalConfiguration(true);
+      existingMirrorConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop,feature/*"));
+      existingMirrorConfiguration.setGpgVerificationType(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
+      existingMirrorConfiguration.setFastForwardOnly(true);
 
-      store.setConfiguration(REPOSITORY, newConfiguration);
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setManagingUsers(Collections.singletonList("trillian"));
+      newConfiguration.setUrl("https://scm-manager.org");
+      newConfiguration.setSynchronizationPeriod(10);
+      newConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential("hello".getBytes(StandardCharsets.UTF_8), "secret"));
+      newConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("scm-manager", "scm-manager"));
+
+      storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
 
       Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
-      assertThat(configurationFromStore).isSameAs(newConfiguration);
-      verify(scheduler).schedule(REPOSITORY, newConfiguration);
+      assertThat(configurationFromStore).isSameAs(existingMirrorConfiguration);
+      verify(scheduler).schedule(eq(REPOSITORY), argThat(it -> {
+        // Filter config should remain the same
+        assertThat(it.getGpgVerificationType()).isEqualTo(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
+        assertThat(it.isFastForwardOnly()).isTrue();
+        assertThat(it.isOverwriteGlobalConfiguration()).isTrue();
+        assertThat(it.getBranchesAndTagsPatterns()).containsExactly("develop,feature/*");
+
+        // Access config should be overwritten
+        assertThat(it.getManagingUsers()).containsExactly("trillian");
+        assertThat(it.getUrl()).isEqualTo("https://scm-manager.org");
+        assertThat(it.getSynchronizationPeriod()).isEqualTo(10);
+        assertThat(it.getCertificateCredential()).matches(certificateCredential -> {
+          assertThat(certificateCredential).isNotNull();
+          assertThat(certificateCredential.getPassword()).isEqualTo("secret");
+          assertThat(certificateCredential.getCertificate()).asString().isEqualTo("hello");
+          return true;
+        });
+        assertThat(it.getUsernamePasswordCredential()).matches(usernamePasswordCredential -> {
+          assertThat(usernamePasswordCredential).isNotNull();
+          assertThat(usernamePasswordCredential.getPassword()).isEqualTo("scm-manager");
+          assertThat(usernamePasswordCredential.getUsername()).isEqualTo("scm-manager");
+          return true;
+        });
+        return true;
+      }));
     }
 
     @Test
-    void shouldOverwriteDummyCredentialsWithExistingCredentials() {
+    void shouldSetFilterConfiguration() {
+      MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
+      existingMirrorConfiguration.setUrl("https://scm-manager.org");
+      existingMirrorConfiguration.setManagingUsers(Collections.singletonList("trillian"));
+      existingMirrorConfiguration.setSynchronizationPeriod(100);
+      existingMirrorConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential());
+      existingMirrorConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential());
+
+      LocalFilterConfigurationImpl newConfiguration = new LocalFilterConfigurationImpl();
+      newConfiguration.setOverwriteGlobalConfiguration(true);
+      newConfiguration.setFastForwardOnly(true);
+      newConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop,feature/*"));
+      newConfiguration.setGpgVerificationType(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
+
+      storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
+      store.setFilterConfiguration(REPOSITORY, newConfiguration);
+
+      Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
+      assertThat(configurationFromStore).isSameAs(existingMirrorConfiguration);
+      verify(scheduler).schedule(eq(REPOSITORY), argThat(it -> {
+        // Access config should remain the same
+        assertThat(it.getUrl()).isEqualTo("https://scm-manager.org");
+        assertThat(it.getManagingUsers()).containsExactly("trillian");
+        assertThat(it.getSynchronizationPeriod()).isEqualTo(100);
+        assertThat(it.getUsernamePasswordCredential()).isNotNull();
+        assertThat(it.getCertificateCredential()).isNotNull();
+
+        // Filters should be overwritten
+        assertThat(it.isOverwriteGlobalConfiguration()).isTrue();
+        assertThat(it.isFastForwardOnly()).isTrue();
+        assertThat(it.getGpgVerificationType()).isEqualTo(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
+        assertThat(it.getBranchesAndTagsPatterns()).containsExactly("develop,feature/*");
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldCreateNewEmptyCertificateCredentialIfExistingWasNull() {
       MirrorConfiguration existingConfiguration = new MirrorConfiguration();
-      existingConfiguration.setUsernamePasswordCredential(new UsernamePasswordCredential("dent", "oldUsernamePassword"));
-      existingConfiguration.setCertificateCredential(new CertificateCredential(new byte[] {1, 2, 3}, "oldCertPassword"));
       mockExistingConfiguration(existingConfiguration);
 
-      MirrorConfiguration newConfiguration = new MirrorConfiguration();
-      newConfiguration.setUsernamePasswordCredential(new UsernamePasswordCredential("dent", "_DUMMY_"));
-      newConfiguration.setCertificateCredential(new CertificateCredential(null, "_DUMMY_"));
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential(new byte[] {1, 2, 3}, "secret"));
 
-      store.setConfiguration(REPOSITORY, newConfiguration);
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
 
-      assertThat(newConfiguration.getUsernamePasswordCredential().getPassword()).isEqualTo("oldUsernamePassword");
-      assertThat(newConfiguration.getCertificateCredential().getPassword()).isEqualTo("oldCertPassword");
-      assertThat(newConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
+      assertThat(existingConfiguration.getCertificateCredential().getPassword()).isEqualTo("secret");
+      assertThat(existingConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
+    }
+
+    @Test
+    void shouldNotCreateNewEmptyCertificateCredentialIfExistingWasNotNull() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      MirrorAccessConfiguration.CertificateCredential certificateCredential = new MirrorAccessConfiguration.CertificateCredential(null, "secret");
+      existingConfiguration.setCertificateCredential(certificateCredential);
+      mockExistingConfiguration(existingConfiguration);
+
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential(new byte[] {1, 2, 3}, "_DUMMY_"));
+
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
+
+      assertThat(existingConfiguration.getCertificateCredential().getPassword()).isEqualTo("secret");
+      assertThat(existingConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
+    }
+
+    @Test
+    void shouldIgnoreDummyCredentialsAndEmptyCertificate() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      existingConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "oldUsernamePassword"));
+      existingConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential(new byte[] {1, 2, 3}, "oldCertPassword"));
+      mockExistingConfiguration(existingConfiguration);
+
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "_DUMMY_"));
+      newConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential(null, "_DUMMY_"));
+
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
+
+      assertThat(existingConfiguration.getUsernamePasswordCredential().getPassword()).isEqualTo("oldUsernamePassword");
+      assertThat(existingConfiguration.getCertificateCredential().getPassword()).isEqualTo("oldCertPassword");
+      assertThat(existingConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
+    }
+
+    @Test
+    void shouldDeleteUsernamePasswordCredentialsIfNewUsernameIsNullOrEmpty() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      existingConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "oldUsernamePassword"));
+      mockExistingConfiguration(existingConfiguration);
+
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("", "_DUMMY_"));
+
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
+
+      assertThat(existingConfiguration.getUsernamePasswordCredential()).isNull();
     }
 
     @Test
@@ -161,11 +278,125 @@ class MirrorConfigurationStoreTest {
       existingConfiguration.setUrl("http://hog.net/");
       mockExistingConfiguration(existingConfiguration);
 
-      MirrorConfiguration newConfiguration = new MirrorConfiguration();
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
       newConfiguration.setUrl("http://magrathea.com/");
 
-      assertThrows(ScmConstraintViolationException.class, () -> store.setConfiguration(REPOSITORY, newConfiguration));
+      assertThrows(ScmConstraintViolationException.class, () -> store.setAccessConfiguration(REPOSITORY, newConfiguration));
     }
+
+    @Test
+    void shouldReturnEmptyIfLocalConfigurationIsNotSet() {
+      final Optional<MirrorConfiguration> applicableConfiguration = store.getApplicableConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration).isNotPresent();
+    }
+
+    @Test
+    void shouldReturnGlobalFiltersIfLocalAreNotPresent() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setFastForwardOnly(true);
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final MirrorFilterConfiguration applicableConfiguration = store.getApplicableFilterConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration.isFastForwardOnly()).isTrue();
+    }
+
+    @Test
+    void shouldApplyExclusivelyGlobalSettings() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setHttpsOnly(true);
+
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final MirrorConfiguration mirrorConfiguration = new MirrorConfiguration();
+      mockExistingConfiguration(mirrorConfiguration);
+
+      final Optional<MirrorConfiguration> applicableConfiguration = store.getApplicableConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration).hasValueSatisfying(it -> {
+        assertThat(it.isHttpsOnly()).isTrue();
+      });
+    }
+
+    @Test
+    void shouldKeepNonFilterValues() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setFastForwardOnly(true);
+      globalMirrorConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop,feature/*"));
+
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final MirrorConfiguration mirrorConfiguration = new MirrorConfiguration();
+      mirrorConfiguration.setUrl("test");
+      mirrorConfiguration.setSynchronizationPeriod(100);
+      mirrorConfiguration.setManagingUsers(Collections.singletonList("trillian"));
+      mirrorConfiguration.setFastForwardOnly(false);
+      mirrorConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop"));
+      mockExistingConfiguration(mirrorConfiguration);
+
+      final Optional<MirrorConfiguration> applicableConfiguration = store.getApplicableConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration).hasValueSatisfying(it -> {
+        assertThat(it.getUrl()).isEqualTo("test");
+        assertThat(it.getSynchronizationPeriod()).isEqualTo(100);
+        assertThat(it.getManagingUsers()).containsExactly("trillian");
+        assertThat(it.isFastForwardOnly()).isTrue();
+        assertThat(it.getBranchesAndTagsPatterns()).containsExactly("develop,feature/*");
+      });
+    }
+
+    @Test
+    void shouldUseGlobalFiltersIfLocalAreNotAllowed() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setFastForwardOnly(true);
+      globalMirrorConfiguration.setDisableRepositoryFilterOverwrite(true);
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final LocalFilterConfigurationImpl localFilterConfiguration = new LocalFilterConfigurationImpl();
+      localFilterConfiguration.setFastForwardOnly(false);
+      localFilterConfiguration.setOverwriteGlobalConfiguration(true);
+      mockFilterConfiguration(localFilterConfiguration);
+
+      final MirrorFilterConfiguration applicableConfiguration = store.getApplicableFilterConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration.isFastForwardOnly()).isTrue();
+    }
+
+    @Test
+    void shouldUseGlobalFiltersIfLocalAreNotOverwritten() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setFastForwardOnly(true);
+      globalMirrorConfiguration.setDisableRepositoryFilterOverwrite(false);
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final LocalFilterConfigurationImpl localFilterConfiguration = new LocalFilterConfigurationImpl();
+      localFilterConfiguration.setFastForwardOnly(false);
+      localFilterConfiguration.setOverwriteGlobalConfiguration(false);
+      mockFilterConfiguration(localFilterConfiguration);
+
+      final MirrorFilterConfiguration applicableConfiguration = store.getApplicableFilterConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration.isFastForwardOnly()).isTrue();
+    }
+
+    @Test
+    void shouldUseLocalFiltersIfOverwritten() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setFastForwardOnly(false);
+      globalMirrorConfiguration.setDisableRepositoryFilterOverwrite(false);
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final LocalFilterConfigurationImpl localFilterConfiguration = new LocalFilterConfigurationImpl();
+      localFilterConfiguration.setFastForwardOnly(true);
+      localFilterConfiguration.setOverwriteGlobalConfiguration(true);
+      mockFilterConfiguration(localFilterConfiguration);
+
+      final MirrorFilterConfiguration applicableConfiguration = store.getApplicableFilterConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration.isFastForwardOnly()).isTrue();
+    }
+
   }
 
   @Test
@@ -200,5 +431,13 @@ class MirrorConfigurationStoreTest {
   @SuppressWarnings("unchecked")
   private void mockExistingConfiguration(MirrorConfiguration existingConfiguration, Repository repository) {
     storeFactory.get("mirror", repository.getId()).set(existingConfiguration);
+  }
+
+  private void mockGlobalConfiguration(GlobalMirrorConfiguration globalMirrorConfiguration) {
+    store.setGlobalConfiguration(globalMirrorConfiguration);
+  }
+
+  private void mockFilterConfiguration(LocalFilterConfiguration localFilterConfiguration) {
+    store.setFilterConfiguration(REPOSITORY, localFilterConfiguration);
   }
 }

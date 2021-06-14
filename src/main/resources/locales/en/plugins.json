@@ -109,6 +109,14 @@
       "fastForwardOnly": {
         "label": "Fast-Forward Only",
         "helpText": "Only apply changes to branches, which resulted from a fast-forward."
+      },
+      "disableRepositoryFilterOverwrite": {
+        "label": "Do not allow repository filter overwrite",
+        "helpText": "Do not allow repository owners to overwrite the mirror filters."
+      },
+      "overwriteGlobalConfiguration": {
+        "label": "Overwrite Global Filter Configuration",
+        "helpText": "Replaces the global filter configuration for this repository."
       }
     },
     "flag": {
@@ -166,6 +174,12 @@
         "displayName": "configure mirror",
         "description": "May modify the repository specific mirror configurations"
       }
+    }
+  },
+  "errors": {
+    "23SZx2QZE1": {
+      "displayName": "Url is not using HTTPS",
+      "description": "Mirror connections are globally configured as https-only, but the provided url is not secure."
     }
   }
 }
