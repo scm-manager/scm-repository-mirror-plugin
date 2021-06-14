@@ -35,7 +35,6 @@ import sonia.scm.config.ScmConfiguration;
 import sonia.scm.mail.api.MailService;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
-import sonia.scm.repository.api.MirrorCommandResult;
 
 import javax.inject.Provider;
 import java.time.Instant;
@@ -47,11 +46,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static sonia.scm.repository.api.MirrorCommandResult.ResultType.FAILED;
-import static sonia.scm.repository.api.MirrorCommandResult.ResultType.OK;
 
 @ExtendWith(MockitoExtension.class)
-class MirrorFailedEmailNotificationHookTest {
+class MirrorStatusEmailNotificationHookTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.create42Puzzle();
 
@@ -63,24 +60,11 @@ class MirrorFailedEmailNotificationHookTest {
   private ScmConfiguration scmConfiguration;
 
   @InjectMocks
-  private MirrorFailedEmailNotificationHook hook;
+  private MirrorStatusEmailNotificationHook hook;
 
   @BeforeEach
   void shouldInitHookConfig() {
     lenient().when(scmConfiguration.getBaseUrl()).thenReturn("http://hitchhiker.org/scm");
-  }
-
-  @Test
-  void shouldOnlySendMailOnFailedMirror() {
-    hook.handleEvent(
-      new MirrorStatusChangedEvent(
-        REPOSITORY,
-        createStatusResult(MirrorStatus.Result.FAILED),
-        createStatusResult(MirrorStatus.Result.SUCCESS)
-      )
-    );
-
-    verify(configStoreProvider, never()).get();
   }
 
   @Test
@@ -104,7 +88,6 @@ class MirrorFailedEmailNotificationHookTest {
   void shouldNotSendMailIfPreviousStatusWasAlsoFailed() {
     MirrorConfiguration mirrorConfig = new MirrorConfiguration();
     mirrorConfig.setManagingUsers(ImmutableList.of("trillian", "arthur", "zaphod"));
-    mockConfigStore(mirrorConfig);
 
     hook.handleEvent(
       new MirrorStatusChangedEvent(

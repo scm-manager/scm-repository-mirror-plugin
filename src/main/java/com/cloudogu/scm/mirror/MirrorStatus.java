@@ -76,17 +76,21 @@ public class MirrorStatus {
   }
 
   public enum Result {
-    SUCCESS("mirrorSuccess", Type.SUCCESS),
-    FAILED_UPDATES("mirrorUpdatesRejected", Type.WARNING),
-    FAILED("mirrorFailed", Type.ERROR),
-    NOT_YET_RUN("notYetRun", Type.INFO);
+    SUCCESS("mirrorSuccess", Type.SUCCESS, "com/cloudogu/mail/emailnotification/mirror_success.mustache", "mirrorSuccess"),
+    FAILED_UPDATES("mirrorUpdatesRejected", Type.WARNING, "com/cloudogu/mail/emailnotification/mirror_rejected_updates.mustache", "mirrorRejectedUpdates"),
+    FAILED("mirrorFailed", Type.ERROR, "com/cloudogu/mail/emailnotification/mirror_failed.mustache", "mirrorFailed"),
+    NOT_YET_RUN("notYetRun", Type.INFO, null, null);
 
     private final String notificationKey;
     private final Type notificationType;
+    private final String mailTemplatePath;
+    private final String mailSubjectKey;
 
-    Result(String notificationKey, Type notificationType) {
+    Result(String notificationKey, Type notificationType, String mailTemplatePath, String mailSubjectKey) {
       this.notificationKey = notificationKey;
       this.notificationType = notificationType;
+      this.mailTemplatePath = mailTemplatePath;
+      this.mailSubjectKey = mailSubjectKey;
     }
 
     public String getNotificationKey() {
@@ -95,6 +99,14 @@ public class MirrorStatus {
 
     public Type getNotificationType() {
       return notificationType;
+    }
+
+    public String getMailTemplatePath() {
+      return mailTemplatePath;
+    }
+
+    public String getMailSubjectKey() {
+      return mailSubjectKey;
     }
   }
 }
