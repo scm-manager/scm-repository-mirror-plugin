@@ -28,6 +28,7 @@ import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
+import com.google.common.base.Strings;
 import org.mapstruct.factory.Mappers;
 import sonia.scm.api.v2.resources.RepositoryLinkProvider;
 import sonia.scm.repository.Repository;
@@ -46,6 +47,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 
 import static org.mapstruct.factory.Mappers.getMapper;
+import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 @Path("v2/mirror/")
 public class MirrorRootResource {
@@ -71,6 +73,11 @@ public class MirrorRootResource {
   @Path("/repositories")
   @Consumes("application/json")
   public Response createMirrorRepository(@Valid MirrorCreationDto requestDto) {
+    doThrow().violation("certificate must not be empty")
+      .when(
+        requestDto.getCertificateCredential() != null && Strings.isNullOrEmpty(requestDto.getCertificateCredential().getCertificate())
+      );
+
     Repository repository = mirrorCreationDtoMapper.mapToRepository(requestDto);
     MirrorConfiguration configuration = mirrorCreationDtoMapper.mapToConfiguration(requestDto);
     Repository mirror = mirrorService.createMirror(configuration, repository);

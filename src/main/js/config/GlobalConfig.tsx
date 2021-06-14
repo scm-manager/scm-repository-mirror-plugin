@@ -70,6 +70,12 @@ const GlobalConfig: FC<Props> = ({ link }) => {
         disabled={isReadOnly}
         {...register("disableRepositoryFilterOverwrite")}
       />
+      <Checkbox
+        label={t("scm-repository-mirror-plugin.form.fastForwardOnly.label")}
+        helpText={t("scm-repository-mirror-plugin.form.fastForwardOnly.helpText")}
+        disabled={isReadOnly}
+        {...register("fastForwardOnly", { shouldUnregister: true })}
+      />
       <InputField
         label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
         helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}

@@ -112,7 +112,7 @@ public class MirrorConfigurationStore implements Initable {
     MirrorPermissions.checkRepositoryMirrorPermission(repository);
     LOG.debug("setting new configuration for repository {}", repository);
     ConfigurationStore<MirrorConfiguration> store = createConfigurationStore(repository);
-    final MirrorConfiguration newConfiguration = store.getOptional().map(applicator).orElse(applicator.apply(new MirrorConfiguration()));
+    MirrorConfiguration newConfiguration = store.getOptional().map(applicator).orElseGet(() -> applicator.apply(new MirrorConfiguration()));
     store.set(newConfiguration);
     scheduler.schedule(repository, newConfiguration);
   }

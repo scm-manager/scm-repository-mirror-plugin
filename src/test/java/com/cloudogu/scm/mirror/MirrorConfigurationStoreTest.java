@@ -211,6 +211,36 @@ class MirrorConfigurationStoreTest {
     }
 
     @Test
+    void shouldCreateNewEmptyCertificateCredentialIfExistingWasNull() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      mockExistingConfiguration(existingConfiguration);
+
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential(new byte[] {1, 2, 3}, "secret"));
+
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
+
+      assertThat(existingConfiguration.getCertificateCredential().getPassword()).isEqualTo("secret");
+      assertThat(existingConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
+    }
+
+    @Test
+    void shouldNotCreateNewEmptyCertificateCredentialIfExistingWasNotNull() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      MirrorAccessConfiguration.CertificateCredential certificateCredential = new MirrorAccessConfiguration.CertificateCredential(null, "secret");
+      existingConfiguration.setCertificateCredential(certificateCredential);
+      mockExistingConfiguration(existingConfiguration);
+
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential(new byte[] {1, 2, 3}, "_DUMMY_"));
+
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
+
+      assertThat(existingConfiguration.getCertificateCredential().getPassword()).isEqualTo("secret");
+      assertThat(existingConfiguration.getCertificateCredential().getCertificate()).isEqualTo(new byte[] {1, 2, 3});
+    }
+
+    @Test
     void shouldIgnoreDummyCredentialsAndEmptyCertificate() {
       MirrorConfiguration existingConfiguration = new MirrorConfiguration();
       existingConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "oldUsernamePassword"));
