@@ -181,5 +181,14 @@
       "displayName": "Url is not using HTTPS",
       "description": "Mirror connections are globally configured as https-only, but the provided url is not secure."
     }
+  },
+  "mailTopics": {
+    "scm-repository-mirror-plugin": {
+      "label": "Repository Mirror",
+      "mirrorStatusChanged": {
+        "label": "State changes of mirrored repositories",
+        "helpText": "Mails for changed states of mirrored repositories, eg. on the first failure or after a synchronization was successful again."
+      }
+    }
   }
 }

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Added
 - Implement global configuration ([#11](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/11))
+### Fixed
+- Send mails on each status change ([#12](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/12))
+- Add topic for personal mail settings ([#12](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/12))
 
 ## 1.0.1 - 2021-06-08
 ### Fixed
