@@ -100,6 +100,7 @@ export const FileInputControl: FC<MirrorAccessConfigControlProps> = ({ control, 
       label={t("scm-repository-mirror-plugin.form.certificate.label")}
       helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
       disabled={isReadonly}
+      testId="certificateInput"
       {...field}
       onChange={(event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target?.files?.[0];
@@ -132,6 +133,7 @@ export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control
               label={t("scm-repository-mirror-plugin.form.username.label")}
               helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
               disabled={isReadonly}
+              testId="usernameInput"
               {...usernameField}
             />
           </Column>
@@ -141,6 +143,7 @@ export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control
               type="password"
               helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
               disabled={isReadonly}
+              testId="usernamePasswordInput"
               {...passwordField}
             />
           </Column>
@@ -160,6 +163,7 @@ export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control
               type="password"
               helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
               disabled={isReadonly}
+              testId="certificatePasswordInput"
               {...certificatePasswordField}
             />
           </Column>
@@ -215,6 +219,7 @@ export const SynchronizationPeriodControl: FC<MirrorAccessConfigControlProps> = 
         helpText={t("scm-repository-mirror-plugin.form.period.helpText")}
         options={createPeriodOptions(t)}
         disabled={isReadonly}
+        testId="synchronizationPeriodInput"
         {...field}
       />
     </Column>
@@ -246,6 +251,7 @@ export const UrlControl: FC<MirrorAccessConfigControlProps> = ({ control, isRead
         errorMessage={fieldState.error?.message}
         validationError={!!fieldState.error}
         disabled={isReadonly}
+        testId="urlInput"
         {...field}
       />
     </Column>
