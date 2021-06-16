@@ -26,3 +26,36 @@
 // It is mandatory that you use this specific file, because otherwise the integration-test-runner
 // might cause overlaps when copying all the different plugin tests together.
 // If there are no steps specific to this plugin, you can leave this file blank.
+
+Given("User has permission to read repository and create repositories", function() {
+  cy.restSetUserPermissions(this.user.username, ["repository:create", "repository:read,pull:*"]);
+});
+
+When("User mirrors a repository", function() {
+  const baseUrl = Cypress.config().baseUrl;
+  const repoUrl = `/repo/${this.repository.namespace}/${this.repository.name}`;
+  cy.visit("/repos/create/mirror");
+  cy.byTestId("url-input")
+    .type(baseUrl + repoUrl)
+    .blur();
+  cy.contains("Namespace")
+    .closest("div.field")
+    .find("input")
+    .type("mirror")
+    .blur();
+  cy.byTestId("base-auth-checkbox").click();
+  cy.byTestId("username-input").type(this.user.username);
+  cy.byTestId("username-password-input").type(this.user.password);
+  cy.byTestId("submit-button").click();
+});
+
+Then("The user is redirected to the repository's page", function() {
+  cy.url({ timeout: 5000 }).should("include", `mirror/${this.repository.name}`);
+});
+
+Then("There is a mirror badge", function() {
+  cy.get("span.tag")
+    .contains("mirror")
+    .should("exist")
+    .and("be.visible");
+});

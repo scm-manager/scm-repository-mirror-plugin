@@ -22,10 +22,12 @@
 # SOFTWARE.
 #
 
-# This is an automatically generated example, please remove or replace as you see fit
-Feature: Example
+Feature: Create Mirror
 
-  Scenario: Authenticated users have a footer navigation
+  Scenario: Authenticated and authorized user creates repository mirror
     Given User is authenticated
-    When User visits any page
-    Then There is a footer navigation
+    And A git repository exists
+    And User has permission to read repository and create repositories
+    When User mirrors a repository
+    Then The user is redirected to the repository's page
+    And There is a mirror badge

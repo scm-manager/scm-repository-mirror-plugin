@@ -117,6 +117,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
             label={t("scm-repository-mirror-plugin.form.overwriteGlobalConfiguration.label")}
             helpText={t("scm-repository-mirror-plugin.form.overwriteGlobalConfiguration.helpText")}
             disabled={disabled}
+            testId="overwrite-global-configuration-checkbox"
             {...register("overwriteGlobalConfiguration")}
           />
           {showFilterForm ? (

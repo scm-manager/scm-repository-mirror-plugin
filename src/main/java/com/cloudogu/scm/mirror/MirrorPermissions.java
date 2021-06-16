@@ -24,7 +24,6 @@
 
 package com.cloudogu.scm.mirror;
 
-import org.apache.shiro.SecurityUtils;
 import sonia.scm.config.ConfigurationPermissions;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
