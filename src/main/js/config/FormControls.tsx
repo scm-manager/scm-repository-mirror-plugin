@@ -100,6 +100,7 @@ export const FileInputControl: FC<MirrorAccessConfigControlProps> = ({ control, 
       label={t("scm-repository-mirror-plugin.form.certificate.label")}
       helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
       disabled={isReadonly}
+      testId="certificate-input"
       {...field}
       onChange={(event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target?.files?.[0];
@@ -123,7 +124,11 @@ export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control
   return (
     <>
       <Column className="column is-full">
-        <Checkbox label={t("scm-repository-mirror-plugin.form.withBaseAuth.label")} {...enabledField} />
+        <Checkbox
+          label={t("scm-repository-mirror-plugin.form.withBaseAuth.label")}
+          testId="base-auth-checkbox"
+          {...enabledField}
+        />
       </Column>
       {enabledField.value ? (
         <>
@@ -132,6 +137,7 @@ export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control
               label={t("scm-repository-mirror-plugin.form.username.label")}
               helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
               disabled={isReadonly}
+              testId="username-input"
               {...usernameField}
             />
           </Column>
@@ -141,6 +147,7 @@ export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control
               type="password"
               helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
               disabled={isReadonly}
+              testId="username-password-input"
               {...passwordField}
             />
           </Column>
@@ -160,6 +167,7 @@ export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control
               type="password"
               helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
               disabled={isReadonly}
+              testId="certificate-password-input"
               {...certificatePasswordField}
             />
           </Column>
@@ -215,6 +223,7 @@ export const SynchronizationPeriodControl: FC<MirrorAccessConfigControlProps> = 
         helpText={t("scm-repository-mirror-plugin.form.period.helpText")}
         options={createPeriodOptions(t)}
         disabled={isReadonly}
+        testId="synchronization-period-input"
         {...field}
       />
     </Column>
@@ -246,6 +255,7 @@ export const UrlControl: FC<MirrorAccessConfigControlProps> = ({ control, isRead
         errorMessage={fieldState.error?.message}
         validationError={!!fieldState.error}
         disabled={isReadonly}
+        testId="url-input"
         {...field}
       />
     </Column>
