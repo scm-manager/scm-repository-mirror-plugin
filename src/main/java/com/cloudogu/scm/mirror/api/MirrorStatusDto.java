@@ -24,7 +24,6 @@
 
 package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.MirrorStatus;
 import de.otto.edison.hal.HalRepresentation;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,5 +32,13 @@ import lombok.Getter;
 @AllArgsConstructor
 @SuppressWarnings("java:S2160") // equals not needed here
 public class MirrorStatusDto extends HalRepresentation {
-  private final MirrorStatus.Result result;
+  private final Result result;
+
+  enum Result {
+    SUCCESS,
+    FAILED_UPDATES,
+    FAILED,
+    NOT_YET_RUN,
+    DISABLED;
+  }
 }

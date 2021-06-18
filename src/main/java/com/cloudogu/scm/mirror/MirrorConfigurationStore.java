@@ -114,7 +114,11 @@ public class MirrorConfigurationStore implements Initable {
     ConfigurationStore<MirrorConfiguration> store = createConfigurationStore(repository);
     MirrorConfiguration newConfiguration = store.getOptional().map(applicator).orElseGet(() -> applicator.apply(new MirrorConfiguration()));
     store.set(newConfiguration);
-    scheduler.schedule(repository, newConfiguration);
+    if (newConfiguration.getSynchronizationPeriod() == null) {
+      scheduler.cancel(repository);
+    } else {
+      scheduler.schedule(repository, newConfiguration);
+    }
   }
 
   private MirrorConfiguration applyLocalFilterConfiguration(MirrorConfiguration existingConfiguration, LocalFilterConfiguration newFilterConfiguration) {
@@ -216,6 +220,7 @@ public class MirrorConfigurationStore implements Initable {
 
   private void init(Repository repository) {
     getConfiguration(repository)
+      .filter(configuration -> configuration.getSynchronizationPeriod() != null)
       .ifPresent(configuration -> scheduler.scheduleNow(repository, configuration));
   }
 

@@ -53,8 +53,13 @@
           "twoHours": "2 hours",
           "fourHours": "4 hours",
           "twelveHours": "12 hours",
-          "oneDay": "1 day"
+          "oneDay": "1 day",
+          "disabled": "disabled"
         }
+      },
+      "syncDisabled": {
+        "label": "Disable periodical synchronization",
+        "helpText": "No automatic synchronizations will be executed when this is checked."
       },
       "managingUsers": {
         "label": "Emergency Contacts",
@@ -124,7 +129,8 @@
       "success": "Last synchronization successful",
       "failedUpdates": "Last synchronization partially failed",
       "failed": "Last synchronization failed",
-      "notYetRun": "Not yet synchronized"
+      "notYetRun": "Not yet synchronized",
+      "disabled": "Automatic synchronization disabled"
     },
     "logs": {
       "navLink": "Mirror Log",

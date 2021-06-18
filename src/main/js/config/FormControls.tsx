@@ -209,24 +209,37 @@ export const createPeriodOptions: (t: (key: string) => string) => SelectItem[] =
   {
     label: t("scm-repository-mirror-plugin.form.period.options.oneDay"),
     value: "1440"
+  },
+  {
+    label: t("scm-repository-mirror-plugin.form.period.options.disabled"),
+    value: "0"
   }
 ];
 
 export const SynchronizationPeriodControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
   const { field } = useController({ control, name: "synchronizationPeriod", defaultValue: 60 });
+  const disabled = !field.value;
 
   return (
-    <Column className="column is-full">
-      <Select
-        label={t("scm-repository-mirror-plugin.form.period.label")}
-        helpText={t("scm-repository-mirror-plugin.form.period.helpText")}
-        options={createPeriodOptions(t)}
-        disabled={isReadonly}
-        testId="synchronization-period-input"
-        {...field}
-      />
-    </Column>
+    <>
+      <Column className="column is-half">
+        <Select
+          label={t("scm-repository-mirror-plugin.form.period.label")}
+          helpText={t("scm-repository-mirror-plugin.form.period.helpText")}
+          options={createPeriodOptions(t)}
+          disabled={isReadonly || disabled}
+          testId="synchronization-period-input"
+          {...field}
+        />
+        <Checkbox
+          label={t("scm-repository-mirror-plugin.form.syncDisabled.label")}
+          helpText={t("scm-repository-mirror-plugin.form.syncDisabled.helpText")}
+          onChange={d => field.onChange(d? null: 60)}
+          checked={disabled}
+        />
+      </Column>
+    </>
   );
 };
 
@@ -270,6 +283,10 @@ export const coalesceFormValue = <T extends MirrorAccessConfigurationForm>(value
   }
   if (!output.certificateCredential?.enabled) {
     delete output.certificateCredential;
+  }
+  console.log(output)
+  if (output.synchronizationPeriod === "0") {
+    delete output.synchronizationPeriod;
   }
 
   return output as T;

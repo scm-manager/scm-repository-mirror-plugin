@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorPermissions;
 import com.cloudogu.scm.mirror.MirrorStatus;
@@ -58,19 +59,25 @@ public class RepositoryEnricher implements HalEnricher {
   @Override
   public void enrich(HalEnricherContext context, HalAppender appender) {
     Repository repository = context.oneRequireByType(Repository.class);
-    if (configurationService.hasConfiguration(repository.getId())) {
-      appendStatusEmbedded(appender, repository);
-      if (MirrorPermissions.hasRepositoryMirrorPermission(repository)) {
-        LinkBuilder linkBuilder = linkBuilder(repository);
-        appendConfigurationLinks(appender, linkBuilder);
-        appendLogsLink(appender, linkBuilder);
+    configurationService.getConfiguration(repository).ifPresent(
+      configuration -> {
+        appendStatusEmbedded(appender, repository, configuration);
+        if (MirrorPermissions.hasRepositoryMirrorPermission(repository)) {
+          LinkBuilder linkBuilder = linkBuilder(repository);
+          appendConfigurationLinks(appender, linkBuilder);
+          appendLogsLink(appender, linkBuilder);
+        }
       }
-    }
+    );
   }
 
-  private void appendStatusEmbedded(HalAppender appender, Repository repository) {
-    MirrorStatus status = statusStore.getStatus(repository);
-    appender.appendEmbedded("mirrorStatus", new MirrorStatusDto(status.getResult()));
+  private void appendStatusEmbedded(HalAppender appender, Repository repository, MirrorConfiguration configuration) {
+    if (configuration.getSynchronizationPeriod() == null) {
+      appender.appendEmbedded("mirrorStatus", new MirrorStatusDto(MirrorStatusDto.Result.DISABLED));
+    } else {
+      MirrorStatus status = statusStore.getStatus(repository);
+      appender.appendEmbedded("mirrorStatus", new MirrorStatusDto(MirrorStatusDto.Result.valueOf(status.getResult().name())));
+    }
   }
 
   private void appendConfigurationLinks(HalAppender appender, LinkBuilder linkBuilder) {

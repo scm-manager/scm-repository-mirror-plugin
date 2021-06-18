@@ -32,7 +32,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
@@ -51,7 +50,6 @@ public class MirrorCreationDto {
 
   @NotBlank
   private String url;
-  @NotNull
   @Min(5)
   private Integer synchronizationPeriod;
   private List<String> managingUsers;

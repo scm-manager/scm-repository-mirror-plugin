@@ -28,13 +28,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import sonia.scm.xml.XmlCipherByteArrayAdapter;
-import sonia.scm.xml.XmlCipherStringAdapter;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,7 +39,7 @@ import java.util.List;
 public class MirrorAccessConfigurationImpl implements MirrorAccessConfiguration {
 
   private String url;
-  private int synchronizationPeriod;
+  private Integer synchronizationPeriod;
   private List<String> managingUsers;
 
   private MirrorAccessConfiguration.UsernamePasswordCredential usernamePasswordCredential;

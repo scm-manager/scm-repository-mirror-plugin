@@ -43,10 +43,10 @@ import sonia.scm.web.security.AdministrationContext;
 import sonia.scm.web.security.PrivilegedAction;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -130,12 +130,12 @@ class MirrorConfigurationStoreTest {
     void shouldSetAccessConfigurationButNotFilters() {
       MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
       existingMirrorConfiguration.setOverwriteGlobalConfiguration(true);
-      existingMirrorConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop,feature/*"));
+      existingMirrorConfiguration.setBranchesAndTagsPatterns(singletonList("develop,feature/*"));
       existingMirrorConfiguration.setGpgVerificationType(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
       existingMirrorConfiguration.setFastForwardOnly(true);
 
       MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
-      newConfiguration.setManagingUsers(Collections.singletonList("trillian"));
+      newConfiguration.setManagingUsers(singletonList("trillian"));
       newConfiguration.setUrl("https://scm-manager.org");
       newConfiguration.setSynchronizationPeriod(10);
       newConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential("hello".getBytes(StandardCharsets.UTF_8), "secret"));
@@ -177,7 +177,7 @@ class MirrorConfigurationStoreTest {
     void shouldSetFilterConfiguration() {
       MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
       existingMirrorConfiguration.setUrl("https://scm-manager.org");
-      existingMirrorConfiguration.setManagingUsers(Collections.singletonList("trillian"));
+      existingMirrorConfiguration.setManagingUsers(singletonList("trillian"));
       existingMirrorConfiguration.setSynchronizationPeriod(100);
       existingMirrorConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential());
       existingMirrorConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential());
@@ -185,7 +185,7 @@ class MirrorConfigurationStoreTest {
       LocalFilterConfigurationImpl newConfiguration = new LocalFilterConfigurationImpl();
       newConfiguration.setOverwriteGlobalConfiguration(true);
       newConfiguration.setFastForwardOnly(true);
-      newConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop,feature/*"));
+      newConfiguration.setBranchesAndTagsPatterns(singletonList("develop,feature/*"));
       newConfiguration.setGpgVerificationType(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
 
       storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
@@ -208,6 +208,17 @@ class MirrorConfigurationStoreTest {
         assertThat(it.getBranchesAndTagsPatterns()).containsExactly("develop,feature/*");
         return true;
       }));
+    }
+
+    @Test
+    void shouldNotTriggerForDisabledMirrorConfiguration() {
+      MirrorConfiguration newMirrorConfiguration = new MirrorConfiguration();
+      newMirrorConfiguration.setSynchronizationPeriod(null);
+
+      store.setAccessConfiguration(REPOSITORY, newMirrorConfiguration);
+
+      verify(scheduler, never()).schedule(any(), any());
+      verify(scheduler).cancel(REPOSITORY);
     }
 
     @Test
@@ -323,16 +334,16 @@ class MirrorConfigurationStoreTest {
     void shouldKeepNonFilterValues() {
       final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
       globalMirrorConfiguration.setFastForwardOnly(true);
-      globalMirrorConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop,feature/*"));
+      globalMirrorConfiguration.setBranchesAndTagsPatterns(singletonList("develop,feature/*"));
 
       mockGlobalConfiguration(globalMirrorConfiguration);
 
       final MirrorConfiguration mirrorConfiguration = new MirrorConfiguration();
       mirrorConfiguration.setUrl("test");
       mirrorConfiguration.setSynchronizationPeriod(100);
-      mirrorConfiguration.setManagingUsers(Collections.singletonList("trillian"));
+      mirrorConfiguration.setManagingUsers(singletonList("trillian"));
       mirrorConfiguration.setFastForwardOnly(false);
-      mirrorConfiguration.setBranchesAndTagsPatterns(Collections.singletonList("develop"));
+      mirrorConfiguration.setBranchesAndTagsPatterns(singletonList("develop"));
       mockExistingConfiguration(mirrorConfiguration);
 
       final Optional<MirrorConfiguration> applicableConfiguration = store.getApplicableConfiguration(REPOSITORY);
@@ -399,29 +410,52 @@ class MirrorConfigurationStoreTest {
 
   }
 
-  @Test
+  @Nested
   @SubjectAware(
     value = "trillian",
     permissions = "*" // admin context
   )
-  void shouldScheduleRepositoriesAtStartup() {
-    doAnswer(
-      invocation -> {
-        invocation.getArgument(0, PrivilegedAction.class).run();
-        return null;
-      }
-    ).when(administrationContext).runAsAdmin(any(PrivilegedAction.class));
-    Repository normalRepository = RepositoryTestData.createHeartOfGold();
-    Repository mirrorRepository = RepositoryTestData.create42Puzzle();
-    when(repositoryManager.getAll())
-      .thenReturn(asList(normalRepository, mirrorRepository));
-    MirrorConfiguration configuration = mock(MirrorConfiguration.class);
-    mockExistingConfiguration(configuration, mirrorRepository);
+  class AtStartup {
 
-    store.init(null);
+    @BeforeEach
+    void mockPrivilegedAction() {
+      doAnswer(
+        invocation -> {
+          invocation.getArgument(0, PrivilegedAction.class).run();
+          return null;
+        }
+      ).when(administrationContext).runAsAdmin(any(PrivilegedAction.class));
+    }
 
-    verify(scheduler).scheduleNow(mirrorRepository, configuration);
-    verify(scheduler, never()).scheduleNow(eq(normalRepository), any());
+    @Test
+    void shouldScheduleRepositoriesAtStartup() {
+      Repository normalRepository = RepositoryTestData.createHeartOfGold();
+      Repository mirrorRepository = RepositoryTestData.create42Puzzle();
+      when(repositoryManager.getAll())
+        .thenReturn(asList(normalRepository, mirrorRepository));
+      MirrorConfiguration configuration = mock(MirrorConfiguration.class);
+      when(configuration.getSynchronizationPeriod()).thenReturn(5);
+      mockExistingConfiguration(configuration, mirrorRepository);
+
+      store.init(null);
+
+      verify(scheduler).scheduleNow(mirrorRepository, configuration);
+      verify(scheduler, never()).scheduleNow(eq(normalRepository), any());
+    }
+
+    @Test
+    void shouldNotScheduleDisabledRepositoriesAtStartup() {
+      Repository mirrorRepository = RepositoryTestData.create42Puzzle();
+      when(repositoryManager.getAll())
+        .thenReturn(singletonList(mirrorRepository));
+      MirrorConfiguration configuration = mock(MirrorConfiguration.class);
+      when(configuration.getSynchronizationPeriod()).thenReturn(null);
+      mockExistingConfiguration(configuration, mirrorRepository);
+
+      store.init(null);
+
+      verify(scheduler, never()).scheduleNow(any(), any());
+    }
   }
 
   private void mockExistingConfiguration(MirrorConfiguration existingConfiguration) {
