@@ -28,11 +28,13 @@ import sonia.scm.mail.api.Category;
 import sonia.scm.mail.api.Topic;
 import sonia.scm.mail.api.TopicProvider;
 import sonia.scm.plugin.Extension;
+import sonia.scm.plugin.Requires;
 
 import java.util.Collection;
 import java.util.Collections;
 
 @Extension
+@Requires("scm-mail-plugin")
 public class MirrorMailTopics implements TopicProvider {
 
   static final Topic TOPIC_MIRROR_STATUS_CHANGED =
