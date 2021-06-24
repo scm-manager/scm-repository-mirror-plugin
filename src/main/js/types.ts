@@ -55,7 +55,7 @@ export type LocalMirrorFilterConfigurationDto = MirrorFilterConfigurationDto & {
 
 export type MirrorAccessConfigurationDto = HalRepresentation & {
   url: string;
-  synchronizationPeriod: string | undefined;
+  synchronizationPeriod?: string;
   managingUsers: string[];
   usernamePasswordCredential?: UsernamePasswordCredentialDto;
   certificateCredential?: CertificateCredentialDto;
