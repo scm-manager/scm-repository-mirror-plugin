@@ -32,7 +32,6 @@ import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
 import com.cloudogu.scm.mirror.NotConfiguredForMirrorException;
-import com.google.common.base.Strings;
 import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
@@ -57,7 +56,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.mapstruct.factory.Mappers.getMapper;
-import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 public class MirrorResource {
 
@@ -103,11 +101,6 @@ public class MirrorResource {
   @Path("/accessConfiguration")
   @Consumes("application/json")
   public void setAccessConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid MirrorAccessConfigurationDto configurationDto) {
-    doThrow().violation("certificate must not be empty")
-      .when(
-        configurationDto.getCertificateCredential() != null && Strings.isNullOrEmpty(configurationDto.getCertificateCredential().getCertificate())
-      );
-
     MirrorAccessConfiguration configuration = fromAccessConfigurationDtoMapper.map(configurationDto);
     Repository repository = loadRepository(namespace, name);
     configurationService.setAccessConfiguration(repository, configuration);
