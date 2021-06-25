@@ -111,6 +111,9 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
           enabled: true
         };
       }
+      if (!initialConfiguration.synchronizationPeriod) {
+        form.synchronizationPeriod = "0"
+      }
       reset(form);
     }
   }, [initialConfiguration]);

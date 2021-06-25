@@ -53,8 +53,13 @@
           "twoHours": "2 Stunden",
           "fourHours": "4 Stunden",
           "twelveHours": "12 Stunden",
-          "oneDay": "1 Tag"
+          "oneDay": "1 Tag",
+          "disabled": "Deaktiviert"
         }
+      },
+      "syncDisabled": {
+        "label": "Periodische Synchronisierung deaktivieren",
+        "helpText": "Wenn dieses selektiert ist, werden keine automatischen Synchronisierungen gestartet."
       },
       "managingUsers": {
         "label": "Notfallkontakte",
@@ -120,11 +125,12 @@
       }
     },
     "flag": {
-      "label": "Spiegel",
+      "label": "gespiegelt",
       "success": "Letzte Synchronisation erfolgreich",
       "failedUpdates": "Letzte Synchronisation teilweise fehlgeschlagen",
       "failed": "Letzte Synchronisation fehlgeschlagen",
-      "notYetRun": "Noch nicht synchronisiert"
+      "notYetRun": "Noch nicht synchronisiert",
+      "disabled": "Automatische Synchronisierung deaktiviert"
     },
     "logs": {
       "navLink": "Protokoll der Spiegelung",

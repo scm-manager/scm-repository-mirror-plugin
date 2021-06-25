@@ -38,7 +38,7 @@ import java.util.List;
 public interface MirrorAccessConfiguration {
   String getUrl();
 
-  int getSynchronizationPeriod();
+  Integer getSynchronizationPeriod();
 
   List<String> getManagingUsers();
 

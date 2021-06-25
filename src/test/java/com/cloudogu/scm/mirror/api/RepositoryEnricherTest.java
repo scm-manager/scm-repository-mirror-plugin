@@ -25,11 +25,11 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.GlobalMirrorConfiguration;
+import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorStatus;
 import com.cloudogu.scm.mirror.MirrorStatusStore;
 import de.otto.edison.hal.HalRepresentation;
-import org.assertj.core.api.InstanceOfAssertFactories;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,11 +48,12 @@ import sonia.scm.web.MockScmPathInfoStore;
 import javax.inject.Provider;
 
 import static com.cloudogu.scm.mirror.MirrorStatus.Result.SUCCESS;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -86,7 +87,7 @@ class RepositoryEnricherTest {
   @Test
   void shouldNotAppendLinkForRepositoryWithoutPermission() {
     HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-    lenient().when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
+    mockExistingConfiguration(5);
     when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
     enricher.enrich(context, appender);
@@ -97,7 +98,7 @@ class RepositoryEnricherTest {
   @Test
   void shouldAppendStatusAsEmbeddedForMirrorRepository() {
     HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-    lenient().when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
+    mockExistingConfiguration(5);
     when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
     enricher.enrich(context, appender);
@@ -105,7 +106,23 @@ class RepositoryEnricherTest {
     verify(appender).appendEmbedded(
       eq("mirrorStatus"),
       (HalRepresentation) argThat(status -> {
-        assertThat(status).extracting("result").asInstanceOf(InstanceOfAssertFactories.type(MirrorStatus.Result.class)).isEqualTo(SUCCESS);
+        assertThat(status).extracting("result").isEqualTo(MirrorStatusDto.Result.SUCCESS);
+        return true;
+      })
+    );
+  }
+
+  @Test
+  void shouldAppendDisabledStatusAsEmbeddedForDisabledMirrorRepository() {
+    HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
+    mockExistingConfiguration(null);
+
+    enricher.enrich(context, appender);
+
+    verify(appender).appendEmbedded(
+      eq("mirrorStatus"),
+      (HalRepresentation) argThat(status -> {
+        assertThat(status).extracting("result").isEqualTo(MirrorStatusDto.Result.DISABLED);
         return true;
       })
     );
@@ -114,7 +131,7 @@ class RepositoryEnricherTest {
   @Test
   void shouldNotAppendStatusForNormalRepository() {
     HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-    lenient().when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(false);
+    when(configurationService.getConfiguration(REPOSITORY)).thenReturn(empty());
 
     enricher.enrich(context, appender);
 
@@ -131,7 +148,7 @@ class RepositoryEnricherTest {
     @Test
     void shouldNotAppendLinkForRepositoryThatIsNoMirror() {
       HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-      when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(false);
+      when(configurationService.getConfiguration(REPOSITORY)).thenReturn(empty());
 
       enricher.enrich(context, appender);
 
@@ -145,7 +162,7 @@ class RepositoryEnricherTest {
       when(configurationService.getGlobalConfiguration()).thenReturn(globalMirrorConfiguration);
 
       HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-      when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
+      mockExistingConfiguration(5);
       when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
       enricher.enrich(context, appender);
@@ -161,7 +178,7 @@ class RepositoryEnricherTest {
       when(configurationService.getGlobalConfiguration()).thenReturn(globalMirrorConfiguration);
 
       HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-      when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
+      mockExistingConfiguration(5);
       when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
       enricher.enrich(context, appender);
@@ -177,12 +194,18 @@ class RepositoryEnricherTest {
       when(configurationService.getGlobalConfiguration()).thenReturn(globalMirrorConfiguration);
 
       HalEnricherContext context = HalEnricherContext.of(REPOSITORY);
-      when(configurationService.hasConfiguration(REPOSITORY.getId())).thenReturn(true);
+      mockExistingConfiguration(5);
       when(statusStore.getStatus(REPOSITORY)).thenReturn(new MirrorStatus(SUCCESS));
 
       enricher.enrich(context, appender);
 
       verify(appender).appendLink("mirrorLogs", "/v2/mirror/repositories/hitchhiker/HeartOfGold/logs");
     }
+  }
+
+  private void mockExistingConfiguration(Integer synchronizationPeriod) {
+    MirrorConfiguration configuration = new MirrorConfiguration();
+    configuration.setSynchronizationPeriod(synchronizationPeriod);
+    when(configurationService.getConfiguration(REPOSITORY)).thenReturn(of(configuration));
   }
 }

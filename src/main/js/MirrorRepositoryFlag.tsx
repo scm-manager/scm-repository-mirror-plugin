@@ -68,6 +68,12 @@ const MirrorRepositoryFlag: FC<Props> = ({ repository }) => {
           {t("scm-repository-mirror-plugin.flag.label")}
         </RepositoryFlag>
       );
+    case "DISABLED":
+      return (
+        <RepositoryFlag onClick={onClick} title={t("scm-repository-mirror-plugin.flag.disabled")}>
+          {t("scm-repository-mirror-plugin.flag.label")}
+        </RepositoryFlag>
+      );
     default:
       return null;
   }
