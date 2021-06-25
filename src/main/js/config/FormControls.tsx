@@ -218,22 +218,20 @@ export const createPeriodOptions: (t: (key: string) => string) => SelectItem[] =
 
 export const SynchronizationPeriodControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
-  const { field } = useController({ control, name: "synchronizationPeriod", defaultValue: 60 });
+  const { field } = useController({ control, name: "synchronizationPeriod", defaultValue: "60" });
 
   return (
-    <>
-      <Column className="column is-half">
-        <Select
-          label={t("scm-repository-mirror-plugin.form.period.label")}
-          helpText={t("scm-repository-mirror-plugin.form.period.helpText")}
-          options={createPeriodOptions(t)}
-          disabled={isReadonly}
-          testId="synchronization-period-input"
-          {...field}
-          value={!field.value? "0": field.value}
-        />
-      </Column>
-    </>
+    <Column className="column is-half">
+      <Select
+        label={t("scm-repository-mirror-plugin.form.period.label")}
+        helpText={t("scm-repository-mirror-plugin.form.period.helpText")}
+        options={createPeriodOptions(t)}
+        disabled={isReadonly}
+        testId="synchronization-period-input"
+        {...field}
+        value={field.value || "0"}
+      />
+    </Column>
   );
 };
 
