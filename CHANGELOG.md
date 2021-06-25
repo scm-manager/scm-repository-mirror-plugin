@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Added
 - Option to disable automatic synchronization ([#14](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/14))
+### Fixed
+- Mirror with certificate credential configurable without setting certificate again ([#15](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/15))
 
 ## 2.0.1 - 2021-06-18
 ### Fixed
