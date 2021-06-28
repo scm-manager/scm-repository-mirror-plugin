@@ -94,3 +94,9 @@ Then("Mirror does no longer exist", function() {
     .should("exist")
     .and("contain", "Not found", {});
 })
+
+Then("User gets success notification", function() {
+  cy.get("#toastRoot")
+    .should("exist")
+    .and("contain", "mirroring succeeded", {});
+})

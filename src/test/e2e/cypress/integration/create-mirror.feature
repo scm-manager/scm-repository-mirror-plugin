@@ -47,3 +47,10 @@ Feature: Create Mirror
     When User mirrors a repository
     And User deletes mirror
     Then Mirror does no longer exist
+
+  Scenario: User gets notification after mirror synchronization
+    Given User is authenticated
+    And A git repository exists
+    And User has permission to read repository and create repositories
+    When User mirrors a repository
+    Then User gets success notification
