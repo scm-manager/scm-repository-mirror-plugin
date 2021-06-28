@@ -31,3 +31,11 @@ Feature: Create Mirror
     When User mirrors a repository
     Then The user is redirected to the repository's page
     And There is a mirror badge
+
+  Scenario: Repository mirror is write protected
+    Given User is authenticated
+    And A git repository exists
+    And User has permission to read repository and create repositories
+    When User mirrors a repository
+    And Creates a new branch in mirror
+    Then There is an permission error message

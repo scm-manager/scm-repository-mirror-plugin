@@ -59,3 +59,18 @@ Then("There is a mirror badge", function() {
     .should("exist")
     .and("be.visible");
 });
+
+When("Creates a new branch in mirror", function() {
+  const mirrorBranchCreateUrl = `/repo/mirror/${this.repository.name}/branches/create`;
+  cy.visit(mirrorBranchCreateUrl);
+  cy.get("input[name='name']", { timeout: 500000 })
+    .type("new_branch");
+  cy.byTestId("submit-button")
+    .click();
+});
+
+Then("There is an permission error message", function() {
+  cy.get("div.notification")
+    .should("exist")
+    .and("contain", "Error:");
+})
