@@ -27,6 +27,8 @@
 // might cause overlaps when copying all the different plugin tests together.
 // If there are no steps specific to this plugin, you can leave this file blank.
 
+const {withAuth} = require("@scm-manager/integration-test-runner/helpers")
+
 Given("User has permission to read repository and create repositories", function() {
   cy.restSetUserPermissions(this.user.username, ["repository:create", "repository:read,pull:*"]);
 });
@@ -60,7 +62,7 @@ Then("There is a mirror badge", function() {
     .and("be.visible");
 });
 
-When("Creates a new branch in mirror", function() {
+When("User creates a new branch in mirror", function() {
   const mirrorBranchCreateUrl = `/repo/mirror/${this.repository.name}/branches/create`;
   cy.visit(mirrorBranchCreateUrl);
   cy.get("input[name='name']", { timeout: 500000 })
@@ -73,4 +75,22 @@ Then("There is an permission error message", function() {
   cy.get("div.notification")
     .should("exist")
     .and("contain", "Error:");
+})
+
+When("User deletes mirror", function() {
+  const mirrorRestUrl = `api/v2/repositories/mirror/${this.repository.name}`;
+  cy.request(
+    withAuth({
+      method: "DELETE",
+      url: mirrorRestUrl
+    })
+  );
+})
+
+Then("Mirror does no longer exist", function() {
+  const mirrorUrl = `repo/mirror/${this.repository.name}`;
+  cy.visit(mirrorUrl);
+  cy.get("div.notification")
+    .should("exist")
+    .and("contain", "Not found", {});
 })

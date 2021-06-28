@@ -37,5 +37,13 @@ Feature: Create Mirror
     And A git repository exists
     And User has permission to read repository and create repositories
     When User mirrors a repository
-    And Creates a new branch in mirror
+    And User creates a new branch in mirror
     Then There is an permission error message
+
+  Scenario: Repository mirror is deletable
+    Given User is authenticated
+    And A git repository exists
+    And User has permission to read repository and create repositories
+    When User mirrors a repository
+    And User deletes mirror
+    Then Mirror does no longer exist
