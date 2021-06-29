@@ -77,7 +77,7 @@ Then("There is an permission error message", function() {
     .and("contain", "Error:");
 })
 
-When("User deletes mirror", function() {
+When("Mirror is deleted", function() {
   const mirrorRestUrl = `api/v2/repositories/mirror/${this.repository.name}`;
   cy.request(
     withAuth({

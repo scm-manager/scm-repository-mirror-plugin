@@ -45,7 +45,7 @@ Feature: Create Mirror
     And A git repository exists
     And User has permission to read repository and create repositories
     When User mirrors a repository
-    And User deletes mirror
+    And Mirror is deleted
     Then Mirror does no longer exist
 
   Scenario: User gets notification after mirror synchronization
