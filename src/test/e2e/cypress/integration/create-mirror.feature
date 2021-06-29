@@ -31,3 +31,26 @@ Feature: Create Mirror
     When User mirrors a repository
     Then The user is redirected to the repository's page
     And There is a mirror badge
+
+  Scenario: Repository mirror is write protected
+    Given User is authenticated
+    And A git repository exists
+    And User has permission to read repository and create repositories
+    When User mirrors a repository
+    And User creates a new branch in mirror
+    Then There is an permission error message
+
+  Scenario: Repository mirror is deletable
+    Given User is authenticated
+    And A git repository exists
+    And User has permission to read repository and create repositories
+    When User mirrors a repository
+    And Mirror is deleted
+    Then Mirror does no longer exist
+
+  Scenario: User gets notification after mirror synchronization
+    Given User is authenticated
+    And A git repository exists
+    And User has permission to read repository and create repositories
+    When User mirrors a repository
+    Then User gets success notification
