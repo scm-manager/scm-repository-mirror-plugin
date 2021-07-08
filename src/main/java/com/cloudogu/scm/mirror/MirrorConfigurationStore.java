@@ -32,6 +32,7 @@ import sonia.scm.Initable;
 import sonia.scm.SCMContextProvider;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
+import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 import sonia.scm.web.security.AdministrationContext;
@@ -88,7 +89,7 @@ public class MirrorConfigurationStore implements Initable {
   }
 
   public Optional<MirrorConfiguration> getConfiguration(Repository repository) {
-    MirrorPermissions.checkRepositoryMirrorPermission(repository);
+    RepositoryPermissions.read(repository).check();
     return createConfigurationStore(repository).getOptional();
   }
 
