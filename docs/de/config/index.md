@@ -9,7 +9,7 @@ das Synchronisationsintervall sowie die Filter angepasst werden.
 Zusätzlich zum Zeitpunkt der Erstellung findet sich hier eine Liste von "Notfallkontakten". Diese
 Benutzer werden benachrichtigt, wenn sich der Status einer Spiegelung ändert.
 
-Die Details zu den anderen Einstellungen finden sich in der [Dokumentation zur Erstelung](../create).
+Die Details zu den anderen Einstellungen finden sich in der [Dokumentation zur Erstellung](../create).
 
 ![Konfiguration der Spiegelung](assets/mirror-configuration.png)
 
