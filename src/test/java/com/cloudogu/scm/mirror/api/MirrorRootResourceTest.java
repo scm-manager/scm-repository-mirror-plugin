@@ -327,7 +327,8 @@ class MirrorRootResourceTest {
             42,
             emptyList(),
             new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "hog"),
-            new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"));
+            new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"),
+            null);
         when(configurationStore.getConfiguration(repository))
           .thenReturn(Optional.of(existingConfiguration));
       }
@@ -357,7 +358,7 @@ class MirrorRootResourceTest {
       )
       void shouldCreateUpdateLinkWithPermission() throws URISyntaxException {
         MirrorConfiguration existingConfiguration =
-          new MirrorConfiguration("http://hog/", 42, emptyList(), null, null);
+          new MirrorConfiguration("http://hog/", 42, emptyList(), null, null, null);
         when(configurationStore.getConfiguration(repository))
           .thenReturn(Optional.of(existingConfiguration));
         MirrorAccessConfigurationDto mirrorConfigurationDto = new MirrorAccessConfigurationDto(new Links.Builder().build());

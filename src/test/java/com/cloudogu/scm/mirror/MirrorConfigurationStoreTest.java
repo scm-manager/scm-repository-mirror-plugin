@@ -46,6 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -208,6 +209,35 @@ class MirrorConfigurationStoreTest {
         assertThat(it.getBranchesAndTagsPatterns()).containsExactly("develop,feature/*");
         return true;
       }));
+    }
+
+    @Test
+    void shouldHaveNoProxyConfigurationByDefault() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      mockExistingConfiguration(existingConfiguration);
+
+      Optional<MirrorConfiguration> configuration = store.getConfiguration(REPOSITORY);
+
+      assertThat(configuration.map(MirrorConfiguration::getProxyConfiguration)).isNotPresent();
+    }
+
+    @Test
+    void shouldPullLocalProxyConfiguration() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration(true, "https://proxy.scm-manager.org", 1337, emptyList(), "trillian", "secret123");
+
+      final MirrorConfiguration mirrorConfiguration = new MirrorConfiguration();
+      mirrorConfiguration.setProxyConfiguration(proxyConfiguration);
+      mockExistingConfiguration(mirrorConfiguration);
+
+      final Optional<MirrorConfiguration> applicableConfiguration = store.getApplicableConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration).hasValueSatisfying(it -> {
+        assertThat(it.getProxyConfiguration()).isSameAs(proxyConfiguration);
+      });
     }
 
     @Test

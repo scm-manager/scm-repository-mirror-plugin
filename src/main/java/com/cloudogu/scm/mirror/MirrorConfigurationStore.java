@@ -101,6 +101,13 @@ public class MirrorConfigurationStore implements Initable {
     setConfiguration(repository, it -> applyAccessConfiguration(repository, it, accessConfiguration));
   }
 
+  public void setProxyConfiguration(Repository repository, MirrorProxyConfiguration mirrorProxyConfiguration) {
+    setConfiguration(repository, it -> {
+      it.setProxyConfiguration(mirrorProxyConfiguration);
+      return it;
+    });
+  }
+
   void setConfiguration(Repository repository, MirrorConfiguration mirrorConfiguration) {
     setConfiguration(repository, it -> {
       applyAccessConfiguration(repository, it, mirrorConfiguration);

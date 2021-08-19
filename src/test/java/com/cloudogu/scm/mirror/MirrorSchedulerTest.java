@@ -88,6 +88,6 @@ class MirrorSchedulerTest {
   }
 
   private MirrorConfiguration mockConfiguration(Repository repository, int i) {
-    return new MirrorConfiguration(null, i, emptyList(), null, null);
+    return new MirrorConfiguration(null, i, emptyList(), null, null, null);
   }
 }

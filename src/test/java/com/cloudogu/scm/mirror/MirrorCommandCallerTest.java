@@ -40,6 +40,7 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.security.PublicKey;
 import sonia.scm.security.PublicKeyParser;
+import sonia.scm.web.proxy.ProxyConfiguration;
 
 import java.util.Collection;
 
@@ -164,6 +165,16 @@ class MirrorCommandCallerTest {
   }
 
   @Test
+  void shouldSetProxyConfigurationInCommand() {
+    final MirrorProxyConfiguration mirrorProxyConfiguration = new MirrorProxyConfiguration(true, "http://proxy.hog", 1337, emptyList(), "", "");
+    MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, emptyList(), null, null, mirrorProxyConfiguration);
+
+    invokeCaller(configuration, null);
+
+    verify(mirrorCommandBuilder).setProxyConfiguration(mirrorProxyConfiguration);
+  }
+
+  @Test
   void shouldSetGpgKeysInCommand() {
     MirrorConfiguration configuration = createMirrorConfig();
     configuration.setGpgVerificationType(MirrorGpgVerificationType.KEY_LIST);
@@ -196,6 +207,6 @@ class MirrorCommandCallerTest {
   }
 
   private MirrorConfiguration createMirrorConfig(MirrorConfiguration.UsernamePasswordCredential upc, MirrorConfiguration.CertificateCredential cc) {
-    return new MirrorConfiguration("https://hog/", 42, emptyList(), upc, cc);
+    return new MirrorConfiguration("https://hog/", 42, emptyList(), upc, cc, null);
   }
 }

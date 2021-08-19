@@ -27,6 +27,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sonia.scm.net.ProxyConfiguration;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,16 +54,18 @@ public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilt
   private List<RawGpgKey> allowedGpgKeys;
   private boolean fastForwardOnly = false;
   private boolean overwriteGlobalConfiguration = false;
+  private ProxyConfiguration proxyConfiguration;
 
   @XmlTransient
   private boolean httpsOnly = false;
 
-  public MirrorConfiguration(String url, int synchronizationPeriod, List<String> managingUsers, UsernamePasswordCredential usernamePasswordCredential, CertificateCredential certificateCredential) {
+  public MirrorConfiguration(String url, int synchronizationPeriod, List<String> managingUsers, UsernamePasswordCredential usernamePasswordCredential, CertificateCredential certificateCredential, ProxyConfiguration proxyConfiguration) {
     this.url = url;
     this.synchronizationPeriod = synchronizationPeriod;
     this.managingUsers = managingUsers;
     this.usernamePasswordCredential = usernamePasswordCredential;
     this.certificateCredential = certificateCredential;
+    this.proxyConfiguration = proxyConfiguration;
   }
 
   public List<String> getManagingUsers() {
