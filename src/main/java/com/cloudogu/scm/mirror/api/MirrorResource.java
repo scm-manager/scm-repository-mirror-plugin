@@ -30,6 +30,7 @@ import com.cloudogu.scm.mirror.LogStore;
 import com.cloudogu.scm.mirror.MirrorAccessConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
+import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
 import com.cloudogu.scm.mirror.MirrorService;
 import com.cloudogu.scm.mirror.NotConfiguredForMirrorException;
 import de.otto.edison.hal.Embedded;
@@ -68,6 +69,8 @@ public class MirrorResource {
   private final MirrorAccessConfigurationToConfigurationDtoMapper toAccessConfigurationDtoMapper;
   private final MirrorFilterConfigurationDtoToDaoMapper fromFiltersDtoMapper = getMapper(MirrorFilterConfigurationDtoToDaoMapper.class);
   private final MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper;
+  private final MirrorProxyConfigurationMapper proxyConfigurationMapper = getMapper(MirrorProxyConfigurationMapper.class);
+
   private final LogEntryMapper logEntryMapper = getMapper(LogEntryMapper.class);
 
   @Inject
@@ -127,6 +130,30 @@ public class MirrorResource {
     LocalFilterConfiguration configuration = fromFiltersDtoMapper.map(filtersDto);
     Repository repository = loadRepository(namespace, name);
     configurationService.setFilterConfiguration(repository, configuration);
+  }
+
+  @GET
+  @Path("/proxyConfiguration")
+  @Produces("application/json")
+  public Response getProxyConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name) {
+    Repository repository = loadRepository(namespace, name);
+    MirrorProxyConfiguration configuration =
+      configurationService.getConfiguration(repository)
+        .map(MirrorConfiguration::getProxyConfiguration)
+        .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
+    return Response
+      .status(200)
+      .entity(proxyConfigurationMapper.map(configuration, repository))
+      .build();
+  }
+
+  @PUT
+  @Path("/proxyConfiguration")
+  @Consumes("application/json")
+  public void setProxyConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid MirrorProxyConfigurationDto proxyConfigurationDto) {
+    MirrorProxyConfiguration configuration = proxyConfigurationMapper.map(proxyConfigurationDto);
+    Repository repository = loadRepository(namespace, name);
+    configurationService.setProxyConfiguration(repository, configuration);
   }
 
   @POST

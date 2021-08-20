@@ -58,6 +58,8 @@ public class MirrorCreationDto {
   private UsernamePasswordCredentialDto usernamePasswordCredential;
   @Valid
   private CertificateCredentialDto certificateCredential;
+  @Valid
+  private MirrorProxyConfigurationDto proxyConfiguration;
 
   private boolean overwriteGlobalConfiguration;
   private String branchesAndTagsPatterns;

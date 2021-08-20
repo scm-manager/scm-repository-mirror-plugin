@@ -227,7 +227,7 @@ class MirrorConfigurationStoreTest {
 
       mockGlobalConfiguration(globalMirrorConfiguration);
 
-      final MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration(true, "https://proxy.scm-manager.org", 1337, emptyList(), "trillian", "secret123");
+      final MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration("https://proxy.scm-manager.org", 1337, emptyList(), "trillian", "secret123");
 
       final MirrorConfiguration mirrorConfiguration = new MirrorConfiguration();
       mirrorConfiguration.setProxyConfiguration(proxyConfiguration);

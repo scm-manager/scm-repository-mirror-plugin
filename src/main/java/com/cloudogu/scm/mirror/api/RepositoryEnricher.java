@@ -83,6 +83,8 @@ public class RepositoryEnricher implements HalEnricher {
   private void appendConfigurationLinks(HalAppender appender, LinkBuilder linkBuilder) {
     String accessConfigurationLink = linkBuilder.method("getAccessConfiguration").parameters().href();
     appender.appendLink("mirrorAccessConfiguration", accessConfigurationLink);
+    String proxyConfigurationLink = linkBuilder.method("getProxyConfiguration").parameters().href();
+    appender.appendLink("mirrorProxyConfiguration", proxyConfigurationLink);
     if (!configurationService.getGlobalConfiguration().isDisableRepositoryFilterOverwrite()) {
       String filterConfigurationLink = linkBuilder.method("getFilterConfiguration").parameters().href();
       appender.appendLink("mirrorFilterConfiguration", filterConfigurationLink);

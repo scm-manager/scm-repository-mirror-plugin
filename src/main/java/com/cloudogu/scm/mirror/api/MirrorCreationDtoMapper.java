@@ -23,6 +23,8 @@
  */
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.MirrorAccessConfiguration.CertificateCredential;
+import com.cloudogu.scm.mirror.MirrorAccessConfiguration.UsernamePasswordCredential;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -35,7 +37,7 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 
-@Mapper(uses = RawGpgKeyToKeyDtoMapper.class)
+@Mapper(uses = {RawGpgKeyToKeyDtoMapper.class, MirrorProxyConfigurationMapper.class})
 public abstract class MirrorCreationDtoMapper {
 
   @Mapping(target = "properties", ignore = true)
@@ -47,6 +49,7 @@ public abstract class MirrorCreationDtoMapper {
   @Mapping(target = "archived", ignore = true)
   abstract Repository mapToRepository(MirrorCreationDto mirrorCreationDto);
 
+  @Mapping(target = "httpsOnly", ignore = true)
   abstract MirrorConfiguration mapToConfiguration(MirrorCreationDto mirrorCreationDto);
 
   @Mapping(target = "branchesAndTagsPatterns")
@@ -57,10 +60,12 @@ public abstract class MirrorCreationDtoMapper {
     return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
   }
 
-  abstract MirrorConfiguration.UsernamePasswordCredential map(UsernamePasswordCredentialDto credentialDto);
-  abstract MirrorConfiguration.CertificateCredential map(CertificateCredentialDto credentialDto);
+  abstract UsernamePasswordCredential map(UsernamePasswordCredentialDto credentialDto);
 
-  @SuppressWarnings("java:S1168") // we want to signal that the certificate is not set and null signals this much better as an empty array
+  abstract CertificateCredential map(CertificateCredentialDto credentialDto);
+
+  @SuppressWarnings("java:S1168")
+    // we want to signal that the certificate is not set and null signals this much better as an empty array
   byte[] mapBase64(String base64encoded) {
     if (base64encoded != null) {
       return Base64.getDecoder().decode(base64encoded.replace("\n", ""));
