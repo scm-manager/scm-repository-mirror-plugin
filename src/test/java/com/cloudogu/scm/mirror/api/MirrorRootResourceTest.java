@@ -29,6 +29,7 @@ import com.cloudogu.scm.mirror.LogStore;
 import com.cloudogu.scm.mirror.MirrorAccessConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
+import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
 import com.cloudogu.scm.mirror.MirrorService;
 import com.cloudogu.scm.mirror.MirrorStatus;
 import com.cloudogu.scm.mirror.MirrorStatus.Result;
@@ -60,6 +61,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -98,13 +100,15 @@ class MirrorRootResourceTest {
   private final GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper = Mappers.getMapper(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class);
   private final MirrorAccessConfigurationToConfigurationDtoMapper configurationToConfigurationDtoMapper = Mappers.getMapper(MirrorAccessConfigurationToConfigurationDtoMapper.class);
   private final MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper = Mappers.getMapper(MirrorFilterConfigurationToDtoMapper.class);
+  private final MirrorProxyConfigurationMapper proxyConfigurationMapper = Mappers.getMapper(MirrorProxyConfigurationMapper.class);
 
   @BeforeEach
   void initResource() {
-    MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, configurationToConfigurationDtoMapper, logStore, toFiltersDtoMapper);
+    MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, configurationToConfigurationDtoMapper, logStore, toFiltersDtoMapper, proxyConfigurationMapper);
     configurationToConfigurationDtoMapper.setScmPathInfoStore(forUri("/"));
     toDtoMapper.setScmPathInfoStore(forUri("/"));
     toFiltersDtoMapper.setScmPathInfoStore(forUri("/"));
+    proxyConfigurationMapper.setScmPathInfoStore(forUri("/"));
     dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService, configurationStore, toDtoMapper));
   }
 
@@ -230,6 +234,31 @@ class MirrorRootResourceTest {
   }
 
   @Test
+  void shouldFailToSetProxyConfigurationForMissingRepository() throws URISyntaxException {
+    JsonMockHttpRequest request = JsonMockHttpRequest
+      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/proxyConfiguration")
+      .json("{'host':'foo.bar','port':1337}");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(404);
+  }
+
+  @Test
+  void shouldValidateNewProxyConfiguration() throws URISyntaxException {
+    JsonMockHttpRequest request = JsonMockHttpRequest
+      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/proxyConfiguration")
+      .json("{'port':-1,'host':''}");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(400);
+    verify(configurationStore, never()).setProxyConfiguration(any(), any());
+  }
+
+  @Test
   void shouldValidateNewAccessConfiguration() throws URISyntaxException {
     JsonMockHttpRequest request = JsonMockHttpRequest
       .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
@@ -328,7 +357,7 @@ class MirrorRootResourceTest {
             emptyList(),
             new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "hog"),
             new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"),
-            null);
+            new MirrorProxyConfiguration("foo.bar", 1337, Arrays.asList("foo", "bar"), "trillian", "secret123"));
         when(configurationStore.getConfiguration(repository))
           .thenReturn(Optional.of(existingConfiguration));
       }
@@ -349,6 +378,24 @@ class MirrorRootResourceTest {
         assertThat(configurationDto.getCertificateCredential().getPassword()).isEqualTo("_DUMMY_");
         assertThat(configurationDto.getLinks().getLinkBy("self")).get().extracting("href")
           .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
+      }
+
+      @Test
+      void shouldGetProxyConfiguration() throws URISyntaxException {
+        MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/proxyConfiguration");
+        JsonMockHttpResponse response = new JsonMockHttpResponse();
+
+        dispatcher.invoke(request, response);
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        MirrorProxyConfigurationDto configurationDto = response.getContentAs(MirrorProxyConfigurationDto.class);
+        assertThat(configurationDto.getHost()).isEqualTo("foo.bar");
+        assertThat(configurationDto.getPort()).isEqualTo(1337);
+        assertThat(configurationDto.getUsername()).isEqualTo("trillian");
+        assertThat(configurationDto.getPassword()).isEqualTo("secret123");
+        assertThat(configurationDto.getExcludes()).isEqualTo("foo,bar");
+        assertThat(configurationDto.getLinks().getLinkBy("self")).get().extracting("href")
+          .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/proxyConfiguration");
       }
 
       @Test

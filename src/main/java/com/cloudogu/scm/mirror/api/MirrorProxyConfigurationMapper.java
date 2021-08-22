@@ -25,6 +25,8 @@ package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorPermissions;
 import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -38,6 +40,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import static de.otto.edison.hal.Link.link;
 
@@ -53,12 +56,12 @@ public abstract class MirrorProxyConfigurationMapper {
 
   @Mapping(target = "excludes")
   String map(Collection<String> value) {
-    return String.join(",", value);
+    return value == null || value.isEmpty() ? null : String.join(",", value);
   }
 
   @Mapping(target = "excludes")
   Collection<String> map(String value) {
-    return Arrays.asList(value.split(","));
+    return Strings.isNullOrEmpty(value) ? Collections.emptyList() : Arrays.asList(value.split(","));
   }
 
   @ObjectFactory
@@ -77,5 +80,10 @@ public abstract class MirrorProxyConfigurationMapper {
       builder.single(link("update", configurationUrl));
     }
     return builder.build();
+  }
+
+  @VisibleForTesting
+  void setScmPathInfoStore(Provider<ScmPathInfoStore> scmPathInfoStore) {
+    this.scmPathInfoStore = scmPathInfoStore;
   }
 }

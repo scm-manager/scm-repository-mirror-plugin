@@ -69,7 +69,7 @@ public class MirrorResource {
   private final MirrorAccessConfigurationToConfigurationDtoMapper toAccessConfigurationDtoMapper;
   private final MirrorFilterConfigurationDtoToDaoMapper fromFiltersDtoMapper = getMapper(MirrorFilterConfigurationDtoToDaoMapper.class);
   private final MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper;
-  private final MirrorProxyConfigurationMapper proxyConfigurationMapper = getMapper(MirrorProxyConfigurationMapper.class);
+  private final MirrorProxyConfigurationMapper proxyConfigurationMapper;
 
   private final LogEntryMapper logEntryMapper = getMapper(LogEntryMapper.class);
 
@@ -78,13 +78,15 @@ public class MirrorResource {
                         MirrorService mirrorService,
                         RepositoryManager repositoryManager,
                         MirrorAccessConfigurationToConfigurationDtoMapper toAccessConfigurationDtoMapper,
-                        LogStore logStore, MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper) {
+                        LogStore logStore, MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper,
+                        MirrorProxyConfigurationMapper proxyConfigurationMapper) {
     this.configurationService = configurationService;
     this.mirrorService = mirrorService;
     this.repositoryManager = repositoryManager;
     this.logStore = logStore;
     this.toAccessConfigurationDtoMapper = toAccessConfigurationDtoMapper;
     this.toFiltersDtoMapper = toFiltersDtoMapper;
+    this.proxyConfigurationMapper = proxyConfigurationMapper;
   }
 
   @GET
