@@ -46,6 +46,8 @@ public interface MirrorAccessConfiguration {
 
   MirrorAccessConfiguration.CertificateCredential getCertificateCredential();
 
+  MirrorProxyConfiguration getProxyConfiguration();
+
   @Getter
   @Setter
   @AllArgsConstructor

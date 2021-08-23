@@ -43,6 +43,7 @@ import sonia.scm.web.security.AdministrationContext;
 import sonia.scm.web.security.PrivilegedAction;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
@@ -135,12 +136,21 @@ class MirrorConfigurationStoreTest {
       existingMirrorConfiguration.setGpgVerificationType(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
       existingMirrorConfiguration.setFastForwardOnly(true);
 
+      MirrorProxyConfiguration newProxyConfiguration = new MirrorProxyConfiguration();
+      newProxyConfiguration.setHost("foo.bar");
+      newProxyConfiguration.setPort(1337);
+      newProxyConfiguration.setUsername("trillian");
+      newProxyConfiguration.setPassword("secret123");
+      newProxyConfiguration.setOverwriteGlobalConfiguration(true);
+      newProxyConfiguration.setExcludes(Arrays.asList("test", "bar"));
+
       MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
       newConfiguration.setManagingUsers(singletonList("trillian"));
       newConfiguration.setUrl("https://scm-manager.org");
       newConfiguration.setSynchronizationPeriod(10);
       newConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential("hello".getBytes(StandardCharsets.UTF_8), "secret"));
       newConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("scm-manager", "scm-manager"));
+      newConfiguration.setProxyConfiguration(newProxyConfiguration);
 
       storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
       store.setAccessConfiguration(REPOSITORY, newConfiguration);
@@ -168,6 +178,60 @@ class MirrorConfigurationStoreTest {
           assertThat(usernamePasswordCredential).isNotNull();
           assertThat(usernamePasswordCredential.getPassword()).isEqualTo("scm-manager");
           assertThat(usernamePasswordCredential.getUsername()).isEqualTo("scm-manager");
+          return true;
+        });
+        assertThat(it.getProxyConfiguration()).matches(proxyConfiguration -> {
+          assertThat(proxyConfiguration.isOverwriteGlobalConfiguration()).isTrue();
+          assertThat(proxyConfiguration.getHost()).isEqualTo("foo.bar");
+          assertThat(proxyConfiguration.getPort()).isEqualTo(1337);
+          assertThat(proxyConfiguration.getUsername()).isEqualTo("trillian");
+          assertThat(proxyConfiguration.getPassword()).isEqualTo("secret123");
+          assertThat(proxyConfiguration.getExcludes()).contains("test", "bar");
+          return true;
+        });
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldResetProxyConfigurationOnDisable() {
+      MirrorProxyConfiguration oldProxyConfiguration = new MirrorProxyConfiguration();
+      oldProxyConfiguration.setHost("foo.bar");
+      oldProxyConfiguration.setPort(1337);
+      oldProxyConfiguration.setUsername("trillian");
+      oldProxyConfiguration.setPassword("secret123");
+      oldProxyConfiguration.setOverwriteGlobalConfiguration(true);
+      oldProxyConfiguration.setExcludes(Arrays.asList("test", "bar"));
+
+      MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
+      existingMirrorConfiguration.setProxyConfiguration(oldProxyConfiguration);
+      existingMirrorConfiguration.setSynchronizationPeriod(10);
+
+      MirrorProxyConfiguration newProxyConfiguration = new MirrorProxyConfiguration();
+      newProxyConfiguration.setHost("new.stuff");
+      newProxyConfiguration.setPort(123);
+      newProxyConfiguration.setUsername("troll");
+      newProxyConfiguration.setPassword("ilikecookies");
+      newProxyConfiguration.setOverwriteGlobalConfiguration(false);
+      newProxyConfiguration.setExcludes(Arrays.asList("nope", "yep"));
+
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setProxyConfiguration(newProxyConfiguration);
+      newConfiguration.setSynchronizationPeriod(10);
+
+      storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
+
+      Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
+      assertThat(configurationFromStore).isSameAs(existingMirrorConfiguration);
+      verify(scheduler).schedule(eq(REPOSITORY), argThat(it -> {
+        assertThat(it.getProxyConfiguration()).matches(proxyConfiguration -> {
+          assertThat(proxyConfiguration.isOverwriteGlobalConfiguration()).isFalse();
+          assertThat(proxyConfiguration.getHost()).isNull();
+          assertThat(proxyConfiguration.getPort()).isZero();
+          assertThat(proxyConfiguration.getUsername()).isNull();
+          assertThat(proxyConfiguration.getPassword()).isNull();
+          assertThat(proxyConfiguration.getExcludes()).isNull();
           return true;
         });
         return true;
@@ -212,13 +276,14 @@ class MirrorConfigurationStoreTest {
     }
 
     @Test
-    void shouldHaveNoProxyConfigurationByDefault() {
+    void shouldHaveDisabledProxyConfigurationByDefault() {
       MirrorConfiguration existingConfiguration = new MirrorConfiguration();
       mockExistingConfiguration(existingConfiguration);
 
       Optional<MirrorConfiguration> configuration = store.getConfiguration(REPOSITORY);
 
-      assertThat(configuration.map(MirrorConfiguration::getProxyConfiguration)).isNotPresent();
+      assertThat(configuration.map(MirrorConfiguration::getProxyConfiguration)).isPresent();
+      assertThat(configuration.map(it -> it.getProxyConfiguration().isOverwriteGlobalConfiguration())).hasValue(false);
     }
 
     @Test
@@ -227,7 +292,7 @@ class MirrorConfigurationStoreTest {
 
       mockGlobalConfiguration(globalMirrorConfiguration);
 
-      final MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration("https://proxy.scm-manager.org", 1337, emptyList(), "trillian", "secret123");
+      final MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration(true, "https://proxy.scm-manager.org", 1337, emptyList(), "trillian", "secret123");
 
       final MirrorConfiguration mirrorConfiguration = new MirrorConfiguration();
       mirrorConfiguration.setProxyConfiguration(proxyConfiguration);

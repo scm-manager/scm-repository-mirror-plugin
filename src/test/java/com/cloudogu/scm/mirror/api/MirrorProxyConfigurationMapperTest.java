@@ -24,7 +24,6 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
-import com.google.inject.util.Providers;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +49,6 @@ class MirrorProxyConfigurationMapperTest {
   void setup() {
     final ScmPathInfoStore scmPathInfoStore = new ScmPathInfoStore();
     scmPathInfoStore.set(() -> URI.create("/scm"));
-    mapper.setScmPathInfoStore(Providers.of(scmPathInfoStore));
 
     repository = RepositoryTestData.createHeartOfGold();
     repository.setId("42");
@@ -78,27 +76,14 @@ class MirrorProxyConfigurationMapperTest {
     input.setPort(1337);
     input.setUsername("trillian");
     input.setPassword("secret123");
+    input.setOverwriteGlobalConfiguration(true);
 
     final MirrorProxyConfigurationDto output = mapper.map(input, repository);
     assertThat(output.getHost()).isEqualTo("foo.bar");
     assertThat(output.getPort()).isEqualTo(1337);
     assertThat(output.getUsername()).isEqualTo("trillian");
     assertThat(output.getPassword()).isEqualTo("secret123");
-  }
-
-  @SubjectAware(permissions = "repository:mirror:42")
-  @Test
-  void shouldAppendLink() {
-    MirrorProxyConfiguration input = new MirrorProxyConfiguration();
-    final MirrorProxyConfigurationDto output = mapper.map(input, repository);
-    assertThat(output.getLinks().getLinkBy("update")).isPresent();
-  }
-
-  @Test
-  void shouldNotAppendUpdateLinkWithoutPermissions() {
-    MirrorProxyConfiguration input = new MirrorProxyConfiguration();
-    final MirrorProxyConfigurationDto output = mapper.map(input, repository);
-    assertThat(output.getLinks().getLinkBy("update")).isNotPresent();
+    assertThat(output.isOverwriteGlobalConfiguration()).isTrue();
   }
 
 }

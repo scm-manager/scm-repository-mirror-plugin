@@ -41,6 +41,7 @@ import java.util.Collection;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class MirrorProxyConfiguration implements ProxyConfiguration {
 
+  private boolean overwriteGlobalConfiguration;
   private String host;
   private int port;
   private Collection<String> excludes;
@@ -49,7 +50,7 @@ public class MirrorProxyConfiguration implements ProxyConfiguration {
 
   @Override
   public boolean isEnabled() {
-    return true;
+    return overwriteGlobalConfiguration;
   }
 
   @Override

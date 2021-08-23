@@ -32,6 +32,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
@@ -58,7 +59,8 @@ public class MirrorCreationDto {
   private UsernamePasswordCredentialDto usernamePasswordCredential;
   @Valid
   private CertificateCredentialDto certificateCredential;
-  @Valid
+
+  @NotNull
   private MirrorProxyConfigurationDto proxyConfiguration;
 
   private boolean overwriteGlobalConfiguration;

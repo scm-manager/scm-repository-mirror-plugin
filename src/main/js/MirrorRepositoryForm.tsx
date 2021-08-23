@@ -34,6 +34,8 @@ import {
   coalesceFormValue,
   CredentialsControl,
   GpgVerificationControl,
+  ProxyHostControl,
+  ProxyPortControl,
   SynchronizationPeriodControl,
   UrlControl
 } from "./config/FormControls";
@@ -66,6 +68,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
   const [valid, setValid] = useState({ namespaceAndName: false, contact: true });
   const { isValid: isFormValid, touchedFields } = formState;
   const showFilterForm = watch("overwriteGlobalConfiguration");
+  const showProxyForm = watch("proxyConfiguration.overwriteGlobalConfiguration");
   const allowLocalFilterConfiguration = !!repositoryType._links["mirrorFilterConfiguration"];
 
   useEffect(() => {
@@ -138,6 +141,20 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
               <GpgVerificationControl control={control} isReadonly={disabled} />
             </>
           ) : null}
+        </>
+      ) : null}
+      <hr />
+      <h4 className="subtitle is-4">{t("scm-repository-mirror-plugin.form.proxy.subtitle")}</h4>
+      <Checkbox
+        label={t("scm-repository-mirror-plugin.form.proxy.overwriteGlobalConfiguration.label")}
+        helpText={t("scm-repository-mirror-plugin.form.proxy.overwriteGlobalConfiguration.helpText")}
+        disabled={disabled}
+        {...register("proxyConfiguration.overwriteGlobalConfiguration")}
+      />
+      {showProxyForm ? (
+        <>
+          <ProxyHostControl control={control} isReadonly={disabled} />
+          <ProxyPortControl control={control} isReadonly={disabled} />
         </>
       ) : null}
       <hr />

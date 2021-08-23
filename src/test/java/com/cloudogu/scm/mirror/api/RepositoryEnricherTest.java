@@ -169,7 +169,6 @@ class RepositoryEnricherTest {
 
       verify(appender).appendLink("mirrorAccessConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
       verify(appender).appendLink("mirrorFilterConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/filterConfiguration");
-      verify(appender).appendLink("mirrorProxyConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/proxyConfiguration");
 
     }
 
@@ -186,7 +185,6 @@ class RepositoryEnricherTest {
       enricher.enrich(context, appender);
 
       verify(appender).appendLink("mirrorAccessConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
-      verify(appender).appendLink("mirrorProxyConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/proxyConfiguration");
       verify(appender, never()).appendLink("mirrorFilterConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/filterConfiguration");
     }
 

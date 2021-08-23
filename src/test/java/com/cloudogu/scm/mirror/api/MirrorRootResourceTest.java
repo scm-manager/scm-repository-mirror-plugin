@@ -100,15 +100,13 @@ class MirrorRootResourceTest {
   private final GlobalMirrorConfigurationToGlobalConfigurationDtoMapper toDtoMapper = Mappers.getMapper(GlobalMirrorConfigurationToGlobalConfigurationDtoMapper.class);
   private final MirrorAccessConfigurationToConfigurationDtoMapper configurationToConfigurationDtoMapper = Mappers.getMapper(MirrorAccessConfigurationToConfigurationDtoMapper.class);
   private final MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper = Mappers.getMapper(MirrorFilterConfigurationToDtoMapper.class);
-  private final MirrorProxyConfigurationMapper proxyConfigurationMapper = Mappers.getMapper(MirrorProxyConfigurationMapper.class);
 
   @BeforeEach
   void initResource() {
-    MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, configurationToConfigurationDtoMapper, logStore, toFiltersDtoMapper, proxyConfigurationMapper);
+    MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, configurationToConfigurationDtoMapper, logStore, toFiltersDtoMapper);
     configurationToConfigurationDtoMapper.setScmPathInfoStore(forUri("/"));
     toDtoMapper.setScmPathInfoStore(forUri("/"));
     toFiltersDtoMapper.setScmPathInfoStore(forUri("/"));
-    proxyConfigurationMapper.setScmPathInfoStore(forUri("/"));
     dispatcher.addSingletonResource(new MirrorRootResource(of(mirrorResource), repositoryLinkProvider, mirrorService, configurationStore, toDtoMapper));
   }
 
@@ -126,7 +124,7 @@ class MirrorRootResourceTest {
     @Test
     void shouldExecuteBasicRequest() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'gpgVerificationType':'NONE'}");
+        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'gpgVerificationType':'NONE','proxyConfiguration':{}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -151,7 +149,7 @@ class MirrorRootResourceTest {
     @Test
     void shouldConfigureBasicAuth() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'trillian','password':'hog'}, 'gpgVerificationType':'NONE'}");
+        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'trillian','password':'hog'}, 'gpgVerificationType':'NONE','proxyConfiguration':{}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -171,7 +169,7 @@ class MirrorRootResourceTest {
     @Test
     void shouldConfigureCertificateAuth() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
-        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'gpgVerificationType':'NONE', 'certificateCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'}}");
+        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'gpgVerificationType':'NONE', 'certificateCredential':{'certificate':'" + BASE64_ENCODED_CERTIFICATE + "','password':'hog'},'proxyConfiguration':{}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -213,7 +211,7 @@ class MirrorRootResourceTest {
   void shouldFailToSetAccessConfigurationForMissingRepository() throws URISyntaxException {
     JsonMockHttpRequest request = JsonMockHttpRequest
       .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
-      .json("{'url':'http://hog/scm', 'synchronizationPeriod':42}");
+      .json("{'url':'http://hog/scm', 'synchronizationPeriod':42,'proxyConfiguration':{}}");
     MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
@@ -231,31 +229,6 @@ class MirrorRootResourceTest {
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(404);
-  }
-
-  @Test
-  void shouldFailToSetProxyConfigurationForMissingRepository() throws URISyntaxException {
-    JsonMockHttpRequest request = JsonMockHttpRequest
-      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/proxyConfiguration")
-      .json("{'host':'foo.bar','port':1337}");
-    MockHttpResponse response = new MockHttpResponse();
-
-    dispatcher.invoke(request, response);
-
-    assertThat(response.getStatus()).isEqualTo(404);
-  }
-
-  @Test
-  void shouldValidateNewProxyConfiguration() throws URISyntaxException {
-    JsonMockHttpRequest request = JsonMockHttpRequest
-      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/proxyConfiguration")
-      .json("{'port':-1,'host':''}");
-    MockHttpResponse response = new MockHttpResponse();
-
-    dispatcher.invoke(request, response);
-
-    assertThat(response.getStatus()).isEqualTo(400);
-    verify(configurationStore, never()).setProxyConfiguration(any(), any());
   }
 
   @Test
@@ -295,10 +268,43 @@ class MirrorRootResourceTest {
     }
 
     @Test
+    void shouldNotValidateProxyConfigurationIfOverwriteIsFalse() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest
+        .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
+        .json("{'url':'test.dummy','synchronizationPeriod':10,'proxyConfiguration':{'overwriteGlobalConfiguration':false}}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(204);
+      verify(configurationStore)
+        .setAccessConfiguration(
+          eq(repository),
+          argThat(configuration -> {
+            assertThat(configuration.getProxyConfiguration()).isNotNull();
+            assertThat(configuration.getProxyConfiguration().isOverwriteGlobalConfiguration()).isFalse();
+            return true;
+          }));
+    }
+
+    @Test
+    void shouldValidateProxyConfiguration() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest
+        .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
+        .json("{'url':'test.dummy','synchronizationPeriod':10,'proxyConfiguration':{'overwriteGlobalConfiguration':true,'url':'','port':-1}}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(400);
+      verify(configurationStore, never()).setAccessConfiguration(any(), any());
+    }
+
+    @Test
     void shouldSetUrlAndPeriodInAccessConfiguration() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest
         .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
-        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42}");
+        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42,'proxyConfiguration':{}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -318,7 +324,7 @@ class MirrorRootResourceTest {
     void shouldSetUsernamePasswordCredentialInAccessConfiguration() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest
         .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
-        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'dent', 'password':'hg2g'}}");
+        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'username':'dent', 'password':'hg2g'},'proxyConfiguration':{}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.invoke(request, response);
@@ -357,7 +363,7 @@ class MirrorRootResourceTest {
             emptyList(),
             new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "hog"),
             new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"),
-            new MirrorProxyConfiguration("foo.bar", 1337, Arrays.asList("foo", "bar"), "trillian", "secret123"));
+            new MirrorProxyConfiguration(true, "foo.bar", 1337, Arrays.asList("foo", "bar"), "trillian", "secret123"));
         when(configurationStore.getConfiguration(repository))
           .thenReturn(Optional.of(existingConfiguration));
       }
@@ -378,24 +384,6 @@ class MirrorRootResourceTest {
         assertThat(configurationDto.getCertificateCredential().getPassword()).isEqualTo("_DUMMY_");
         assertThat(configurationDto.getLinks().getLinkBy("self")).get().extracting("href")
           .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
-      }
-
-      @Test
-      void shouldGetProxyConfiguration() throws URISyntaxException {
-        MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/proxyConfiguration");
-        JsonMockHttpResponse response = new JsonMockHttpResponse();
-
-        dispatcher.invoke(request, response);
-
-        assertThat(response.getStatus()).isEqualTo(200);
-        MirrorProxyConfigurationDto configurationDto = response.getContentAs(MirrorProxyConfigurationDto.class);
-        assertThat(configurationDto.getHost()).isEqualTo("foo.bar");
-        assertThat(configurationDto.getPort()).isEqualTo(1337);
-        assertThat(configurationDto.getUsername()).isEqualTo("trillian");
-        assertThat(configurationDto.getPassword()).isEqualTo("secret123");
-        assertThat(configurationDto.getExcludes()).isEqualTo("foo,bar");
-        assertThat(configurationDto.getLinks().getLinkBy("self")).get().extracting("href")
-          .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/proxyConfiguration");
       }
 
       @Test

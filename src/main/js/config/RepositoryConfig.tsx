@@ -29,7 +29,6 @@ import {
   ConfigurationForm,
   ErrorNotification,
   InputField,
-  Notification,
   Subtitle
 } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
@@ -45,6 +44,8 @@ import {
   CredentialsControl,
   GpgVerificationControl,
   ManagingUsersControl,
+  ProxyHostControl,
+  ProxyPortControl,
   SynchronizationPeriodControl,
   UrlControl
 } from "./FormControls";
@@ -92,9 +93,10 @@ export const TriggerButton: FC<{ link: string }> = ({ link }) => {
 const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => {
   const [t] = useTranslation("plugins");
   const { initialConfiguration, update, isReadOnly, ...formProps } = useConfigLink<MirrorAccessConfigurationDto>(link);
-  const { formState, handleSubmit, control, reset } = useForm<MirrorAccessConfigurationForm>({
+  const { formState, handleSubmit, control, reset, watch, register } = useForm<MirrorAccessConfigurationForm>({
     mode: "onChange"
   });
+  const showProxyForm = watch("proxyConfiguration.overwriteGlobalConfiguration");
 
   useEffect(() => {
     if (initialConfiguration) {
@@ -112,7 +114,7 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
         };
       }
       if (!initialConfiguration.synchronizationPeriod) {
-        form.synchronizationPeriod = "0"
+        form.synchronizationPeriod = "0";
       }
       reset(form);
     }
@@ -135,6 +137,20 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
         <SynchronizationPeriodControl control={control} isReadonly={isReadOnly} />
         <ManagingUsersControl control={control} isReadonly={isReadOnly} />
       </Columns>
+      <hr />
+      <Subtitle subtitle={t("scm-repository-mirror-plugin.form.proxy.subtitle")} />
+      <Checkbox
+        label={t("scm-repository-mirror-plugin.form.proxy.overwriteGlobalConfiguration.label")}
+        helpText={t("scm-repository-mirror-plugin.form.proxy.overwriteGlobalConfiguration.helpText")}
+        disabled={isReadOnly}
+        {...register("proxyConfiguration.overwriteGlobalConfiguration")}
+      />
+      {showProxyForm ? (
+        <Columns className="columns is-multiline">
+          <ProxyHostControl control={control} isReadonly={isReadOnly} />
+          <ProxyPortControl control={control} isReadonly={isReadOnly} />
+        </Columns>
+      ) : null}
     </ConfigurationForm>
   );
 };
@@ -201,6 +217,7 @@ const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
 
 const RepositoryConfig: FC<Props> = ({ link, repository }) => {
   const filtersLink = repository._links["mirrorFilterConfiguration"];
+  const proxyLink = repository._links["mirrorProxyConfiguration"];
   return (
     <>
       <RepositoryMirrorAccessConfigForm link={link} />

@@ -44,8 +44,10 @@ public class MirrorProxyConfigurationDto extends HalRepresentation {
   private String excludes;
   private String username;
   private String password;
+  private boolean overwriteGlobalConfiguration;
 
   MirrorProxyConfigurationDto(Links links) {
     super(links);
   }
+
 }

@@ -42,7 +42,7 @@ import javax.inject.Provider;
 
 import static de.otto.edison.hal.Link.link;
 
-@Mapper
+@Mapper(uses = {MirrorProxyConfigurationMapper.class})
 public abstract class MirrorAccessConfigurationToConfigurationDtoMapper {
 
   @Inject

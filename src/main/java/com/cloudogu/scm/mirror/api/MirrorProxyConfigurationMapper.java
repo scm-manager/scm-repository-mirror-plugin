@@ -23,32 +23,19 @@
  */
 package com.cloudogu.scm.mirror.api;
 
-import com.cloudogu.scm.mirror.MirrorPermissions;
 import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.ObjectFactory;
-import sonia.scm.api.v2.resources.LinkBuilder;
-import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.repository.Repository;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import static de.otto.edison.hal.Link.link;
-
 @Mapper
 public abstract class MirrorProxyConfigurationMapper {
-
-  @Inject
-  Provider<ScmPathInfoStore> scmPathInfoStore;
 
   @Mapping(ignore = true, target = "attributes")
   abstract MirrorProxyConfigurationDto map(MirrorProxyConfiguration configuration, @Context Repository repository);
@@ -64,26 +51,4 @@ public abstract class MirrorProxyConfigurationMapper {
     return Strings.isNullOrEmpty(value) ? Collections.emptyList() : Arrays.asList(value.split(","));
   }
 
-  @ObjectFactory
-  MirrorProxyConfigurationDto createConfigurationDto(@Context Repository repository) {
-    return new MirrorProxyConfigurationDto(createLinks(repository));
-  }
-
-  private Links createLinks(Repository repository) {
-    String configurationUrl = new LinkBuilder(scmPathInfoStore.get().get(), MirrorRootResource.class, MirrorResource.class)
-      .method("repository").parameters(repository.getNamespace(), repository.getName())
-      .method("getProxyConfiguration").parameters()
-      .href();
-
-    Links.Builder builder = Links.linkingTo().self(configurationUrl);
-    if (MirrorPermissions.hasRepositoryMirrorPermission(repository)) {
-      builder.single(link("update", configurationUrl));
-    }
-    return builder.build();
-  }
-
-  @VisibleForTesting
-  void setScmPathInfoStore(Provider<ScmPathInfoStore> scmPathInfoStore) {
-    this.scmPathInfoStore = scmPathInfoStore;
-  }
 }

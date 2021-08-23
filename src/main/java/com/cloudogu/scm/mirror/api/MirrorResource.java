@@ -42,7 +42,12 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 
 import javax.inject.Inject;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -54,6 +59,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.mapstruct.factory.Mappers.getMapper;
@@ -69,7 +75,6 @@ public class MirrorResource {
   private final MirrorAccessConfigurationToConfigurationDtoMapper toAccessConfigurationDtoMapper;
   private final MirrorFilterConfigurationDtoToDaoMapper fromFiltersDtoMapper = getMapper(MirrorFilterConfigurationDtoToDaoMapper.class);
   private final MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper;
-  private final MirrorProxyConfigurationMapper proxyConfigurationMapper;
 
   private final LogEntryMapper logEntryMapper = getMapper(LogEntryMapper.class);
 
@@ -78,15 +83,13 @@ public class MirrorResource {
                         MirrorService mirrorService,
                         RepositoryManager repositoryManager,
                         MirrorAccessConfigurationToConfigurationDtoMapper toAccessConfigurationDtoMapper,
-                        LogStore logStore, MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper,
-                        MirrorProxyConfigurationMapper proxyConfigurationMapper) {
+                        LogStore logStore, MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper) {
     this.configurationService = configurationService;
     this.mirrorService = mirrorService;
     this.repositoryManager = repositoryManager;
     this.logStore = logStore;
     this.toAccessConfigurationDtoMapper = toAccessConfigurationDtoMapper;
     this.toFiltersDtoMapper = toFiltersDtoMapper;
-    this.proxyConfigurationMapper = proxyConfigurationMapper;
   }
 
   @GET
@@ -96,7 +99,8 @@ public class MirrorResource {
     Repository repository = loadRepository(namespace, name);
     MirrorConfiguration configuration =
       configurationService.getConfiguration(repository)
-      .orElseThrow(() -> new NotConfiguredForMirrorException(repository));return Response
+      .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
+    return Response
       .status(200)
       .entity(toAccessConfigurationDtoMapper.map(configuration, repository))
       .build();
@@ -106,6 +110,14 @@ public class MirrorResource {
   @Path("/accessConfiguration")
   @Consumes("application/json")
   public void setAccessConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid MirrorAccessConfigurationDto configurationDto) {
+    if (configurationDto.getProxyConfiguration().isOverwriteGlobalConfiguration()) {
+      ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+      Validator validator = factory.getValidator();
+      final Set<ConstraintViolation<MirrorProxyConfigurationDto>> constraintViolations = validator.validate(configurationDto.getProxyConfiguration());
+      if (!constraintViolations.isEmpty()) {
+        throw new ConstraintViolationException(constraintViolations);
+      }
+    }
     MirrorAccessConfiguration configuration = fromAccessConfigurationDtoMapper.map(configurationDto);
     Repository repository = loadRepository(namespace, name);
     configurationService.setAccessConfiguration(repository, configuration);
@@ -132,30 +144,6 @@ public class MirrorResource {
     LocalFilterConfiguration configuration = fromFiltersDtoMapper.map(filtersDto);
     Repository repository = loadRepository(namespace, name);
     configurationService.setFilterConfiguration(repository, configuration);
-  }
-
-  @GET
-  @Path("/proxyConfiguration")
-  @Produces("application/json")
-  public Response getProxyConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name) {
-    Repository repository = loadRepository(namespace, name);
-    MirrorProxyConfiguration configuration =
-      configurationService.getConfiguration(repository)
-        .map(MirrorConfiguration::getProxyConfiguration)
-        .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
-    return Response
-      .status(200)
-      .entity(proxyConfigurationMapper.map(configuration, repository))
-      .build();
-  }
-
-  @PUT
-  @Path("/proxyConfiguration")
-  @Consumes("application/json")
-  public void setProxyConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid MirrorProxyConfigurationDto proxyConfigurationDto) {
-    MirrorProxyConfiguration configuration = proxyConfigurationMapper.map(proxyConfigurationDto);
-    Repository repository = loadRepository(namespace, name);
-    configurationService.setProxyConfiguration(repository, configuration);
   }
 
   @POST

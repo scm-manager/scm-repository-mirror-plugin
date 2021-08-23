@@ -30,7 +30,7 @@ import org.mapstruct.Mapper;
 
 import java.util.Base64;
 
-@Mapper
+@Mapper(uses = {MirrorProxyConfigurationMapper.class})
 abstract class MirrorAccessConfigurationDtoToConfigurationMapper {
 
   abstract MirrorAccessConfigurationImpl map(MirrorAccessConfigurationDto configurationDto);

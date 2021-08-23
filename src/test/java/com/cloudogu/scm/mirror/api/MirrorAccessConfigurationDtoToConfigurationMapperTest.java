@@ -33,6 +33,7 @@ import org.mapstruct.factory.Mappers;
 import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MirrorAccessConfigurationDtoToConfigurationMapperTest {
 
@@ -40,12 +41,19 @@ class MirrorAccessConfigurationDtoToConfigurationMapperTest {
 
   @Test
   void shouldMapToDao() {
+    MirrorProxyConfigurationDto proxyConfiguration = new MirrorProxyConfigurationDto();
+    proxyConfiguration.setHost("foo.bar");
+    proxyConfiguration.setPort(1337);
+    proxyConfiguration.setUsername("trillian");
+    proxyConfiguration.setPassword("secret123");
+
     final MirrorAccessConfigurationDto input = new MirrorAccessConfigurationDto();
     input.setUrl("https://foo.bar");
     input.setManagingUsers(ImmutableList.of("freddy", "bernard", "harold"));
     input.setSynchronizationPeriod(42);
     input.setUsernamePasswordCredential(new UsernamePasswordCredentialDto("trillian", "secretpassword"));
     input.setCertificateCredential(new CertificateCredentialDto("aGVsbG8=", "evenmoresecretpassword"));
+    input.setProxyConfiguration(proxyConfiguration);
 
     final MirrorAccessConfiguration output = mapper.map(input);
 
@@ -60,5 +68,16 @@ class MirrorAccessConfigurationDtoToConfigurationMapperTest {
     assertThat(output.getCertificateCredential().getCertificate()).isEqualTo("hello".getBytes(StandardCharsets.UTF_8));
   }
 
+  @Test
+  void shouldNotAllowMissingProxyConfiguration() {
+    final MirrorAccessConfigurationDto input = new MirrorAccessConfigurationDto();
+    input.setUrl("https://foo.bar");
+    input.setManagingUsers(ImmutableList.of("freddy", "bernard", "harold"));
+    input.setSynchronizationPeriod(42);
+    input.setUsernamePasswordCredential(new UsernamePasswordCredentialDto("trillian", "secretpassword"));
+    input.setCertificateCredential(new CertificateCredentialDto("aGVsbG8=", "evenmoresecretpassword"));
+
+    final MirrorAccessConfiguration output = mapper.map(input);
+  }
 
 }

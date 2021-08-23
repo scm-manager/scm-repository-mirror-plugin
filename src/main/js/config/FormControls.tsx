@@ -249,7 +249,8 @@ export const UrlControl: FC<MirrorAccessConfigControlProps> = ({ control, isRead
         value: /^[A-Za-z0-9]+:\/\/[^\s$.?#].[^\s]*$/,
         message: t("scm-repository-mirror-plugin.form.url.errors.invalid")
       }
-    }
+    },
+    shouldUnregister: true
   });
 
   return (
@@ -264,6 +265,70 @@ export const UrlControl: FC<MirrorAccessConfigControlProps> = ({ control, isRead
         {...field}
       />
     </Column>
+  );
+};
+
+export const ProxyHostControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
+  const [t] = useTranslation("plugins");
+  const { field, fieldState } = useController({
+    control,
+    name: "proxyConfiguration.host",
+    rules: {
+      required: {
+        value: true,
+        message: t("scm-repository-mirror-plugin.form.proxy.host.errors.required")
+      },
+      pattern: {
+        value: /^[^\s$.?#].[^\s]*$/,
+        message: t("scm-repository-mirror-plugin.form.proxy.host.errors.invalid")
+      }
+    },
+    shouldUnregister: true
+  });
+
+  return (
+    <div className="column is-full mb-2 px-3">
+      <InputField
+        label={t("scm-repository-mirror-plugin.form.proxy.host.label")}
+        helpText={t("scm-repository-mirror-plugin.form.proxy.host.helpText")}
+        errorMessage={fieldState.error?.message}
+        validationError={!!fieldState.error}
+        disabled={isReadonly}
+        {...field}
+      />
+    </div>
+  );
+};
+
+export const ProxyPortControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
+  const [t] = useTranslation("plugins");
+  const { field, fieldState } = useController({
+    control,
+    name: "proxyConfiguration.port",
+    rules: {
+      required: {
+        value: true,
+        message: t("scm-repository-mirror-plugin.form.proxy.port.errors.required")
+      },
+      min: {
+        value: 1,
+        message: t("scm-repository-mirror-plugin.form.proxy.port.errors.min")
+      }
+    }
+  });
+
+  return (
+    <div className="column is-full mb-2 px-3">
+      <InputField
+        label={t("scm-repository-mirror-plugin.form.proxy.port.label")}
+        helpText={t("scm-repository-mirror-plugin.form.proxy.port.helpText")}
+        errorMessage={fieldState.error?.message}
+        validationError={!!fieldState.error}
+        type="number"
+        disabled={isReadonly}
+        {...field}
+      />
+    </div>
   );
 };
 
