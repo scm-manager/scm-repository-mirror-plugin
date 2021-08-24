@@ -314,7 +314,8 @@ export const ProxyPortControl: FC<MirrorAccessConfigControlProps> = ({ control, 
         value: 1,
         message: t("scm-repository-mirror-plugin.form.proxy.port.errors.min")
       }
-    }
+    },
+    shouldUnregister: true
   });
 
   return (
@@ -325,6 +326,72 @@ export const ProxyPortControl: FC<MirrorAccessConfigControlProps> = ({ control, 
         errorMessage={fieldState.error?.message}
         validationError={!!fieldState.error}
         type="number"
+        disabled={isReadonly}
+        {...field}
+      />
+    </div>
+  );
+};
+
+export const ProxyUsernameControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
+  const [t] = useTranslation("plugins");
+  const { field, fieldState } = useController({
+    control,
+    name: "proxyConfiguration.username",
+    shouldUnregister: true
+  });
+
+  return (
+    <div className="column is-full mb-2 px-3">
+      <InputField
+        label={t("scm-repository-mirror-plugin.form.proxy.username.label")}
+        helpText={t("scm-repository-mirror-plugin.form.proxy.username.helpText")}
+        errorMessage={fieldState.error?.message}
+        validationError={!!fieldState.error}
+        disabled={isReadonly}
+        {...field}
+      />
+    </div>
+  );
+};
+
+export const ProxyPasswordControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
+  const [t] = useTranslation("plugins");
+  const { field, fieldState } = useController({
+    control,
+    name: "proxyConfiguration.password",
+    shouldUnregister: true
+  });
+
+  return (
+    <div className="column is-full mb-2 px-3">
+      <InputField
+        label={t("scm-repository-mirror-plugin.form.proxy.password.label")}
+        helpText={t("scm-repository-mirror-plugin.form.proxy.password.helpText")}
+        errorMessage={fieldState.error?.message}
+        validationError={!!fieldState.error}
+        disabled={isReadonly}
+        {...field}
+      />
+    </div>
+  );
+};
+
+export const ProxyExcludesControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
+  const [t] = useTranslation("plugins");
+  const { field, fieldState } = useController({
+    control,
+    name: "proxyConfiguration.excludes",
+    shouldUnregister: true
+  });
+
+  return (
+    <div className="column is-full mb-2 px-3">
+      <InputField
+        label={t("scm-repository-mirror-plugin.form.proxy.excludes.label")}
+        helpText={t("scm-repository-mirror-plugin.form.proxy.excludes.helpText")}
+        errorMessage={fieldState.error?.message}
+        validationError={!!fieldState.error}
         disabled={isReadonly}
         {...field}
       />

@@ -122,6 +122,41 @@
       "overwriteGlobalConfiguration": {
         "label": "Globale Filterkonfiguration überschreiben",
         "helpText": "Ersetzt die globale Filterkonfiguration für dieses Repository."
+      },
+      "proxy": {
+        "subtitle": "Proxy",
+        "overwriteGlobalConfiguration": {
+          "label": "Globale Proxykonfiguration überschreiben",
+          "helpText": "Ersetzt die globale Proxykonfiguration für dieses Repository."
+        },
+        "host": {
+          "label": "Host",
+          "helpText": "Die URL des Proxyservers.",
+          "errors": {
+            "required": "Dies ist ein Pflichtfeld",
+            "invalid": "Der angegebene Wert muss eine valide URL sein"
+          }
+        },
+        "port": {
+          "label": "Port",
+          "helpText": "Der Port des Proxyservers.",
+          "errors": {
+            "required": "Dies ist ein Pflichtfeld",
+            "min": "Der angegebene Wert muss eine positive Zahl sein"
+          }
+        },
+        "username": {
+          "label": "Benutzername",
+          "helpText": "Der Benutzername für eine Authentifizierung bei dem Proxyserver, falls erforderlich."
+        },
+        "password": {
+          "label": "Passwort",
+          "helpText": "Das Passwort für den angegebenen Benutzer."
+        },
+        "excludes": {
+          "label": "Ausgeschlossene URLs",
+          "helpText": "Eine komma-separierte Liste von URLs, welche den Proxy ignorieren und direkt an den Endpunkt weitergeleitet werden sollen."
+        }
       }
     },
     "flag": {

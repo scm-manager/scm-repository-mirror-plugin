@@ -56,6 +56,10 @@ import sonia.scm.web.JsonMockHttpRequest;
 import sonia.scm.web.JsonMockHttpResponse;
 import sonia.scm.web.RestDispatcher;
 
+import javax.validation.ConstraintViolationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -76,6 +80,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -264,7 +269,7 @@ class MirrorRootResourceTest {
 
     @BeforeEach
     void setUpManager() {
-      doReturn(repository).when(repositoryManager).get(repository.getNamespaceAndName());
+      lenient().doReturn(repository).when(repositoryManager).get(repository.getNamespaceAndName());
     }
 
     @Test
@@ -294,6 +299,7 @@ class MirrorRootResourceTest {
         .json("{'url':'test.dummy','synchronizationPeriod':10,'proxyConfiguration':{'overwriteGlobalConfiguration':true,'url':'','port':-1}}");
       MockHttpResponse response = new MockHttpResponse();
 
+      dispatcher.getProviderFactory().registerProvider(ConstraintViolationExceptionMapper.class);
       dispatcher.invoke(request, response);
 
       assertThat(response.getStatus()).isEqualTo(400);
@@ -469,6 +475,15 @@ class MirrorRootResourceTest {
   @SuppressWarnings("UnstableApiUsage")
   static void readCertificate() throws IOException {
     CERTIFICATE = toByteArray(getResource("com/cloudogu/scm/mirror/client.pfx"));
+  }
+
+  @Provider
+  public static class ConstraintViolationExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
+
+    @Override
+    public Response toResponse(ConstraintViolationException exception) {
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    }
   }
 
   private static byte[] CERTIFICATE;

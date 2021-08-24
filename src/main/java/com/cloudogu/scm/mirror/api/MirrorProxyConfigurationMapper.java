@@ -24,15 +24,16 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import sonia.scm.repository.Repository;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+
+import static java.util.Collections.emptyList;
 
 @Mapper
 public abstract class MirrorProxyConfigurationMapper {
@@ -48,7 +49,10 @@ public abstract class MirrorProxyConfigurationMapper {
 
   @Mapping(target = "excludes")
   Collection<String> map(String value) {
-    return Strings.isNullOrEmpty(value) ? Collections.emptyList() : Arrays.asList(value.split(","));
+    if (Strings.isNullOrEmpty(value)) {
+      return emptyList();
+    }
+    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
   }
 
 }

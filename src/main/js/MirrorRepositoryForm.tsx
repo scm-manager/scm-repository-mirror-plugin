@@ -34,8 +34,11 @@ import {
   coalesceFormValue,
   CredentialsControl,
   GpgVerificationControl,
+  ProxyExcludesControl,
   ProxyHostControl,
+  ProxyPasswordControl,
   ProxyPortControl,
+  ProxyUsernameControl,
   SynchronizationPeriodControl,
   UrlControl
 } from "./config/FormControls";
@@ -155,6 +158,9 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
         <>
           <ProxyHostControl control={control} isReadonly={disabled} />
           <ProxyPortControl control={control} isReadonly={disabled} />
+          <ProxyUsernameControl control={control} isReadonly={disabled} />
+          <ProxyPasswordControl control={control} isReadonly={disabled} />
+          <ProxyExcludesControl control={control} isReadonly={disabled} />
         </>
       ) : null}
       <hr />

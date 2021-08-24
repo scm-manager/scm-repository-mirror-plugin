@@ -30,7 +30,6 @@ import com.cloudogu.scm.mirror.LogStore;
 import com.cloudogu.scm.mirror.MirrorAccessConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
-import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
 import com.cloudogu.scm.mirror.MirrorService;
 import com.cloudogu.scm.mirror.NotConfiguredForMirrorException;
 import de.otto.edison.hal.Embedded;
@@ -40,14 +39,10 @@ import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
+import sonia.scm.web.api.DtoValidator;
 
 import javax.inject.Inject;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -59,7 +54,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.mapstruct.factory.Mappers.getMapper;
@@ -111,12 +105,7 @@ public class MirrorResource {
   @Consumes("application/json")
   public void setAccessConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid MirrorAccessConfigurationDto configurationDto) {
     if (configurationDto.getProxyConfiguration().isOverwriteGlobalConfiguration()) {
-      ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-      Validator validator = factory.getValidator();
-      final Set<ConstraintViolation<MirrorProxyConfigurationDto>> constraintViolations = validator.validate(configurationDto.getProxyConfiguration());
-      if (!constraintViolations.isEmpty()) {
-        throw new ConstraintViolationException(constraintViolations);
-      }
+      DtoValidator.validate(configurationDto.getProxyConfiguration());
     }
     MirrorAccessConfiguration configuration = fromAccessConfigurationDtoMapper.map(configurationDto);
     Repository repository = loadRepository(namespace, name);
