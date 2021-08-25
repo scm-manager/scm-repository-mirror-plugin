@@ -43,11 +43,9 @@ import sonia.scm.web.security.AdministrationContext;
 import sonia.scm.web.security.PrivilegedAction;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -142,7 +140,6 @@ class MirrorConfigurationStoreTest {
       newProxyConfiguration.setUsername("trillian");
       newProxyConfiguration.setPassword("secret123");
       newProxyConfiguration.setOverwriteGlobalConfiguration(true);
-      newProxyConfiguration.setExcludes(Arrays.asList("test", "bar"));
 
       MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
       newConfiguration.setManagingUsers(singletonList("trillian"));
@@ -186,7 +183,7 @@ class MirrorConfigurationStoreTest {
           assertThat(proxyConfiguration.getPort()).isEqualTo(1337);
           assertThat(proxyConfiguration.getUsername()).isEqualTo("trillian");
           assertThat(proxyConfiguration.getPassword()).isEqualTo("secret123");
-          assertThat(proxyConfiguration.getExcludes()).contains("test", "bar");
+          assertThat(proxyConfiguration.getExcludes()).isNotNull();
           return true;
         });
         return true;
@@ -201,7 +198,6 @@ class MirrorConfigurationStoreTest {
       oldProxyConfiguration.setUsername("trillian");
       oldProxyConfiguration.setPassword("secret123");
       oldProxyConfiguration.setOverwriteGlobalConfiguration(true);
-      oldProxyConfiguration.setExcludes(Arrays.asList("test", "bar"));
 
       MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
       existingMirrorConfiguration.setProxyConfiguration(oldProxyConfiguration);
@@ -213,7 +209,6 @@ class MirrorConfigurationStoreTest {
       newProxyConfiguration.setUsername("troll");
       newProxyConfiguration.setPassword("ilikecookies");
       newProxyConfiguration.setOverwriteGlobalConfiguration(false);
-      newProxyConfiguration.setExcludes(Arrays.asList("nope", "yep"));
 
       MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
       newConfiguration.setProxyConfiguration(newProxyConfiguration);
@@ -231,7 +226,7 @@ class MirrorConfigurationStoreTest {
           assertThat(proxyConfiguration.getPort()).isZero();
           assertThat(proxyConfiguration.getUsername()).isNull();
           assertThat(proxyConfiguration.getPassword()).isNull();
-          assertThat(proxyConfiguration.getExcludes()).isNull();
+          assertThat(proxyConfiguration.getExcludes()).isNotNull();
           return true;
         });
         return true;
@@ -284,6 +279,8 @@ class MirrorConfigurationStoreTest {
 
       assertThat(configuration.map(MirrorConfiguration::getProxyConfiguration)).isPresent();
       assertThat(configuration.map(it -> it.getProxyConfiguration().isOverwriteGlobalConfiguration())).hasValue(false);
+      assertThat(configuration.map(it -> it.getProxyConfiguration().getExcludes())).isPresent();
+
     }
 
     @Test
@@ -292,7 +289,7 @@ class MirrorConfigurationStoreTest {
 
       mockGlobalConfiguration(globalMirrorConfiguration);
 
-      final MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration(true, "https://proxy.scm-manager.org", 1337, emptyList(), "trillian", "secret123");
+      final MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration(true, "https://proxy.scm-manager.org", 1337, "trillian", "secret123");
 
       final MirrorConfiguration mirrorConfiguration = new MirrorConfiguration();
       mirrorConfiguration.setProxyConfiguration(proxyConfiguration);

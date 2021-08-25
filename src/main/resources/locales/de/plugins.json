@@ -131,10 +131,10 @@
         },
         "host": {
           "label": "Host",
-          "helpText": "Die URL des Proxyservers.",
+          "helpText": "Der Hostname des Proxyservers.",
           "errors": {
             "required": "Dies ist ein Pflichtfeld",
-            "invalid": "Der angegebene Wert muss eine valide URL sein"
+            "invalid": "Der angegebene Wert muss ein valider Hostname sein"
           }
         },
         "port": {
@@ -142,7 +142,7 @@
           "helpText": "Der Port des Proxyservers.",
           "errors": {
             "required": "Dies ist ein Pflichtfeld",
-            "min": "Der angegebene Wert muss eine positive Zahl sein"
+            "range": "Der angegebene Wert muss eine Zahl zwischen 1 und 65535 sein"
           }
         },
         "username": {
@@ -152,10 +152,6 @@
         "password": {
           "label": "Passwort",
           "helpText": "Das Passwort für den angegebenen Benutzer."
-        },
-        "excludes": {
-          "label": "Ausgeschlossene URLs",
-          "helpText": "Eine komma-separierte Liste von URLs, welche den Proxy ignorieren und direkt an den Endpunkt weitergeleitet werden sollen."
         }
       }
     },

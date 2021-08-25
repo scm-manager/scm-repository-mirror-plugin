@@ -27,8 +27,6 @@ import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
-import java.util.Arrays;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MirrorProxyConfigurationMapperTest {
@@ -42,14 +40,12 @@ class MirrorProxyConfigurationMapperTest {
     input.setPort(1337);
     input.setUsername("trillian");
     input.setPassword("secret123");
-    input.setExcludes("  the  , best, test  ");
 
     final MirrorProxyConfiguration output = mapper.map(input);
     assertThat(output.getHost()).isEqualTo("foo.bar");
     assertThat(output.getPort()).isEqualTo(1337);
     assertThat(output.getUsername()).isEqualTo("trillian");
     assertThat(output.getPassword()).isEqualTo("secret123");
-    assertThat(output.getExcludes()).contains("the","best","test");
   }
 
   @Test
@@ -60,7 +56,6 @@ class MirrorProxyConfigurationMapperTest {
     input.setUsername("trillian");
     input.setPassword("secret123");
     input.setOverwriteGlobalConfiguration(true);
-    input.setExcludes(Arrays.asList("the","best","test"));
 
     final MirrorProxyConfigurationDto output = mapper.map(input);
     assertThat(output.getHost()).isEqualTo("foo.bar");
@@ -68,7 +63,6 @@ class MirrorProxyConfigurationMapperTest {
     assertThat(output.getUsername()).isEqualTo("trillian");
     assertThat(output.getPassword()).isEqualTo("secret123");
     assertThat(output.isOverwriteGlobalConfiguration()).isTrue();
-    assertThat(output.getExcludes()).isEqualTo("the,best,test");
   }
 
 }

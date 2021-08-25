@@ -166,7 +166,7 @@ class MirrorCommandCallerTest {
 
   @Test
   void shouldSetProxyConfigurationInCommand() {
-    final MirrorProxyConfiguration mirrorProxyConfiguration = new MirrorProxyConfiguration(true, "http://proxy.hog", 1337, emptyList(), "", "");
+    final MirrorProxyConfiguration mirrorProxyConfiguration = new MirrorProxyConfiguration(true, "http://proxy.hog", 1337, "", "");
     MirrorConfiguration configuration = new MirrorConfiguration("https://hog/", 42, emptyList(), null, null, mirrorProxyConfiguration);
 
     invokeCaller(configuration, null);

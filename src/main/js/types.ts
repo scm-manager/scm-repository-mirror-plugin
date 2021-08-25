@@ -107,7 +107,6 @@ export type LogCollection = HalRepresentationWithEmbedded<EmbeddedLogEntries>;
 export type MirrorProxyConfiguration = {
   host: string;
   port: number;
-  excludes?: string;
   username?: string;
   password?: string;
   overwriteGlobalConfiguration?: boolean;

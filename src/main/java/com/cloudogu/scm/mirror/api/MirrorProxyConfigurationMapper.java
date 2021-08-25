@@ -24,32 +24,12 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
-import java.util.Collection;
-
-import static java.util.Collections.emptyList;
 
 @Mapper
-public abstract class MirrorProxyConfigurationMapper {
+public interface MirrorProxyConfigurationMapper {
 
-  abstract MirrorProxyConfigurationDto map(MirrorProxyConfiguration configuration);
-  abstract MirrorProxyConfiguration map(MirrorProxyConfigurationDto configurationDto);
-
-  @Mapping(target = "excludes")
-  String map(Collection<String> value) {
-    return value == null || value.isEmpty() ? null : String.join(",", value);
-  }
-
-  @Mapping(target = "excludes")
-  Collection<String> map(String value) {
-    if (Strings.isNullOrEmpty(value)) {
-      return emptyList();
-    }
-    return Splitter.on(',').trimResults().omitEmptyStrings().splitToList(value);
-  }
+  MirrorProxyConfigurationDto map(MirrorProxyConfiguration configuration);
+  MirrorProxyConfiguration map(MirrorProxyConfigurationDto configurationDto);
 
 }

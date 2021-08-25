@@ -33,6 +33,7 @@ import sonia.scm.net.ProxyConfiguration;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import java.util.Collection;
+import java.util.Collections;
 
 @Getter
 @Setter
@@ -44,13 +45,17 @@ public class MirrorProxyConfiguration implements ProxyConfiguration {
   private boolean overwriteGlobalConfiguration;
   private String host;
   private int port;
-  private Collection<String> excludes;
   private String username;
   private String password;
 
   @Override
   public boolean isEnabled() {
     return overwriteGlobalConfiguration;
+  }
+
+  @Override
+  public Collection<String> getExcludes() {
+    return Collections.emptyList();
   }
 
   @Override

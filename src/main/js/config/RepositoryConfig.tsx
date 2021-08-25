@@ -44,7 +44,6 @@ import {
   CredentialsControl,
   GpgVerificationControl,
   ManagingUsersControl,
-  ProxyExcludesControl,
   ProxyHostControl,
   ProxyPasswordControl,
   ProxyPortControl,
@@ -154,7 +153,6 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
           <ProxyPortControl control={control} isReadonly={isReadOnly} />
           <ProxyUsernameControl control={control} isReadonly={isReadOnly} />
           <ProxyPasswordControl control={control} isReadonly={isReadOnly} />
-          <ProxyExcludesControl control={control} isReadonly={isReadOnly} />
         </Columns>
       ) : null}
     </ConfigurationForm>

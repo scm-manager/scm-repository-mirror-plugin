@@ -311,7 +311,11 @@ export const ProxyPortControl: FC<MirrorAccessConfigControlProps> = ({ control, 
       },
       min: {
         value: 1,
-        message: t("scm-repository-mirror-plugin.form.proxy.port.errors.min")
+        message: t("scm-repository-mirror-plugin.form.proxy.port.errors.range")
+      },
+      max: {
+        value: 65535,
+        message: t("scm-repository-mirror-plugin.form.proxy.port.errors.range")
       }
     },
     shouldUnregister: true
@@ -368,28 +372,6 @@ export const ProxyPasswordControl: FC<MirrorAccessConfigControlProps> = ({ contr
         label={t("scm-repository-mirror-plugin.form.proxy.password.label")}
         helpText={t("scm-repository-mirror-plugin.form.proxy.password.helpText")}
         type="password"
-        errorMessage={fieldState.error?.message}
-        validationError={!!fieldState.error}
-        disabled={isReadonly}
-        {...field}
-      />
-    </div>
-  );
-};
-
-export const ProxyExcludesControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
-  const [t] = useTranslation("plugins");
-  const { field, fieldState } = useController({
-    control,
-    name: "proxyConfiguration.excludes",
-    shouldUnregister: true
-  });
-
-  return (
-    <div className="column is-full mb-2 px-3">
-      <InputField
-        label={t("scm-repository-mirror-plugin.form.proxy.excludes.label")}
-        helpText={t("scm-repository-mirror-plugin.form.proxy.excludes.helpText")}
         errorMessage={fieldState.error?.message}
         validationError={!!fieldState.error}
         disabled={isReadonly}

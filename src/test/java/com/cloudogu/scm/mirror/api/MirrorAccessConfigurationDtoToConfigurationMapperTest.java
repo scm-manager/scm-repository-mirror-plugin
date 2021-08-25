@@ -44,7 +44,6 @@ class MirrorAccessConfigurationDtoToConfigurationMapperTest {
     proxyConfiguration.setPort(1337);
     proxyConfiguration.setUsername("trillian");
     proxyConfiguration.setPassword("secret123");
-    proxyConfiguration.setExcludes(" the  ,   best,  test ");
 
     final MirrorAccessConfigurationDto input = new MirrorAccessConfigurationDto();
     input.setUrl("https://foo.bar");
@@ -71,7 +70,7 @@ class MirrorAccessConfigurationDtoToConfigurationMapperTest {
     assertThat(outputProxyConfiguration.getPort()).isEqualTo(1337);
     assertThat(outputProxyConfiguration.getUsername()).isEqualTo("trillian");
     assertThat(outputProxyConfiguration.getPassword()).isEqualTo("secret123");
-    assertThat(outputProxyConfiguration.getExcludes()).contains("the", "best", "test");
+    assertThat(outputProxyConfiguration.getExcludes()).isNotNull();
   }
 
 }

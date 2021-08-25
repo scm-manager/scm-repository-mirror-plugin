@@ -26,9 +26,9 @@ package com.cloudogu.scm.mirror.api;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
 
 @Getter
 @Setter
@@ -37,9 +37,8 @@ public class MirrorProxyConfigurationDto {
 
   @NotBlank
   private String host;
-  @Positive
+  @Range(min = 1, max = 65535)
   private int port;
-  private String excludes;
   private String username;
   private String password;
   private boolean overwriteGlobalConfiguration;

@@ -65,7 +65,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -293,10 +292,38 @@ class MirrorRootResourceTest {
     }
 
     @Test
-    void shouldValidateProxyConfiguration() throws URISyntaxException {
+    void shouldNotAllowEmptyUrlProxyConfiguration() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest
         .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
-        .json("{'url':'test.dummy','synchronizationPeriod':10,'proxyConfiguration':{'overwriteGlobalConfiguration':true,'url':'','port':-1}}");
+        .json("{'url':'test.dummy','synchronizationPeriod':10,'proxyConfiguration':{'overwriteGlobalConfiguration':true,'url':'','port':1}}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.getProviderFactory().registerProvider(ConstraintViolationExceptionMapper.class);
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(400);
+      verify(configurationStore, never()).setAccessConfiguration(any(), any());
+    }
+
+    @Test
+    void shouldNotAllowNegativePortProxyConfiguration() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest
+        .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
+        .json("{'url':'test.dummy','synchronizationPeriod':10,'proxyConfiguration':{'overwriteGlobalConfiguration':true,'url':'test','port':-1}}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.getProviderFactory().registerProvider(ConstraintViolationExceptionMapper.class);
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(400);
+      verify(configurationStore, never()).setAccessConfiguration(any(), any());
+    }
+
+    @Test
+    void shouldNotAllowOutOfBoundsPortProxyConfiguration() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest
+        .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
+        .json("{'url':'test.dummy','synchronizationPeriod':10,'proxyConfiguration':{'overwriteGlobalConfiguration':true,'url':'test','port':75000}}");
       MockHttpResponse response = new MockHttpResponse();
 
       dispatcher.getProviderFactory().registerProvider(ConstraintViolationExceptionMapper.class);
@@ -369,7 +396,7 @@ class MirrorRootResourceTest {
             emptyList(),
             new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "hog"),
             new MirrorConfiguration.CertificateCredential(CERTIFICATE, "hg2g"),
-            new MirrorProxyConfiguration(true, "foo.bar", 1337, Arrays.asList("foo", "bar"), "trillian", "secret123"));
+            new MirrorProxyConfiguration(true, "foo.bar", 1337, "trillian", "secret123"));
         when(configurationStore.getConfiguration(repository))
           .thenReturn(Optional.of(existingConfiguration));
       }
