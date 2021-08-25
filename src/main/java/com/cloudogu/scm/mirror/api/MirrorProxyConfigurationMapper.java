@@ -26,10 +26,8 @@ package com.cloudogu.scm.mirror.api;
 import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import sonia.scm.repository.Repository;
 
 import java.util.Collection;
 
@@ -38,8 +36,7 @@ import static java.util.Collections.emptyList;
 @Mapper
 public abstract class MirrorProxyConfigurationMapper {
 
-  @Mapping(ignore = true, target = "attributes")
-  abstract MirrorProxyConfigurationDto map(MirrorProxyConfiguration configuration, @Context Repository repository);
+  abstract MirrorProxyConfigurationDto map(MirrorProxyConfiguration configuration);
   abstract MirrorProxyConfiguration map(MirrorProxyConfigurationDto configurationDto);
 
   @Mapping(target = "excludes")

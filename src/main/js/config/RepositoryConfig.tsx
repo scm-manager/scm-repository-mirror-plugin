@@ -223,7 +223,6 @@ const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
 
 const RepositoryConfig: FC<Props> = ({ link, repository }) => {
   const filtersLink = repository._links["mirrorFilterConfiguration"];
-  const proxyLink = repository._links["mirrorProxyConfiguration"];
   return (
     <>
       <RepositoryMirrorAccessConfigForm link={link} />

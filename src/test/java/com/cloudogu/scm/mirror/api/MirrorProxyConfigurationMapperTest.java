@@ -24,35 +24,16 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
-import org.github.sdorra.jse.ShiroExtension;
-import org.github.sdorra.jse.SubjectAware;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
-import sonia.scm.api.v2.resources.ScmPathInfoStore;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryTestData;
 
-import java.net.URI;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SubjectAware(value = "trillian")
-@ExtendWith(ShiroExtension.class)
 class MirrorProxyConfigurationMapperTest {
 
-  private Repository repository;
   private final MirrorProxyConfigurationMapper mapper = Mappers.getMapper(MirrorProxyConfigurationMapper.class);
-
-  @BeforeEach
-  void setup() {
-    final ScmPathInfoStore scmPathInfoStore = new ScmPathInfoStore();
-    scmPathInfoStore.set(() -> URI.create("/scm"));
-
-    repository = RepositoryTestData.createHeartOfGold();
-    repository.setId("42");
-  }
 
   @Test
   void shouldMapToDao() {
@@ -61,12 +42,14 @@ class MirrorProxyConfigurationMapperTest {
     input.setPort(1337);
     input.setUsername("trillian");
     input.setPassword("secret123");
+    input.setExcludes("  the  , best, test  ");
 
     final MirrorProxyConfiguration output = mapper.map(input);
     assertThat(output.getHost()).isEqualTo("foo.bar");
     assertThat(output.getPort()).isEqualTo(1337);
     assertThat(output.getUsername()).isEqualTo("trillian");
     assertThat(output.getPassword()).isEqualTo("secret123");
+    assertThat(output.getExcludes()).contains("the","best","test");
   }
 
   @Test
@@ -77,13 +60,15 @@ class MirrorProxyConfigurationMapperTest {
     input.setUsername("trillian");
     input.setPassword("secret123");
     input.setOverwriteGlobalConfiguration(true);
+    input.setExcludes(Arrays.asList("the","best","test"));
 
-    final MirrorProxyConfigurationDto output = mapper.map(input, repository);
+    final MirrorProxyConfigurationDto output = mapper.map(input);
     assertThat(output.getHost()).isEqualTo("foo.bar");
     assertThat(output.getPort()).isEqualTo(1337);
     assertThat(output.getUsername()).isEqualTo("trillian");
     assertThat(output.getPassword()).isEqualTo("secret123");
     assertThat(output.isOverwriteGlobalConfiguration()).isTrue();
+    assertThat(output.getExcludes()).isEqualTo("the,best,test");
   }
 
 }

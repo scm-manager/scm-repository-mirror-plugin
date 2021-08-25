@@ -43,6 +43,7 @@ class MirrorCreationDtoMapperTest {
     mirrorProxyConfigurationDto.setPort(1337);
     mirrorProxyConfigurationDto.setUsername("admin");
     mirrorProxyConfigurationDto.setPassword("secret123");
+    mirrorProxyConfigurationDto.setExcludes("  the  , best, test  ");
 
     MirrorCreationDto input = new MirrorCreationDto();
     input.setUrl("https://foo.bar");
@@ -69,5 +70,6 @@ class MirrorCreationDtoMapperTest {
     assertThat(proxyConfiguration.getPort()).isEqualTo(1337);
     assertThat(proxyConfiguration.getUsername()).isEqualTo("admin");
     assertThat(proxyConfiguration.getPassword()).isEqualTo("secret123");
+    assertThat(proxyConfiguration.getExcludes()).contains("the","best","test");
   }
 }

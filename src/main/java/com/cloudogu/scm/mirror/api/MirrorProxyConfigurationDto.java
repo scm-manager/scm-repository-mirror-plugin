@@ -23,8 +23,6 @@
  */
 package com.cloudogu.scm.mirror.api;
 
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,7 +33,7 @@ import javax.validation.constraints.Positive;
 @Getter
 @Setter
 @NoArgsConstructor
-public class MirrorProxyConfigurationDto extends HalRepresentation {
+public class MirrorProxyConfigurationDto {
 
   @NotBlank
   private String host;
@@ -45,9 +43,5 @@ public class MirrorProxyConfigurationDto extends HalRepresentation {
   private String username;
   private String password;
   private boolean overwriteGlobalConfiguration;
-
-  MirrorProxyConfigurationDto(Links links) {
-    super(links);
-  }
 
 }

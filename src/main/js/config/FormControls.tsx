@@ -25,8 +25,8 @@
 import { Control, useController, useForm, useWatch } from "react-hook-form";
 import {
   MirrorAccessConfigurationForm,
-  mirrorGpgVerificationTypes,
   MirrorFilterConfigurationDto,
+  mirrorGpgVerificationTypes,
   PublicKey
 } from "../types";
 import React, { ChangeEvent, FC, useEffect } from "react";
@@ -34,6 +34,7 @@ import { useTranslation } from "react-i18next";
 import { SelectValue } from "@scm-manager/ui-types";
 import {
   AutocompleteAddEntryToTableField,
+  Button,
   Checkbox,
   FileInput,
   Icon,
@@ -42,7 +43,6 @@ import {
   MemberNameTagGroup,
   Select,
   SelectItem,
-  Button,
   Textarea
 } from "@scm-manager/ui-components";
 import { useUserSuggestions } from "@scm-manager/ui-api";
@@ -249,8 +249,7 @@ export const UrlControl: FC<MirrorAccessConfigControlProps> = ({ control, isRead
         value: /^[A-Za-z0-9]+:\/\/[^\s$.?#].[^\s]*$/,
         message: t("scm-repository-mirror-plugin.form.url.errors.invalid")
       }
-    },
-    shouldUnregister: true
+    }
   });
 
   return (

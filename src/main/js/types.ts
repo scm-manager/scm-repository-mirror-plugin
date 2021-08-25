@@ -104,7 +104,7 @@ type EmbeddedLogEntries = Embedded & {
 
 export type LogCollection = HalRepresentationWithEmbedded<EmbeddedLogEntries>;
 
-export type MirrorProxyConfiguration = HalRepresentation & {
+export type MirrorProxyConfiguration = {
   host: string;
   port: number;
   excludes?: string;
