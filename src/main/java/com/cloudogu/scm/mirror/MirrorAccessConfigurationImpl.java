@@ -45,6 +45,8 @@ public class MirrorAccessConfigurationImpl implements MirrorAccessConfiguration 
   private MirrorAccessConfiguration.UsernamePasswordCredential usernamePasswordCredential;
   private MirrorAccessConfiguration.CertificateCredential certificateCredential;
 
+  private MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration();
+
   public List<String> getManagingUsers() {
     return managingUsers != null ? managingUsers : Collections.emptyList();
   }

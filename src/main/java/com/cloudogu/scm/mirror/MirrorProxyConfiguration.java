@@ -21,33 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror;
 
+import com.google.common.base.Strings;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import sonia.scm.net.ProxyConfiguration;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.5'
-}
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import java.util.Collection;
+import java.util.Collections;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@XmlAccessorType(XmlAccessType.FIELD)
+public class MirrorProxyConfiguration implements ProxyConfiguration {
 
-scmPlugin {
-  scmVersion = "2.22.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+  private boolean overwriteGlobalConfiguration;
+  private String host;
+  private int port;
+  private String username;
+  private String password;
 
-  author = "SCM-Team"
-  category = "Workflow"
-
-  run {
-    loggingConfiguration = "src/main/conf/logging.xml"
+  @Override
+  public boolean isEnabled() {
+    return overwriteGlobalConfiguration;
   }
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
+  @Override
+  public Collection<String> getExcludes() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public boolean isAuthenticationRequired() {
+    return !Strings.isNullOrEmpty(getUsername()) && !Strings.isNullOrEmpty(getPassword());
   }
 }

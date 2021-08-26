@@ -39,6 +39,7 @@ import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
+import sonia.scm.web.api.DtoValidator;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -68,6 +69,7 @@ public class MirrorResource {
   private final MirrorAccessConfigurationToConfigurationDtoMapper toAccessConfigurationDtoMapper;
   private final MirrorFilterConfigurationDtoToDaoMapper fromFiltersDtoMapper = getMapper(MirrorFilterConfigurationDtoToDaoMapper.class);
   private final MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper;
+
   private final LogEntryMapper logEntryMapper = getMapper(LogEntryMapper.class);
 
   @Inject
@@ -91,7 +93,8 @@ public class MirrorResource {
     Repository repository = loadRepository(namespace, name);
     MirrorConfiguration configuration =
       configurationService.getConfiguration(repository)
-      .orElseThrow(() -> new NotConfiguredForMirrorException(repository));return Response
+      .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
+    return Response
       .status(200)
       .entity(toAccessConfigurationDtoMapper.map(configuration, repository))
       .build();
@@ -101,6 +104,9 @@ public class MirrorResource {
   @Path("/accessConfiguration")
   @Consumes("application/json")
   public void setAccessConfiguration(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid MirrorAccessConfigurationDto configurationDto) {
+    if (configurationDto.getProxyConfiguration().isOverwriteGlobalConfiguration()) {
+      DtoValidator.validate(configurationDto.getProxyConfiguration());
+    }
     MirrorAccessConfiguration configuration = fromAccessConfigurationDtoMapper.map(configurationDto);
     Repository repository = loadRepository(namespace, name);
     configurationService.setAccessConfiguration(repository, configuration);

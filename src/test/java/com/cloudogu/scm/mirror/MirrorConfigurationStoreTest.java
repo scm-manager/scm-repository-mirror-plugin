@@ -134,12 +134,20 @@ class MirrorConfigurationStoreTest {
       existingMirrorConfiguration.setGpgVerificationType(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
       existingMirrorConfiguration.setFastForwardOnly(true);
 
+      MirrorProxyConfiguration newProxyConfiguration = new MirrorProxyConfiguration();
+      newProxyConfiguration.setHost("foo.bar");
+      newProxyConfiguration.setPort(1337);
+      newProxyConfiguration.setUsername("trillian");
+      newProxyConfiguration.setPassword("secret123");
+      newProxyConfiguration.setOverwriteGlobalConfiguration(true);
+
       MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
       newConfiguration.setManagingUsers(singletonList("trillian"));
       newConfiguration.setUrl("https://scm-manager.org");
       newConfiguration.setSynchronizationPeriod(10);
       newConfiguration.setCertificateCredential(new MirrorAccessConfiguration.CertificateCredential("hello".getBytes(StandardCharsets.UTF_8), "secret"));
       newConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("scm-manager", "scm-manager"));
+      newConfiguration.setProxyConfiguration(newProxyConfiguration);
 
       storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
       store.setAccessConfiguration(REPOSITORY, newConfiguration);
@@ -167,6 +175,58 @@ class MirrorConfigurationStoreTest {
           assertThat(usernamePasswordCredential).isNotNull();
           assertThat(usernamePasswordCredential.getPassword()).isEqualTo("scm-manager");
           assertThat(usernamePasswordCredential.getUsername()).isEqualTo("scm-manager");
+          return true;
+        });
+        assertThat(it.getProxyConfiguration()).matches(proxyConfiguration -> {
+          assertThat(proxyConfiguration.isOverwriteGlobalConfiguration()).isTrue();
+          assertThat(proxyConfiguration.getHost()).isEqualTo("foo.bar");
+          assertThat(proxyConfiguration.getPort()).isEqualTo(1337);
+          assertThat(proxyConfiguration.getUsername()).isEqualTo("trillian");
+          assertThat(proxyConfiguration.getPassword()).isEqualTo("secret123");
+          assertThat(proxyConfiguration.getExcludes()).isNotNull();
+          return true;
+        });
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldResetProxyConfigurationOnDisable() {
+      MirrorProxyConfiguration oldProxyConfiguration = new MirrorProxyConfiguration();
+      oldProxyConfiguration.setHost("foo.bar");
+      oldProxyConfiguration.setPort(1337);
+      oldProxyConfiguration.setUsername("trillian");
+      oldProxyConfiguration.setPassword("secret123");
+      oldProxyConfiguration.setOverwriteGlobalConfiguration(true);
+
+      MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
+      existingMirrorConfiguration.setProxyConfiguration(oldProxyConfiguration);
+      existingMirrorConfiguration.setSynchronizationPeriod(10);
+
+      MirrorProxyConfiguration newProxyConfiguration = new MirrorProxyConfiguration();
+      newProxyConfiguration.setHost("new.stuff");
+      newProxyConfiguration.setPort(123);
+      newProxyConfiguration.setUsername("troll");
+      newProxyConfiguration.setPassword("ilikecookies");
+      newProxyConfiguration.setOverwriteGlobalConfiguration(false);
+
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setProxyConfiguration(newProxyConfiguration);
+      newConfiguration.setSynchronizationPeriod(10);
+
+      storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
+
+      Object configurationFromStore = storeFactory.get("mirror", REPOSITORY.getId()).get();
+      assertThat(configurationFromStore).isSameAs(existingMirrorConfiguration);
+      verify(scheduler).schedule(eq(REPOSITORY), argThat(it -> {
+        assertThat(it.getProxyConfiguration()).matches(proxyConfiguration -> {
+          assertThat(proxyConfiguration.isOverwriteGlobalConfiguration()).isFalse();
+          assertThat(proxyConfiguration.getHost()).isNull();
+          assertThat(proxyConfiguration.getPort()).isZero();
+          assertThat(proxyConfiguration.getUsername()).isNull();
+          assertThat(proxyConfiguration.getPassword()).isNull();
+          assertThat(proxyConfiguration.getExcludes()).isNotNull();
           return true;
         });
         return true;
@@ -208,6 +268,38 @@ class MirrorConfigurationStoreTest {
         assertThat(it.getBranchesAndTagsPatterns()).containsExactly("develop,feature/*");
         return true;
       }));
+    }
+
+    @Test
+    void shouldHaveDisabledProxyConfigurationByDefault() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      mockExistingConfiguration(existingConfiguration);
+
+      Optional<MirrorConfiguration> configuration = store.getConfiguration(REPOSITORY);
+
+      assertThat(configuration.map(MirrorConfiguration::getProxyConfiguration)).isPresent();
+      assertThat(configuration.map(it -> it.getProxyConfiguration().isOverwriteGlobalConfiguration())).hasValue(false);
+      assertThat(configuration.map(it -> it.getProxyConfiguration().getExcludes())).isPresent();
+
+    }
+
+    @Test
+    void shouldPullLocalProxyConfiguration() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration(true, "https://proxy.scm-manager.org", 1337, "trillian", "secret123");
+
+      final MirrorConfiguration mirrorConfiguration = new MirrorConfiguration();
+      mirrorConfiguration.setProxyConfiguration(proxyConfiguration);
+      mockExistingConfiguration(mirrorConfiguration);
+
+      final Optional<MirrorConfiguration> applicableConfiguration = store.getApplicableConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration).hasValueSatisfying(it -> {
+        assertThat(it.getProxyConfiguration()).isSameAs(proxyConfiguration);
+      });
     }
 
     @Test

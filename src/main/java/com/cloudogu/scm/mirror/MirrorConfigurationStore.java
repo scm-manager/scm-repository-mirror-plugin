@@ -144,6 +144,11 @@ public class MirrorConfigurationStore implements Initable {
     updateCertificateCredentials(existingConfiguration, newMirrorAccessConfiguration);
     existingConfiguration.setManagingUsers(newMirrorAccessConfiguration.getManagingUsers());
     existingConfiguration.setSynchronizationPeriod(newMirrorAccessConfiguration.getSynchronizationPeriod());
+    if (newMirrorAccessConfiguration.getProxyConfiguration().isOverwriteGlobalConfiguration()) {
+      existingConfiguration.setProxyConfiguration(newMirrorAccessConfiguration.getProxyConfiguration());
+    } else {
+      existingConfiguration.setProxyConfiguration(new MirrorProxyConfiguration());
+    }
     return existingConfiguration;
   }
 

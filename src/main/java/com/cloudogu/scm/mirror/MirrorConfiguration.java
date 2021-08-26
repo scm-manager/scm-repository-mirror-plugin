@@ -53,16 +53,18 @@ public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilt
   private List<RawGpgKey> allowedGpgKeys;
   private boolean fastForwardOnly = false;
   private boolean overwriteGlobalConfiguration = false;
+  private MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration();
 
   @XmlTransient
   private boolean httpsOnly = false;
 
-  public MirrorConfiguration(String url, int synchronizationPeriod, List<String> managingUsers, UsernamePasswordCredential usernamePasswordCredential, CertificateCredential certificateCredential) {
+  public MirrorConfiguration(String url, int synchronizationPeriod, List<String> managingUsers, UsernamePasswordCredential usernamePasswordCredential, CertificateCredential certificateCredential, MirrorProxyConfiguration proxyConfiguration) {
     this.url = url;
     this.synchronizationPeriod = synchronizationPeriod;
     this.managingUsers = managingUsers;
     this.usernamePasswordCredential = usernamePasswordCredential;
     this.certificateCredential = certificateCredential;
+    this.proxyConfiguration = proxyConfiguration;
   }
 
   public List<String> getManagingUsers() {
@@ -76,5 +78,4 @@ public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilt
   public List<RawGpgKey> getAllowedGpgKeys() {
     return allowedGpgKeys != null ? allowedGpgKeys : Collections.emptyList();
   }
-
 }

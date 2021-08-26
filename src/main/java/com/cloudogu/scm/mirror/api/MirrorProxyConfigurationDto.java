@@ -21,33 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.mirror.api;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.validator.constraints.Range;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.8.5'
-}
+import javax.validation.constraints.NotBlank;
 
-dependencies {
-  // define dependencies to other plugins here e.g.:
-  // plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.5.0"
-}
+@Getter
+@Setter
+@NoArgsConstructor
+public class MirrorProxyConfigurationDto {
 
-scmPlugin {
-  scmVersion = "2.22.1-SNAPSHOT"
-  displayName = "Repository Mirror Plugin"
-  description = "Mirror external repositories into SCM-Manager"
+  @NotBlank
+  private String host;
+  @Range(min = 1, max = 65535)
+  private int port;
+  private String username;
+  private String password;
+  private boolean overwriteGlobalConfiguration;
 
-  author = "SCM-Team"
-  category = "Workflow"
-
-  run {
-    loggingConfiguration = "src/main/conf/logging.xml"
-  }
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.mirror"
-    ]
-  }
 }

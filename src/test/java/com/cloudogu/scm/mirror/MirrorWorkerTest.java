@@ -344,6 +344,6 @@ class MirrorWorkerTest {
   }
 
   private MirrorConfiguration createMirrorConfig(List<String> managingUsers, MirrorAccessConfiguration.UsernamePasswordCredential upc, MirrorAccessConfiguration.CertificateCredential cc) {
-    return new MirrorConfiguration("https://hog/", 42, managingUsers, upc, cc);
+    return new MirrorConfiguration("https://hog/", 42, managingUsers, upc, cc, null);
   }
 }

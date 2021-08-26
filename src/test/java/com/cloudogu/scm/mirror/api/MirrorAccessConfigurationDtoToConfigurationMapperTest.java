@@ -24,8 +24,7 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorAccessConfiguration;
-import com.cloudogu.scm.mirror.MirrorConfiguration;
-import com.cloudogu.scm.mirror.MirrorGpgVerificationType;
+import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
 import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -40,12 +39,19 @@ class MirrorAccessConfigurationDtoToConfigurationMapperTest {
 
   @Test
   void shouldMapToDao() {
+    MirrorProxyConfigurationDto proxyConfiguration = new MirrorProxyConfigurationDto();
+    proxyConfiguration.setHost("foo.bar");
+    proxyConfiguration.setPort(1337);
+    proxyConfiguration.setUsername("trillian");
+    proxyConfiguration.setPassword("secret123");
+
     final MirrorAccessConfigurationDto input = new MirrorAccessConfigurationDto();
     input.setUrl("https://foo.bar");
     input.setManagingUsers(ImmutableList.of("freddy", "bernard", "harold"));
     input.setSynchronizationPeriod(42);
     input.setUsernamePasswordCredential(new UsernamePasswordCredentialDto("trillian", "secretpassword"));
     input.setCertificateCredential(new CertificateCredentialDto("aGVsbG8=", "evenmoresecretpassword"));
+    input.setProxyConfiguration(proxyConfiguration);
 
     final MirrorAccessConfiguration output = mapper.map(input);
 
@@ -58,7 +64,13 @@ class MirrorAccessConfigurationDtoToConfigurationMapperTest {
     assertThat(output.getCertificateCredential()).isNotNull();
     assertThat(output.getCertificateCredential().getPassword()).isEqualTo("evenmoresecretpassword");
     assertThat(output.getCertificateCredential().getCertificate()).isEqualTo("hello".getBytes(StandardCharsets.UTF_8));
+    assertThat(output.getProxyConfiguration()).isNotNull();
+    final MirrorProxyConfiguration outputProxyConfiguration = output.getProxyConfiguration();
+    assertThat(outputProxyConfiguration.getHost()).isEqualTo("foo.bar");
+    assertThat(outputProxyConfiguration.getPort()).isEqualTo(1337);
+    assertThat(outputProxyConfiguration.getUsername()).isEqualTo("trillian");
+    assertThat(outputProxyConfiguration.getPassword()).isEqualTo("secret123");
+    assertThat(outputProxyConfiguration.getExcludes()).isNotNull();
   }
-
 
 }

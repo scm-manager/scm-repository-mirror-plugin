@@ -122,6 +122,37 @@
       "overwriteGlobalConfiguration": {
         "label": "Overwrite Global Filter Configuration",
         "helpText": "Replaces the global filter configuration for this repository."
+      },
+      "proxy": {
+        "subtitle": "Proxy",
+        "overwriteGlobalConfiguration": {
+          "label": "Overwrite Global Proxy Configuration",
+          "helpText": "Replaces the global proxy configuration for this repository."
+        },
+        "host": {
+          "label": "Host",
+          "helpText": "The host name of the proxy server.",
+          "errors": {
+            "required": "This field is required",
+            "invalid": "The provided value has to be a valid host name"
+          }
+        },
+        "port": {
+          "label": "Port",
+          "helpText": "The proxy server port.",
+          "errors": {
+            "required": "This field is required",
+            "range": "The provided value has to be a number between 1 and 65535"
+          }
+        },
+        "username": {
+          "label": "Username",
+          "helpText": "The username to authenticate with the proxy server if required."
+        },
+        "password": {
+          "label": "Password",
+          "helpText": "The password for the provided proxy user."
+        }
       }
     },
     "flag": {

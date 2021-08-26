@@ -77,7 +77,8 @@ class MirrorCommandCaller {
 
       MirrorCommandBuilder mirrorCommand =
         repositoryService.getMirrorCommand()
-          .setSourceUrl(configuration.getUrl());
+          .setSourceUrl(configuration.getUrl())
+          .setProxyConfiguration(configuration.getProxyConfiguration());
       mirrorCommand.setPublicKeys(keys);
       filter = filterBuilder.createFilter(configuration, keys);
       mirrorCommand.setFilter(filter);

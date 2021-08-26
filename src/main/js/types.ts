@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { HalRepresentation, HalRepresentationWithEmbedded, Embedded, RepositoryCreation } from "@scm-manager/ui-types";
+import { Embedded, HalRepresentation, HalRepresentationWithEmbedded, RepositoryCreation } from "@scm-manager/ui-types";
 
 export type UsernamePasswordCredentialDto = {
   username: string;
@@ -59,6 +59,7 @@ export type MirrorAccessConfigurationDto = HalRepresentation & {
   managingUsers: string[];
   usernamePasswordCredential?: UsernamePasswordCredentialDto;
   certificateCredential?: CertificateCredentialDto;
+  proxyConfiguration: MirrorProxyConfiguration;
 };
 
 export type MirrorAccessConfigurationForm = MirrorAccessConfigurationDto & {
@@ -102,3 +103,11 @@ type EmbeddedLogEntries = Embedded & {
 };
 
 export type LogCollection = HalRepresentationWithEmbedded<EmbeddedLogEntries>;
+
+export type MirrorProxyConfiguration = {
+  host: string;
+  port: number;
+  username?: string;
+  password?: string;
+  overwriteGlobalConfiguration?: boolean;
+};
