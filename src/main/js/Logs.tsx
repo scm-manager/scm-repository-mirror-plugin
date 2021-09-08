@@ -96,6 +96,11 @@ type ColumnProps = {
   minWidth: number;
 };
 
+const TagColumn = styled.span<ColumnProps>`
+  display: inline-block;
+  min-width: ${props => props.minWidth}rem;
+`;
+
 const Column = styled.span<ColumnProps>`
   display: inline-block;
   overflow: hidden;
@@ -126,17 +131,20 @@ const LogRow: FC<LogRowProps> = ({ entry, initialOpenState }) => {
   return (
     <article>
       <div
-        className={classNames({
-          "has-cursor-pointer": !!entry.log
-        })}
+        className={classNames(
+          {
+            "has-cursor-pointer": !!entry.log
+          },
+          "is-flex is-align-items-center"
+        )}
         onClick={() => setOpen(!open)}
       >
         <Column minWidth={2}>
           <Icon name={open ? "angle-down" : "angle-right"} />
         </Column>
-        <Column minWidth={7}>
+        <TagColumn minWidth={7}>
           <ResultTag entry={entry} />
-        </Column>
+        </TagColumn>
         <Column minWidth={15}>
           <Trans i18nKey="plugins:scm-repository-mirror-plugin.logs.finishedAt" components={[dateFromNow]} />
         </Column>
