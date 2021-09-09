@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Local proxy configuration ([#19](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/19))
 
+### Fixed
+- Visual artifacts on repository mirror tags for firefox users ([#20](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/20)) 
+
 ## 2.1.1 - 2021-07-08
 ### Fixed
 - Read and list repositories without "OWNER" permission ([#17](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/17))
