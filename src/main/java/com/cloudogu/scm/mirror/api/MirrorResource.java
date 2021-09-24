@@ -58,6 +58,7 @@ import java.util.stream.Collectors;
 
 import static org.mapstruct.factory.Mappers.getMapper;
 
+@Path("")
 public class MirrorResource {
 
   private final MirrorConfigurationStore configurationService;
@@ -139,6 +140,12 @@ public class MirrorResource {
   @Path("/sync")
   public void syncMirror(@PathParam("namespace") String namespace, @PathParam("name") String name) {
     mirrorService.updateMirror(loadRepository(namespace, name));
+  }
+
+  @POST
+  @Path("/unmirror")
+  public void unmirror(@PathParam("namespace") String namespace, @PathParam("name") String name) {
+    mirrorService.unmirror(loadRepository(namespace, name));
   }
 
   @GET

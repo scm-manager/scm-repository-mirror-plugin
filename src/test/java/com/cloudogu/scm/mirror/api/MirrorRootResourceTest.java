@@ -249,6 +249,19 @@ class MirrorRootResourceTest {
   }
 
   @Test
+  void shouldUnmirrorRepository() throws URISyntaxException {
+    JsonMockHttpRequest request = JsonMockHttpRequest
+      .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/unmirror")
+      .json("{}");
+    MockHttpResponse response = new MockHttpResponse();
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(204);
+    verify(mirrorService).unmirror(any(Repository.class));
+  }
+
+  @Test
   void shouldRetrieveGlobalConfigurationFromService() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest
       .get("/v2/mirror/configuration");
