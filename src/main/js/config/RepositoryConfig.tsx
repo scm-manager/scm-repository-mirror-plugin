@@ -29,6 +29,8 @@ import {
   ConfigurationForm,
   ErrorNotification,
   InputField,
+  Level,
+  Modal,
   Subtitle
 } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
@@ -66,22 +68,58 @@ type Props = {
 export const UnmirrorButton: FC<{ link: string }> = ({ link }) => {
   const [t] = useTranslation("plugins");
   const [error, setError] = useState<Error | undefined>();
-  const [loading, setLoading] = useState<boolean>();
+  const [loading, setLoading] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+
+  const openUnmirrorModal = () => {
+    setOpenModal(true);
+  };
 
   const unmirrorRepository = () => {
     setLoading(true);
     apiClient
       .post(link)
-      .then(() => setLoading(false))
-      .catch(setError);
+      .then(() => {
+        setOpenModal(false);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err);
+        setLoading(false);
+      });
   };
 
   return (
     <>
-      <ErrorNotification error={error} />
+      {openModal ? (
+        <Modal
+          active={openModal}
+          body={
+            <>
+              <p>{t("scm-repository-mirror-plugin.form.unmirrorDescription")}</p> <ErrorNotification error={error} />
+            </>
+          }
+          title={t("scm-repository-mirror-plugin.form.unmirror")}
+          closeFunction={() => {
+            setOpenModal(false);
+            setError(undefined);
+          }}
+          headColor="danger"
+          headTextColor="white"
+          footer={
+            <Button
+              icon="ban"
+              color="danger"
+              action={() => unmirrorRepository()}
+              loading={loading}
+              label={t("scm-repository-mirror-plugin.form.unmirror")}
+            />
+          }
+        />
+      ) : null}
       <Button
         icon="ban"
-        action={unmirrorRepository}
+        action={openUnmirrorModal}
         label={t("scm-repository-mirror-plugin.form.unmirror")}
         loading={loading}
         disabled={!link}
@@ -102,7 +140,10 @@ export const SyncButton: FC<{ link: string }> = ({ link }) => {
     apiClient
       .post(link)
       .then(() => setTriggerLoading(false))
-      .catch(setTriggerError);
+      .catch(error => {
+        setTriggerError(error);
+        setTriggerLoading(false);
+      });
   };
 
   return (
@@ -159,8 +200,10 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
 
   return (
     <ConfigurationForm isValid={formState.isValid} isReadOnly={isReadOnly} onSubmit={onSubmit} {...formProps}>
-      <SyncButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />
-      <UnmirrorButton link={(initialConfiguration?._links.unmirror as Link)?.href} />
+      <Level
+        left={<SyncButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />}
+        right={<UnmirrorButton link={(initialConfiguration?._links.unmirror as Link)?.href} />}
+      />
       <hr />
       <Subtitle subtitle={t("scm-repository-mirror-plugin.form.subtitle")} />
       <Columns className="columns is-multiline">

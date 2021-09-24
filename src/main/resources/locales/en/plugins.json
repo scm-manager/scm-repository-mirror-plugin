@@ -91,6 +91,8 @@
           "submit": "Add Key"
         }
       },
+      "unmirror": "Unmirror repository",
+      "unmirrorDescription": "If you unmirror the repository it will no longer be read only and it will not be updated anymore by the external source. This repository cannot be transformed into a mirror again!",
       "gpgVerificationType": {
         "options": {
           "none": "None",

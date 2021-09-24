@@ -91,6 +91,8 @@
           "submit": "Schlüssel hinzufügen"
         }
       },
+      "unmirror": "Repository entspiegeln",
+      "unmirrorDescription": "Wenn das Repository entspiegelt wird, ist es nicht mehr schreibgeschützt und es finden keine regelmäßigen Aktualisierung mehr von der externen Quelle statt. Das Repository kann nicht wieder in einen Spiegel umgewandelt werden!",
       "gpgVerificationType": {
         "options": {
           "none": "Keine",

@@ -126,7 +126,7 @@ public class MirrorConfigurationStore implements Initable {
     MirrorPermissions.checkRepositoryMirrorPermission(repository);
     LOG.debug("unmirror repository {}", repository);
     ConfigurationStore<MirrorConfiguration> store = createConfigurationStore(repository);
-    store.set(null);
+    store.set(null); // We need to delete the store entry instead of resetting it
     scheduler.cancel(repository);
   }
 
