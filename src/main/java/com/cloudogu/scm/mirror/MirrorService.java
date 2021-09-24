@@ -28,6 +28,8 @@ import com.google.common.collect.ImmutableList;
 import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sonia.scm.HandlerEventType;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHandler;
 import sonia.scm.repository.RepositoryManager;
@@ -52,14 +54,16 @@ public class MirrorService {
   private final RepositoryManager manager;
   private final MirrorConfigurationStore configurationStore;
   private final MirrorWorker mirrorWorker;
+  private final ScmEventBus eventBus;
 
   @Inject
   MirrorService(RepositoryManager manager,
                 MirrorConfigurationStore configurationStore,
-                MirrorWorker mirrorWorker) {
+                MirrorWorker mirrorWorker, ScmEventBus eventBus) {
     this.manager = manager;
     this.mirrorWorker = mirrorWorker;
     this.configurationStore = configurationStore;
+    this.eventBus = eventBus;
   }
 
   public Repository createMirror(MirrorConfiguration configuration, Repository repository) {
@@ -86,6 +90,12 @@ public class MirrorService {
     MirrorConfiguration configuration = configurationStore.getApplicableConfiguration(repository)
       .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
     mirrorWorker.startUpdate(repository, configuration);
+  }
+
+  public void unmirror(Repository repository) {
+    MirrorPermissions.checkRepositoryMirrorPermission(repository);
+    configurationStore.setConfiguration(repository, null);
+    eventBus.post(new RepositoryUnmirrorEvent(HandlerEventType.MODIFY, repository));
   }
 
   private Consumer<Repository> createMirrorCallback(MirrorConfiguration configuration) {

@@ -53,6 +53,13 @@ class MirrorCleanupHookTest {
   }
 
   @Test
+  void shouldCancelScheduleForUnmirroredRepository() {
+    new MirrorCleanupHook(of(scheduler)).cleanupSchedules(new RepositoryUnmirrorEvent(HandlerEventType.MODIFY, repository));
+
+    verify(scheduler).cancel(repository);
+  }
+
+  @Test
   void shouldIgnoreOtherEvents() {
     new MirrorCleanupHook(of(scheduler)).cleanupSchedules(new RepositoryEvent(HandlerEventType.BEFORE_DELETE, repository));
 
