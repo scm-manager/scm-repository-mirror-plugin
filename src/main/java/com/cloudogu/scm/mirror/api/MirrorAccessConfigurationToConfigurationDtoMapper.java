@@ -66,11 +66,13 @@ public abstract class MirrorAccessConfigurationToConfigurationDtoMapper {
   private Links createLinks(Repository repository) {
     String configurationUrl = createUrl(repository, "getAccessConfiguration");
     String manualSyncUrl = createUrl(repository, "syncMirror");
+    String unmirrorUrl = createUrl(repository, "unmirror");
 
     Links.Builder builder = Links.linkingTo().self(configurationUrl);
     if (MirrorPermissions.hasRepositoryMirrorPermission(repository)) {
       builder.single(link("update", configurationUrl));
       builder.single(link("syncMirror", manualSyncUrl));
+      builder.single(link("unmirror", unmirrorUrl));
     }
     return builder.build();
   }

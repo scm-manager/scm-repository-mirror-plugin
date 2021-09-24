@@ -63,7 +63,36 @@ type Props = {
   link: string;
 };
 
-export const TriggerButton: FC<{ link: string }> = ({ link }) => {
+export const UnmirrorButton: FC<{ link: string }> = ({ link }) => {
+  const [t] = useTranslation("plugins");
+  const [error, setError] = useState<Error | undefined>();
+  const [loading, setLoading] = useState<boolean>();
+
+  const unmirrorRepository = () => {
+    setLoading(true);
+    apiClient
+      .post(link)
+      .then(() => setLoading(false))
+      .catch(setError);
+  };
+
+  return (
+    <>
+      <ErrorNotification error={error} />
+      <Button
+        icon="ban"
+        action={unmirrorRepository}
+        label={t("scm-repository-mirror-plugin.form.unmirror")}
+        loading={loading}
+        disabled={!link}
+        type="button"
+        color="danger"
+      />
+    </>
+  );
+};
+
+export const SyncButton: FC<{ link: string }> = ({ link }) => {
   const [t] = useTranslation("plugins");
   const [triggerError, setTriggerError] = useState<Error | undefined>();
   const [triggerLoading, setTriggerLoading] = useState<boolean>();
@@ -130,7 +159,8 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
 
   return (
     <ConfigurationForm isValid={formState.isValid} isReadOnly={isReadOnly} onSubmit={onSubmit} {...formProps}>
-      <TriggerButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />
+      <SyncButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />
+      <UnmirrorButton link={(initialConfiguration?._links.unmirror as Link)?.href} />
       <hr />
       <Subtitle subtitle={t("scm-repository-mirror-plugin.form.subtitle")} />
       <Columns className="columns is-multiline">

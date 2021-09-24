@@ -55,10 +55,4 @@ public class MirrorCleanupHook {
       scheduler.get().cancel(event.getItem());
     }
   }
-
-  @Subscribe
-  public void cleanupSchedules(RepositoryUnmirrorEvent event) {
-    LOG.debug("cleanup schedule for repository {} due to unmirror", event.getItem());
-    scheduler.get().cancel(event.getItem());
-  }
 }
