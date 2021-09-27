@@ -112,17 +112,6 @@ class MirrorServiceTest {
   @SubjectAware(
     permissions = "repository:mirror:42"
   )
-  void shouldUnmirrorRepository() {
-    service.unmirror(repository);
-
-    verify(configurationStore).setConfiguration(repository, null);
-    verify(eventBus).post(any(RepositoryUnmirrorEvent.class));
-  }
-
-  @Test
-  @SubjectAware(
-    permissions = "repository:mirror:42"
-  )
   void shouldFailUpdateCommandWhenNotConfiguredAsMirror() {
     repository.setId("42");
     when(configurationStore.getApplicableConfiguration(repository)).thenReturn(empty());

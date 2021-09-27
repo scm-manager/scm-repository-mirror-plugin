@@ -29,8 +29,6 @@ import {
   ConfigurationForm,
   ErrorNotification,
   InputField,
-  Level,
-  Modal,
   Subtitle
 } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
@@ -55,6 +53,7 @@ import {
 } from "./FormControls";
 import { Link, Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";
+import { MirrorDangerZone } from "./MirrorDangerZone";
 
 const Columns = styled.div`
   padding: 0.75rem 0 0;
@@ -63,71 +62,6 @@ const Columns = styled.div`
 type Props = {
   repository: Repository;
   link: string;
-};
-
-export const UnmirrorButton: FC<{ link: string }> = ({ link }) => {
-  const [t] = useTranslation("plugins");
-  const [error, setError] = useState<Error | undefined>();
-  const [loading, setLoading] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
-
-  const openUnmirrorModal = () => {
-    setOpenModal(true);
-  };
-
-  const unmirrorRepository = () => {
-    setLoading(true);
-    apiClient
-      .post(link)
-      .then(() => {
-        setOpenModal(false);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err);
-        setLoading(false);
-      });
-  };
-
-  return (
-    <>
-      {openModal ? (
-        <Modal
-          active={openModal}
-          body={
-            <>
-              <p>{t("scm-repository-mirror-plugin.form.unmirrorDescription")}</p> <ErrorNotification error={error} />
-            </>
-          }
-          title={t("scm-repository-mirror-plugin.form.unmirror")}
-          closeFunction={() => {
-            setOpenModal(false);
-            setError(undefined);
-          }}
-          headColor="danger"
-          headTextColor="white"
-          footer={
-            <Button
-              icon="ban"
-              color="danger"
-              action={() => unmirrorRepository()}
-              loading={loading}
-              label={t("scm-repository-mirror-plugin.form.unmirror")}
-            />
-          }
-        />
-      ) : null}
-      <Button
-        icon="ban"
-        action={openUnmirrorModal}
-        label={t("scm-repository-mirror-plugin.form.unmirror")}
-        loading={loading}
-        disabled={!link}
-        type="button"
-        color="danger"
-      />
-    </>
-  );
 };
 
 export const SyncButton: FC<{ link: string }> = ({ link }) => {
@@ -162,7 +96,7 @@ export const SyncButton: FC<{ link: string }> = ({ link }) => {
   );
 };
 
-const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => {
+const RepositoryMirrorAccessConfigForm: FC<Props> = ({ link, repository }) => {
   const [t] = useTranslation("plugins");
   const { initialConfiguration, update, isReadOnly, ...formProps } = useConfigLink<MirrorAccessConfigurationDto>(link);
   const { formState, handleSubmit, control, reset, watch, register } = useForm<MirrorAccessConfigurationForm>({
@@ -200,10 +134,7 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
 
   return (
     <ConfigurationForm isValid={formState.isValid} isReadOnly={isReadOnly} onSubmit={onSubmit} {...formProps}>
-      <Level
-        left={<SyncButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />}
-        right={<UnmirrorButton link={(initialConfiguration?._links.unmirror as Link)?.href} />}
-      />
+      <SyncButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />
       <hr />
       <Subtitle subtitle={t("scm-repository-mirror-plugin.form.subtitle")} />
       <Columns className="columns is-multiline">
@@ -296,8 +227,9 @@ const RepositoryConfig: FC<Props> = ({ link, repository }) => {
   const filtersLink = repository._links["mirrorFilterConfiguration"];
   return (
     <>
-      <RepositoryMirrorAccessConfigForm link={link} />
+      <RepositoryMirrorAccessConfigForm link={link} repository={repository} />
       {filtersLink ? <RepositoryMirrorFilterConfigForm link={(filtersLink as Link).href} /> : null}
+      <MirrorDangerZone repository={repository} link={(repository._links["unmirror"] as Link).href} />
     </>
   );
 };

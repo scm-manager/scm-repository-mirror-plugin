@@ -87,6 +87,7 @@ public class RepositoryEnricher implements HalEnricher {
       String filterConfigurationLink = linkBuilder.method("getFilterConfiguration").parameters().href();
       appender.appendLink("mirrorFilterConfiguration", filterConfigurationLink);
     }
+    appender.appendLink("unmirror", linkBuilder.method("unmirror").parameters().href());
   }
 
   private void appendLogsLink(HalAppender appender, LinkBuilder linkBuilder) {

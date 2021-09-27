@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.MirrorAccessConfiguration.UsernamePasswordCredential;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorPermissions;
@@ -40,6 +41,7 @@ import sonia.scm.repository.Repository;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import static com.cloudogu.scm.mirror.MirrorConfiguration.*;
 import static de.otto.edison.hal.Link.link;
 
 @Mapper(uses = {MirrorProxyConfigurationMapper.class})
@@ -52,11 +54,11 @@ public abstract class MirrorAccessConfigurationToConfigurationDtoMapper {
   abstract MirrorAccessConfigurationDto map(MirrorConfiguration configuration, @Context Repository repository);
 
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
-  abstract UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
+  abstract UsernamePasswordCredentialDto map(UsernamePasswordCredential credential);
 
   @Mapping(target = "certificate", expression = "java(null)")
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
-  abstract CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
+  abstract CertificateCredentialDto map(CertificateCredential credential);
 
   @ObjectFactory
   MirrorAccessConfigurationDto createConfigurationDto(@Context Repository repository) {
@@ -66,13 +68,11 @@ public abstract class MirrorAccessConfigurationToConfigurationDtoMapper {
   private Links createLinks(Repository repository) {
     String configurationUrl = createUrl(repository, "getAccessConfiguration");
     String manualSyncUrl = createUrl(repository, "syncMirror");
-    String unmirrorUrl = createUrl(repository, "unmirror");
 
     Links.Builder builder = Links.linkingTo().self(configurationUrl);
     if (MirrorPermissions.hasRepositoryMirrorPermission(repository)) {
       builder.single(link("update", configurationUrl));
       builder.single(link("syncMirror", manualSyncUrl));
-      builder.single(link("unmirror", unmirrorUrl));
     }
     return builder.build();
   }

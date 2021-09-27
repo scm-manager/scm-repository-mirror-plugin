@@ -169,7 +169,7 @@ class RepositoryEnricherTest {
 
       verify(appender).appendLink("mirrorAccessConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
       verify(appender).appendLink("mirrorFilterConfiguration", "/v2/mirror/repositories/hitchhiker/HeartOfGold/filterConfiguration");
-
+      verify(appender).appendLink("unmirror", "/v2/mirror/repositories/hitchhiker/HeartOfGold/unmirror");
     }
 
     @Test
