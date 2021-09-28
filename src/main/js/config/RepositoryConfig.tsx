@@ -96,7 +96,7 @@ export const SyncButton: FC<{ link: string }> = ({ link }) => {
   );
 };
 
-const RepositoryMirrorAccessConfigForm: FC<Props> = ({ link, repository }) => {
+const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => {
   const [t] = useTranslation("plugins");
   const { initialConfiguration, update, isReadOnly, ...formProps } = useConfigLink<MirrorAccessConfigurationDto>(link);
   const { formState, handleSubmit, control, reset, watch, register } = useForm<MirrorAccessConfigurationForm>({
@@ -227,7 +227,7 @@ const RepositoryConfig: FC<Props> = ({ link, repository }) => {
   const filtersLink = repository._links["mirrorFilterConfiguration"];
   return (
     <>
-      <RepositoryMirrorAccessConfigForm link={link} repository={repository} />
+      <RepositoryMirrorAccessConfigForm link={link} />
       {filtersLink ? <RepositoryMirrorFilterConfigForm link={(filtersLink as Link).href} /> : null}
       <MirrorDangerZone repository={repository} link={(repository._links["unmirror"] as Link).href} />
     </>

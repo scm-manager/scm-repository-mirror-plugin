@@ -34,7 +34,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.ScmConstraintViolationException;
-import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHandler;
 import sonia.scm.repository.RepositoryManager;
@@ -69,8 +68,6 @@ class MirrorServiceTest {
   private MirrorConfigurationStore configurationStore;
   @Mock
   private MirrorWorker mirrorWorker;
-  @Mock
-  private ScmEventBus eventBus;
 
   private MirrorService service;
 
@@ -78,7 +75,7 @@ class MirrorServiceTest {
 
   @BeforeEach
   void createService() {
-    service = new MirrorService(manager, configurationStore, mirrorWorker, eventBus);
+    service = new MirrorService(manager, configurationStore, mirrorWorker);
   }
 
   @Test

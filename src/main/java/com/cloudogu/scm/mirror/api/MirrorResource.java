@@ -58,7 +58,6 @@ import java.util.stream.Collectors;
 
 import static org.mapstruct.factory.Mappers.getMapper;
 
-@Path("")
 public class MirrorResource {
 
   private final MirrorConfigurationStore configurationService;
