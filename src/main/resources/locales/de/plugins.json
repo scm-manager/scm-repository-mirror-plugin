@@ -97,7 +97,6 @@
         "shortDescription": "Die Spiegelung wird in ein normales Repository umgewandelt.",
         "description": "Wenn das Repository entspiegelt wird, finden keine regelmäßigen Aktualisierungen mehr von der externen Quelle statt. Auf das Repository kann schreibend zugegriffen werden. Das Repository kann nicht wieder in einen Spiegel umgewandelt werden!"
       },
-      "unmirrorDescription": "",
       "gpgVerificationType": {
         "options": {
           "none": "Keine",

@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.MirrorAccessConfiguration.CertificateCredential;
 import com.cloudogu.scm.mirror.MirrorAccessConfiguration.UsernamePasswordCredential;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
@@ -41,7 +42,6 @@ import sonia.scm.repository.Repository;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import static com.cloudogu.scm.mirror.MirrorConfiguration.*;
 import static de.otto.edison.hal.Link.link;
 
 @Mapper(uses = {MirrorProxyConfigurationMapper.class})
