@@ -21,35 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import styled from "styled-components";
 import React, { FC, useState } from "react";
 import { Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";
 import { useUnmirrorRepository } from "../useMirrorRepository";
 import { useHistory } from "react-router-dom";
-import { Button, ErrorNotification, Level, Modal } from "@scm-manager/ui-components";
-
-export const DangerZoneContainer = styled.div`
-  border: 1px solid #ff6a88;
-  border-radius: 5px;
-
-  > .level {
-    flex-flow: wrap;
-
-    .level-left {
-      max-width: 100%;
-    }
-
-    .level-right {
-      margin-top: 0.75rem;
-    }
-  }
-
-  > *:not(:last-child) {
-    padding-bottom: 1.5rem;
-    border-bottom: solid 2px whitesmoke;
-  }
-`;
+import { Button, ErrorNotification, Level, Modal, DangerZone } from "@scm-manager/ui-components";
 
 const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repository }) => {
   const [t] = useTranslation("plugins");
@@ -112,9 +89,9 @@ export const MirrorDangerZone: FC<{ repository: Repository; link: string }> = ({
   return (
     <>
       <hr />
-      <DangerZoneContainer className="px-4 py-5">
+      <DangerZone className="px-4 py-5">
         <UnmirrorRepo repository={repository} link={link} />
-      </DangerZoneContainer>
+      </DangerZone>
     </>
   );
 };
