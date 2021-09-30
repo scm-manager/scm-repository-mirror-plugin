@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Added
 - Local proxy configuration ([#19](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/19))
+- Unmirror repository function ([#21](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/21))
 
 ### Fixed
 - Visual artifacts on repository mirror tags for firefox users ([#20](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/20)) 

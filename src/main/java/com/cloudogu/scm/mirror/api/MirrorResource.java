@@ -141,6 +141,12 @@ public class MirrorResource {
     mirrorService.updateMirror(loadRepository(namespace, name));
   }
 
+  @POST
+  @Path("/unmirror")
+  public void unmirror(@PathParam("namespace") String namespace, @PathParam("name") String name) {
+    mirrorService.unmirror(loadRepository(namespace, name));
+  }
+
   @GET
   @Path("/logs")
   @Produces("application/json")

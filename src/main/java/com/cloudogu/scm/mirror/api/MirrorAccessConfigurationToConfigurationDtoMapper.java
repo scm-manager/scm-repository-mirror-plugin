@@ -24,6 +24,8 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.cloudogu.scm.mirror.MirrorAccessConfiguration.CertificateCredential;
+import com.cloudogu.scm.mirror.MirrorAccessConfiguration.UsernamePasswordCredential;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorPermissions;
@@ -52,11 +54,11 @@ public abstract class MirrorAccessConfigurationToConfigurationDtoMapper {
   abstract MirrorAccessConfigurationDto map(MirrorConfiguration configuration, @Context Repository repository);
 
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
-  abstract UsernamePasswordCredentialDto map(MirrorConfiguration.UsernamePasswordCredential credential);
+  abstract UsernamePasswordCredentialDto map(UsernamePasswordCredential credential);
 
   @Mapping(target = "certificate", expression = "java(null)")
   @Mapping(target = "password", constant = MirrorConfigurationStore.DUMMY_PASSWORD)
-  abstract CertificateCredentialDto map(MirrorConfiguration.CertificateCredential credential);
+  abstract CertificateCredentialDto map(CertificateCredential credential);
 
   @ObjectFactory
   MirrorAccessConfigurationDto createConfigurationDto(@Context Repository repository) {

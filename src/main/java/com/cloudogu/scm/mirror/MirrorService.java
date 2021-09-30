@@ -88,6 +88,11 @@ public class MirrorService {
     mirrorWorker.startUpdate(repository, configuration);
   }
 
+  public void unmirror(Repository repository) {
+    MirrorPermissions.checkRepositoryMirrorPermission(repository);
+    configurationStore.deleteConfiguration(repository);
+  }
+
   private Consumer<Repository> createMirrorCallback(MirrorConfiguration configuration) {
     return repository -> {
       LOG.info("created new repository {} as mirror; initializing", repository);

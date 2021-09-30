@@ -65,3 +65,30 @@ export const useMirrorRepository = () => {
     repository: data
   };
 };
+
+export type UnmirrorOptions = {
+  onSuccess: () => void;
+};
+
+export const useUnmirrorRepository = (repository: Repository, options?: UnmirrorOptions) => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error } = useMutation<unknown, Error, string>(
+    link => {
+      return apiClient.post(link);
+    },
+    {
+      onSuccess: () => {
+        if (options?.onSuccess) {
+          options.onSuccess();
+        }
+        queryClient.invalidateQueries(["repository", repository.namespace, repository.name]);
+        return queryClient.invalidateQueries(["repositories"]);
+      }
+    }
+  );
+  return {
+    unmirror: (link: string) => mutate(link),
+    isLoading,
+    error
+  };
+};

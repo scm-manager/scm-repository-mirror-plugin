@@ -374,6 +374,19 @@ class MirrorRootResourceTest {
     }
 
     @Test
+    void shouldUnmirrorRepository() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest
+        .post("/v2/mirror/repositories/hitchhiker/HeartOfGold/unmirror")
+        .json("{}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(204);
+      verify(mirrorService).unmirror(any(Repository.class));
+    }
+
+    @Test
     void shouldExecuteUpdateRequest() throws URISyntaxException {
       JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories/hitchhiker/HeartOfGold/sync");
       MockHttpResponse response = new MockHttpResponse();

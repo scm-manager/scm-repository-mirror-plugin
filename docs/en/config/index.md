@@ -15,6 +15,11 @@ The details for the other settings can be found in the [documentation for the cr
 
 [^1]: Please note, that at most four synchronisations will run in parallel.
 
+In the red-bordered area below, the mirroring can be finally terminated via the `Unmirror Repository` action.
+As a consequence, the repository will no longer be updated from the external source and the repository can be edited directly.
+Once a mirroring has been terminated, this repository can no longer be converted into a mirror!
+![Spiegelung beenden](assets/unmirror.png)
+
 ## Global Configuration
 
 Further settings are available in the administration settings and default filters can

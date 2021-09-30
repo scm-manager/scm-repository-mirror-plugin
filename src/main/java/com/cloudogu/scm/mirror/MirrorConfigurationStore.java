@@ -122,6 +122,14 @@ public class MirrorConfigurationStore implements Initable {
     }
   }
 
+  public void deleteConfiguration(Repository repository) {
+    MirrorPermissions.checkRepositoryMirrorPermission(repository);
+    LOG.debug("unmirror repository {}", repository);
+    ConfigurationStore<MirrorConfiguration> store = createConfigurationStore(repository);
+    store.delete();
+    scheduler.cancel(repository);
+  }
+
   private MirrorConfiguration applyLocalFilterConfiguration(MirrorConfiguration existingConfiguration, LocalFilterConfiguration newFilterConfiguration) {
     existingConfiguration.setOverwriteGlobalConfiguration(newFilterConfiguration.isOverwriteGlobalConfiguration());
     return applyFilterConfiguration(existingConfiguration, newFilterConfiguration);

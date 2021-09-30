@@ -53,6 +53,7 @@ import {
 } from "./FormControls";
 import { Link, Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";
+import { MirrorDangerZone } from "./MirrorDangerZone";
 
 const Columns = styled.div`
   padding: 0.75rem 0 0;
@@ -63,7 +64,7 @@ type Props = {
   link: string;
 };
 
-export const TriggerButton: FC<{ link: string }> = ({ link }) => {
+export const SyncButton: FC<{ link: string }> = ({ link }) => {
   const [t] = useTranslation("plugins");
   const [triggerError, setTriggerError] = useState<Error | undefined>();
   const [triggerLoading, setTriggerLoading] = useState<boolean>();
@@ -73,7 +74,10 @@ export const TriggerButton: FC<{ link: string }> = ({ link }) => {
     apiClient
       .post(link)
       .then(() => setTriggerLoading(false))
-      .catch(setTriggerError);
+      .catch(error => {
+        setTriggerError(error);
+        setTriggerLoading(false);
+      });
   };
 
   return (
@@ -130,7 +134,7 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
 
   return (
     <ConfigurationForm isValid={formState.isValid} isReadOnly={isReadOnly} onSubmit={onSubmit} {...formProps}>
-      <TriggerButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />
+      <SyncButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />
       <hr />
       <Subtitle subtitle={t("scm-repository-mirror-plugin.form.subtitle")} />
       <Columns className="columns is-multiline">
@@ -225,6 +229,7 @@ const RepositoryConfig: FC<Props> = ({ link, repository }) => {
     <>
       <RepositoryMirrorAccessConfigForm link={link} />
       {filtersLink ? <RepositoryMirrorFilterConfigForm link={(filtersLink as Link).href} /> : null}
+      <MirrorDangerZone repository={repository} link={(repository._links["unmirror"] as Link).href} />
     </>
   );
 };

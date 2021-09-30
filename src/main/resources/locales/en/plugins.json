@@ -91,6 +91,12 @@
           "submit": "Add Key"
         }
       },
+      "unmirror": {
+        "button": "Unmirror Repository",
+        "subtitle": "End Repository Mirroring",
+        "shortDescription": "Transforms this mirror into a normal repository",
+        "description": "When you unmirror this repository, it is no longer updated from the external source. You can modify this repository. This repository cannot be changed back to a mirror!"
+      },
       "gpgVerificationType": {
         "options": {
           "none": "None",

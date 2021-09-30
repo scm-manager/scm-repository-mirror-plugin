@@ -15,6 +15,11 @@ Die Details zu den anderen Einstellungen finden sich in der [Dokumentation zur E
 
 [^1]: Es laufen grundsätzlich höchstens vier Synchronisationen gleichzeitig.
 
+In dem rot-umrandeten Bereich unten kann über die Aktion `Repository entspiegeln` die Spiegelung endgültig beendet werden. 
+Als Folgen daraus wird das Repository nicht mehr von der externen Quelle aktualisiert und das Repository kann direkt bearbeitet werden.
+Sobald eine Spiegelung beendet wurde, kann dieses Repository nicht mehr in einen Spiegel umgewandelt werden!
+![Spiegelung beenden](assets/unmirror.png)
+
 ## Globale Konfiguration
 
 In den Administrationseinstellungen können zusätzliche Einstellungen vorgenommen
