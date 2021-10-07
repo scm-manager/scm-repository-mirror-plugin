@@ -286,13 +286,14 @@ export const ProxyHostControl: FC<MirrorAccessConfigControlProps> = ({ control, 
   });
 
   return (
-    <div className="column is-full mb-2 px-3">
+    <div className="column is-full">
       <InputField
         label={t("scm-repository-mirror-plugin.form.proxy.host.label")}
         helpText={t("scm-repository-mirror-plugin.form.proxy.host.helpText")}
         errorMessage={fieldState.error?.message}
         validationError={!!fieldState.error}
         disabled={isReadonly}
+        className="mb-0"
         {...field}
       />
     </div>
@@ -322,7 +323,7 @@ export const ProxyPortControl: FC<MirrorAccessConfigControlProps> = ({ control, 
   });
 
   return (
-    <div className="column is-full mb-2 px-3">
+    <div className="column is-full">
       <InputField
         label={t("scm-repository-mirror-plugin.form.proxy.port.label")}
         helpText={t("scm-repository-mirror-plugin.form.proxy.port.helpText")}
@@ -330,6 +331,7 @@ export const ProxyPortControl: FC<MirrorAccessConfigControlProps> = ({ control, 
         validationError={!!fieldState.error}
         type="number"
         disabled={isReadonly}
+        className="mb-0"
         {...field}
       />
     </div>
@@ -345,13 +347,14 @@ export const ProxyUsernameControl: FC<MirrorAccessConfigControlProps> = ({ contr
   });
 
   return (
-    <div className="column is-full mb-2 px-3">
+    <div className="column is-full">
       <InputField
         label={t("scm-repository-mirror-plugin.form.proxy.username.label")}
         helpText={t("scm-repository-mirror-plugin.form.proxy.username.helpText")}
         errorMessage={fieldState.error?.message}
         validationError={!!fieldState.error}
         disabled={isReadonly}
+        className="mb-0"
         {...field}
       />
     </div>
@@ -367,7 +370,7 @@ export const ProxyPasswordControl: FC<MirrorAccessConfigControlProps> = ({ contr
   });
 
   return (
-    <div className="column is-full mb-2 px-3">
+    <div className="column is-full">
       <InputField
         label={t("scm-repository-mirror-plugin.form.proxy.password.label")}
         helpText={t("scm-repository-mirror-plugin.form.proxy.password.helpText")}
@@ -375,6 +378,7 @@ export const ProxyPasswordControl: FC<MirrorAccessConfigControlProps> = ({ contr
         errorMessage={fieldState.error?.message}
         validationError={!!fieldState.error}
         disabled={isReadonly}
+        className="mb-0"
         {...field}
       />
     </div>
