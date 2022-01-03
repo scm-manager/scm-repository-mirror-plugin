@@ -23,7 +23,7 @@
  */
 
 import { Checkbox, InputField, Level, SubmitButton } from "@scm-manager/ui-components";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useCallback, useEffect, useState } from "react";
 import { MirrorCreationDto, MirrorCreationForm } from "./types";
 import { useForm } from "react-hook-form";
 import { RepositoryCreation, RepositoryType } from "@scm-manager/ui-types";
@@ -72,6 +72,13 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
   const showFilterForm = watch("overwriteGlobalConfiguration");
   const showProxyForm = watch("proxyConfiguration.overwriteGlobalConfiguration");
   const allowLocalFilterConfiguration = !!repositoryType._links["mirrorFilterConfiguration"];
+  const setContactValid = useCallback((contact: boolean) => setValid(currentValid => ({ ...currentValid, contact })), [
+    setValid
+  ]);
+  const setNamespaceAndNameValid = useCallback(
+    (namespaceAndName: boolean) => setValid(currentValid => ({ ...currentValid, namespaceAndName })),
+    [setValid]
+  );
 
   useEffect(() => {
     const url = getValues("url");
@@ -105,14 +112,14 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
       <NameForm
         repository={repository}
         onChange={setRepository}
-        setValid={(namespaceAndName: boolean) => setValid({ ...valid, namespaceAndName })}
+        setValid={setNamespaceAndNameValid}
         disabled={disabled}
       />
       <InformationForm
         repository={repository}
         onChange={setRepository}
         disabled={disabled}
-        setValid={(contact: boolean) => setValid({ ...valid, contact })}
+        setValid={setContactValid}
       />
       {allowLocalFilterConfiguration ? (
         <>
