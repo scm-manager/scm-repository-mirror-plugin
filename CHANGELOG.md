@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.2.2 - 2022-01-07
+### Fixed
+- High contrast mode findings ([#24](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/24))
+
 ## 2.2.1 - 2022-01-03
 ### Fixed
 - Fix form validation to prevent rerender loop
@@ -14,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unmirror repository function ([#21](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/21))
 
 ### Fixed
-- Visual artifacts on repository mirror tags for firefox users ([#20](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/20)) 
+- Visual artifacts on repository mirror tags for firefox users ([#20](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/20))
 
 ## 2.1.1 - 2021-07-08
 ### Fixed
@@ -23,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 2.1.0 - 2021-07-06
 ### Added
 - Option to disable automatic synchronization ([#14](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/14))
+
 ### Fixed
 - Mirror with certificate credential configurable without setting certificate again ([#15](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/15))
 
@@ -33,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 2.0.0 - 2021-06-16
 ### Added
 - Implement global configuration ([#11](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/11))
+
 ### Fixed
 - Send mails on each status change ([#12](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/12))
 - Add topic for personal mail settings ([#12](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/12))
@@ -51,3 +57,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filtering by fast forward ([#9](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/9))
 - Emergency contacts ([#9](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/9))
 - Synchronization logs ([#9](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/9))
+
