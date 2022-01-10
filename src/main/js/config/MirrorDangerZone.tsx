@@ -35,6 +35,7 @@ const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repo
     onSuccess: () => history.push(`/repo/${repository.namespace}/${repository.name}`)
   });
   const history = useHistory();
+  const [initialFocusNode, setInitialFocusNode] = useState<HTMLButtonElement | null>(null);
 
   return (
     <>
@@ -51,6 +52,7 @@ const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repo
           closeFunction={() => setOpenModal(false)}
           headColor="danger"
           headTextColor="white"
+          initialFocusNode={initialFocusNode}
           footer={
             <Button
               icon="ban"
@@ -58,6 +60,7 @@ const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repo
               action={() => unmirror(link)}
               loading={isLoading}
               label={t("scm-repository-mirror-plugin.form.unmirror.button")}
+              ref={setInitialFocusNode}
             />
           }
         />
