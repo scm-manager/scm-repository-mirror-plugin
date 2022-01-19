@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useState } from "react";
+import React, { FC, useRef, useState } from "react";
 import { Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";
 import { useUnmirrorRepository } from "../useMirrorRepository";
@@ -35,7 +35,7 @@ const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repo
     onSuccess: () => history.push(`/repo/${repository.namespace}/${repository.name}`)
   });
   const history = useHistory();
-  const [initialFocusNode, setInitialFocusNode] = useState<HTMLButtonElement | null>(null);
+  const initialFocusRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -52,7 +52,7 @@ const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repo
           closeFunction={() => setOpenModal(false)}
           headColor="danger"
           headTextColor="white"
-          initialFocusNode={initialFocusNode}
+          initialFocusRef={initialFocusRef}
           footer={
             <Button
               icon="ban"
@@ -60,7 +60,7 @@ const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repo
               action={() => unmirror(link)}
               loading={isLoading}
               label={t("scm-repository-mirror-plugin.form.unmirror.button")}
-              ref={setInitialFocusNode}
+              ref={initialFocusRef}
             />
           }
         />
