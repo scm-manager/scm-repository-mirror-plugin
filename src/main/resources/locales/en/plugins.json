@@ -121,6 +121,10 @@
         "label": "Fast-Forward Only",
         "helpText": "Only apply changes to branches, which resulted from a fast-forward."
       },
+      "ignoreLfs": {
+        "label": "Do not fetch LFS files",
+        "helpText": "Check this to disable the download of LFS files (if present). This option has no effects, if the source repository does not use LFS."
+      },
       "disableRepositoryFilterOverwrite": {
         "label": "Do not allow repository filter overwrite",
         "helpText": "Do not allow repository owners to overwrite the mirror filters."

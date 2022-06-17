@@ -150,6 +150,12 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
               <GpgVerificationControl control={control} isReadonly={disabled} />
             </>
           ) : null}
+          <Checkbox
+            label={t("scm-repository-mirror-plugin.form.ignoreLfs.label")}
+            helpText={t("scm-repository-mirror-plugin.form.ignoreLfs.helpText")}
+            disabled={disabled}
+            {...register("ignoreLfs", { shouldUnregister: true })}
+          />
         </>
       ) : null}
       <hr />

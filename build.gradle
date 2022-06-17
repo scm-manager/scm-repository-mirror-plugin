@@ -23,7 +23,7 @@
  */
 
 plugins {
-  id 'org.scm-manager.smp' version '0.10.1'
+  id 'org.scm-manager.smp' version '0.11.1'
 }
 
 dependencies {
@@ -33,7 +33,7 @@ dependencies {
 }
 
 scmPlugin {
-  scmVersion = "2.24.0"
+  scmVersion = "2.36.1-SNAPSHOT"
   displayName = "Repository Mirror Plugin"
   description = "Mirror external repositories into SCM-Manager"
 

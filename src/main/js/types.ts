@@ -60,6 +60,7 @@ export type MirrorAccessConfigurationDto = HalRepresentation & {
   usernamePasswordCredential?: UsernamePasswordCredentialDto;
   certificateCredential?: CertificateCredentialDto;
   proxyConfiguration: MirrorProxyConfiguration;
+  ignoreLfs: boolean;
 };
 
 export type MirrorAccessConfigurationForm = MirrorAccessConfigurationDto & {

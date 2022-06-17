@@ -35,4 +35,5 @@ public interface MirrorFilterConfiguration {
 
   boolean isFastForwardOnly();
 
+  boolean isIgnoreLfs();
 }

@@ -83,6 +83,7 @@ class MirrorCommandCaller {
       filter = filterBuilder.createFilter(configuration, keys);
       mirrorCommand.setFilter(filter);
       setCredentials(configuration, mirrorCommand);
+      mirrorCommand.setIgnoreLfs(configuration.isIgnoreLfs());
       result = callback.apply(mirrorCommand);
     }
     return new CallResult<>(result, filter);
