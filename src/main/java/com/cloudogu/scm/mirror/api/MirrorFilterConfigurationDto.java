@@ -44,6 +44,7 @@ public class MirrorFilterConfigurationDto extends HalRepresentation {
   private MirrorGpgVerificationType gpgVerificationType;
   private List<RawGpgKeyDto> allowedGpgKeys;
   private boolean fastForwardOnly;
+  private boolean ignoreLfs;
 
   MirrorFilterConfigurationDto(Links links) {
     super(links);

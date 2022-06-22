@@ -46,8 +46,8 @@ public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilt
   private String url;
   private Integer synchronizationPeriod;
   private List<String> managingUsers;
-  private MirrorAccessConfiguration.UsernamePasswordCredential usernamePasswordCredential;
-  private MirrorAccessConfiguration.CertificateCredential certificateCredential;
+  private UsernamePasswordCredential usernamePasswordCredential;
+  private CertificateCredential certificateCredential;
   private List<String> branchesAndTagsPatterns;
   private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
   private List<RawGpgKey> allowedGpgKeys;
@@ -57,6 +57,7 @@ public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilt
 
   @XmlTransient
   private boolean httpsOnly = false;
+  private boolean ignoreLfs = false;
 
   public MirrorConfiguration(String url, int synchronizationPeriod, List<String> managingUsers, UsernamePasswordCredential usernamePasswordCredential, CertificateCredential certificateCredential, MirrorProxyConfiguration proxyConfiguration) {
     this.url = url;
@@ -77,5 +78,9 @@ public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilt
 
   public List<RawGpgKey> getAllowedGpgKeys() {
     return allowedGpgKeys != null ? allowedGpgKeys : Collections.emptyList();
+  }
+
+  public boolean isIgnoreLfs() {
+      return ignoreLfs;
   }
 }

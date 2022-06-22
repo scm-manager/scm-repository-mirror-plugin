@@ -56,6 +56,8 @@ public class MirrorAccessConfigurationDto extends HalRepresentation {
   @NotNull
   private MirrorProxyConfigurationDto proxyConfiguration;
 
+  private boolean ignoreLfs;
+
   MirrorAccessConfigurationDto(Links links) {
     super(links);
   }

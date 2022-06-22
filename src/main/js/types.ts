@@ -47,6 +47,7 @@ export type MirrorFilterConfigurationDto = HalRepresentation & {
   gpgVerificationType: MirrorGpgVerificationType;
   allowedGpgKeys?: PublicKey[];
   fastForwardOnly?: boolean;
+  ignoreLfs: boolean;
 };
 
 export type LocalMirrorFilterConfigurationDto = MirrorFilterConfigurationDto & {
@@ -60,6 +61,7 @@ export type MirrorAccessConfigurationDto = HalRepresentation & {
   usernamePasswordCredential?: UsernamePasswordCredentialDto;
   certificateCredential?: CertificateCredentialDto;
   proxyConfiguration: MirrorProxyConfiguration;
+  ignoreLfs: boolean;
 };
 
 export type MirrorAccessConfigurationForm = MirrorAccessConfigurationDto & {

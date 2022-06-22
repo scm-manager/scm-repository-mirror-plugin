@@ -42,6 +42,7 @@ public class MirrorFilterConfigurationImpl implements MirrorFilterConfiguration 
   private MirrorGpgVerificationType gpgVerificationType = MirrorGpgVerificationType.NONE;
   private List<RawGpgKey> allowedGpgKeys;
   private boolean fastForwardOnly = false;
+  private boolean ignoreLfs = false;
 
   public List<String> getBranchesAndTagsPatterns() {
     return branchesAndTagsPatterns != null ? branchesAndTagsPatterns : Collections.emptyList();
