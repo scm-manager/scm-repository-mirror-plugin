@@ -1,0 +1,2 @@
+- type: added
+  description: Option to ignore lfs files ([#27](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/27))
