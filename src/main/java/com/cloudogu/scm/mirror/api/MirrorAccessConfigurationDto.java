@@ -44,7 +44,7 @@ public class MirrorAccessConfigurationDto extends HalRepresentation {
 
   @NotBlank
   private String url;
-  @Min(5)
+  @Min(1)
   private Integer synchronizationPeriod;
   private List<String> managingUsers;
 
