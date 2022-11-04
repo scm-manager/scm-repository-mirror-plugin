@@ -179,6 +179,18 @@ export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control
 
 export const createPeriodOptions: (t: (key: string) => string) => SelectItem[] = t => [
   {
+    label: t("scm-repository-mirror-plugin.form.period.options.oneMinute"),
+    value: "1"
+  },
+  {
+    label: t("scm-repository-mirror-plugin.form.period.options.twoMinutes"),
+    value: "2"
+  },
+  {
+    label: t("scm-repository-mirror-plugin.form.period.options.threeMinutes"),
+    value: "3"
+  },
+  {
     label: t("scm-repository-mirror-plugin.form.period.options.fiveMinutes"),
     value: "5"
   },
