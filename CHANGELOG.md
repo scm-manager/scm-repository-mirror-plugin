@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.3.0 - 2022-11-04
+### Added
+- Shorter refresh periods ([#28](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/28))
+
 ## 2.2.2 - 2022-01-07
 ### Fixed
 - High contrast mode findings ([#24](https://github.com/scm-manager/scm-repository-mirror-plugin/pull/24))
