@@ -46,6 +46,9 @@
         "label": "Refresh Period",
         "helpText": "The periodic interval at which the scm-manager re-fetches repository data.",
         "options": {
+          "oneMinute": "each minute",
+          "twoMinutes": "2 minutes",
+          "threeMinutes": "3 minutes",
           "fiveMinutes": "5 minutes",
           "fifteenMinutes": "15 minutes",
           "thirtyMinutes": "30 minutes",

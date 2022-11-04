@@ -46,6 +46,9 @@
         "label": "Aktualisierungsrate",
         "helpText": "Intervall in welchem das gespiegelte Repository aktualisiert werden soll.",
         "options": {
+          "oneMinute": "jede Minute",
+          "twoMinutes": "2 Minuten",
+          "threeMinutes": "3 Minuten",
           "fiveMinutes": "5 Minuten",
           "fifteenMinutes": "15 Minuten",
           "thirtyMinutes": "30 Minuten",
