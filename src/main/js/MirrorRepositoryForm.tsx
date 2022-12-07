@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { Checkbox, InputField, Level, SubmitButton } from "@scm-manager/ui-components";
+import { Checkbox, InputField, Level, SubmitButton, urls } from "@scm-manager/ui-components";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { MirrorCreationDto, MirrorCreationForm } from "./types";
 import { useForm } from "react-hook-form";
@@ -41,6 +41,7 @@ import {
   SynchronizationPeriodControl,
   UrlControl
 } from "./config/FormControls";
+import { useLocation } from "react-router-dom";
 
 const Columns = styled.div`
   padding: 0.75rem 0 0;
@@ -56,6 +57,7 @@ type Props = {
 
 const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, NameForm, InformationForm }) => {
   const [t] = useTranslation("plugins");
+  const location = useLocation();
   const { handleSubmit, formState, getValues, control, register, watch } = useForm<MirrorCreationForm>({
     mode: "onChange"
   });
@@ -64,7 +66,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     contact: "",
     description: "",
     name: "",
-    namespace: "",
+    namespace: urls.getValueStringFromLocationByKey(location, "namespace") || "",
     contextEntries: {}
   });
   const [valid, setValid] = useState({ namespaceAndName: false, contact: true });
