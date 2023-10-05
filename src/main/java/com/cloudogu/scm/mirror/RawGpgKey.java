@@ -29,6 +29,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sonia.scm.auditlog.AuditEntry;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -41,6 +42,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement
 @EqualsAndHashCode
+@AuditEntry(maskedFields = "raw")
 public class RawGpgKey {
 
   private String displayName;

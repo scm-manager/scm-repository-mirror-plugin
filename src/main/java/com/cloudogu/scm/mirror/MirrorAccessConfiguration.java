@@ -27,6 +27,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sonia.scm.auditlog.AuditEntry;
 import sonia.scm.xml.XmlCipherByteArrayAdapter;
 import sonia.scm.xml.XmlCipherStringAdapter;
 
@@ -74,6 +75,7 @@ public interface MirrorAccessConfiguration {
   @AllArgsConstructor
   @NoArgsConstructor
   @XmlAccessorType(XmlAccessType.FIELD)
+  @AuditEntry(maskedFields = "certificate")
   class CertificateCredential {
     @XmlJavaTypeAdapter(XmlCipherByteArrayAdapter.class)
     private byte[] certificate;
