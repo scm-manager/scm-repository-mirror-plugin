@@ -48,10 +48,10 @@ describe("Create Mirror", () => {
       .type(baseUrl + repoUrl)
       .blur();
     cy.contains("Namespace")
-      .closest("fieldset.field")
+      .closest(".field")
       .find("input")
-      .type("mirror")
-      .blur();
+      .type("mirror");
+    cy.get("ul[role=listbox]").find("li").click();
     cy.byTestId("base-auth-checkbox").click();
     cy.byTestId("username-input").type(username);
     cy.byTestId("username-password-input").type(password);
