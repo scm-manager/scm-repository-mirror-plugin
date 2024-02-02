@@ -35,20 +35,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.MirrorCommandBuilder;
-import sonia.scm.repository.api.MirrorFilter;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.security.PublicKey;
 import sonia.scm.security.PublicKeyParser;
-import sonia.scm.web.proxy.ProxyConfiguration;
 
 import java.util.Collection;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -188,6 +186,16 @@ class MirrorCommandCallerTest {
       assertThat(keys).contains(publicKey);
       return true;
     }));
+  }
+
+  @Test
+  void shouldSetIgnoreLfsInCommand() {
+    MirrorConfiguration configuration = createMirrorConfig();
+    configuration.setIgnoreLfs(true);
+
+    invokeCaller(configuration, null);
+
+    verify(mirrorCommandBuilder).setIgnoreLfs(eq(true));
   }
 
   private MirrorCommandCaller.CallResult<Object> invokeCaller(MirrorConfiguration configuration, Object mockedResult) {

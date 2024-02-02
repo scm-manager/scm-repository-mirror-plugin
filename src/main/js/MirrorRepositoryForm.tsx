@@ -128,6 +128,12 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
           <hr />
           <h4 className="subtitle is-4">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h4>
           <Checkbox
+            label={t("scm-repository-mirror-plugin.form.ignoreLfs.label")}
+            helpText={t("scm-repository-mirror-plugin.form.ignoreLfs.helpText")}
+            disabled={disabled}
+            {...register("ignoreLfs", { shouldUnregister: true })}
+          />
+          <Checkbox
             label={t("scm-repository-mirror-plugin.form.overwriteGlobalConfiguration.label")}
             helpText={t("scm-repository-mirror-plugin.form.overwriteGlobalConfiguration.helpText")}
             disabled={disabled}

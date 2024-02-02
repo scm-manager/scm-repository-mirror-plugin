@@ -53,6 +53,7 @@ public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilt
   private List<RawGpgKey> allowedGpgKeys;
   private boolean fastForwardOnly = false;
   private boolean overwriteGlobalConfiguration = false;
+  private boolean ignoreLfs = false;
   private MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration();
 
   @XmlTransient

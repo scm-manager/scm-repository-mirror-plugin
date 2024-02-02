@@ -133,6 +133,7 @@ class MirrorConfigurationStoreTest {
       existingMirrorConfiguration.setBranchesAndTagsPatterns(singletonList("develop,feature/*"));
       existingMirrorConfiguration.setGpgVerificationType(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
       existingMirrorConfiguration.setFastForwardOnly(true);
+      existingMirrorConfiguration.setIgnoreLfs(true);
 
       MirrorProxyConfiguration newProxyConfiguration = new MirrorProxyConfiguration();
       newProxyConfiguration.setHost("foo.bar");
@@ -157,6 +158,7 @@ class MirrorConfigurationStoreTest {
       verify(scheduler).schedule(eq(REPOSITORY), argThat(it -> {
         // Filter config should remain the same
         assertThat(it.getGpgVerificationType()).isEqualTo(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
+        assertThat(it.isFastForwardOnly()).isTrue();
         assertThat(it.isFastForwardOnly()).isTrue();
         assertThat(it.isOverwriteGlobalConfiguration()).isTrue();
         assertThat(it.getBranchesAndTagsPatterns()).containsExactly("develop,feature/*");

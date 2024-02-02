@@ -68,5 +68,6 @@ public class MirrorCreationDto {
   private MirrorGpgVerificationType gpgVerificationType;
   private List<RawGpgKeyDto> allowedGpgKeys;
   private boolean fastForwardOnly;
+  private boolean ignoreLfs;
 
 }

@@ -124,6 +124,10 @@
         "label": "Nur Fast-Forward",
         "helpText": "Es werden nur Änderungen an Branches übernommen, die durch einen Fast-Forward entstanden sind."
       },
+      "ignoreLfs": {
+        "label": "Keine LFS Dateien laden",
+        "helpText": "LFS Dateien werden beim Spiegeln nicht aufgelöst."
+      },
       "disableRepositoryFilterOverwrite": {
         "label": "Überschreiben der Filterkonfiguration durch Repositories deaktivieren",
         "helpText": "Repository Owner dürfen die Filterkonfiguration für Spiegelungen nicht mehr überschreiben."

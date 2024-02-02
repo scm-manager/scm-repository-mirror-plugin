@@ -124,6 +124,10 @@
         "label": "Fast-Forward Only",
         "helpText": "Only apply changes to branches, which resulted from a fast-forward."
       },
+      "ignoreLfs": {
+        "label": "Do not load LFS files",
+        "helpText": "LFS files will not be resolved during mirroring."
+      },
       "disableRepositoryFilterOverwrite": {
         "label": "Do not allow repository filter overwrite",
         "helpText": "Do not allow repository owners to overwrite the mirror filters."

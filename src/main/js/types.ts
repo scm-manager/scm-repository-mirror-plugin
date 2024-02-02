@@ -47,6 +47,7 @@ export type MirrorFilterConfigurationDto = HalRepresentation & {
   gpgVerificationType: MirrorGpgVerificationType;
   allowedGpgKeys?: PublicKey[];
   fastForwardOnly?: boolean;
+  ignoreLfs?: boolean;
 };
 
 export type LocalMirrorFilterConfigurationDto = MirrorFilterConfigurationDto & {

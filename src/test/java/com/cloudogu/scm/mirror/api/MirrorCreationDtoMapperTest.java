@@ -51,6 +51,7 @@ class MirrorCreationDtoMapperTest {
     input.setGpgVerificationType(MirrorGpgVerificationType.KEY_LIST);
     input.setAllowedGpgKeys(ImmutableList.of(new RawGpgKeyDto("foo", "bar")));
     input.setFastForwardOnly(true);
+    input.setIgnoreLfs(true);
     input.setBranchesAndTagsPatterns("foo,bar");
     input.setContact("bruno");
     input.setProxyConfiguration(mirrorProxyConfigurationDto);
@@ -61,6 +62,7 @@ class MirrorCreationDtoMapperTest {
     assertThat(output.getAllowedGpgKeys().get(0).getDisplayName()).isEqualTo("foo");
     assertThat(output.getAllowedGpgKeys().get(0).getRaw()).isEqualTo("bar");
     assertThat(output.isFastForwardOnly()).isTrue();
+    assertThat(output.isIgnoreLfs()).isTrue();
     assertThat(output.getBranchesAndTagsPatterns()).contains("foo", "bar");
     assertThat(output.getUrl()).isEqualTo("https://foo.bar");
     assertThat(output.getProxyConfiguration()).isNotNull();

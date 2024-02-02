@@ -139,6 +139,7 @@ public class MirrorConfigurationStore implements Initable {
     existingConfiguration.setFastForwardOnly(newFilterConfiguration.isFastForwardOnly());
     existingConfiguration.setGpgVerificationType(newFilterConfiguration.getGpgVerificationType());
     existingConfiguration.setAllowedGpgKeys(newFilterConfiguration.getAllowedGpgKeys());
+    existingConfiguration.setIgnoreLfs(newFilterConfiguration.isIgnoreLfs());
     existingConfiguration.setBranchesAndTagsPatterns(newFilterConfiguration.getBranchesAndTagsPatterns());
     return existingConfiguration;
   }

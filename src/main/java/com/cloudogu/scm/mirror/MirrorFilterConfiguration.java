@@ -34,5 +34,6 @@ public interface MirrorFilterConfiguration {
   List<RawGpgKey> getAllowedGpgKeys();
 
   boolean isFastForwardOnly();
+  boolean isIgnoreLfs();
 
 }
