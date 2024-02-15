@@ -1,7 +1,7 @@
 {
     "name": "@scm-manager/scm-repository-mirror-plugin",
     "private": true,
-    "version": "2.4.1",
+    "version": "2.4.2-SNAPSHOT",
     "license": "MIT",
     "main": "./src/main/js/index.tsx",
     "scripts": {
