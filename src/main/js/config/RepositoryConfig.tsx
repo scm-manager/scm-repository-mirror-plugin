@@ -184,13 +184,21 @@ const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
     // we have to manually set the url to the initial configuration
     update(
       !formValue.overwriteGlobalConfiguration
-        ? ({ ...initialConfiguration, overwriteGlobalConfiguration: false } as LocalMirrorFilterConfigurationDto)
+        ? ({ ...initialConfiguration, overwriteGlobalConfiguration: false, ignoreLfs: formValue.ignoreLfs } as LocalMirrorFilterConfigurationDto)
         : formValue
     )
   );
 
   return (
     <>
+      <hr />
+      <h2 className="subtitle">{t("scm-repository-mirror-plugin.form.lfs")}</h2>
+      <Checkbox
+        label={t("scm-repository-mirror-plugin.form.ignoreLfs.label")}
+        helpText={t("scm-repository-mirror-plugin.form.ignoreLfs.helpText")}
+        disabled={isReadOnly}
+        {...register("ignoreLfs",  { shouldUnregister: true })}
+      />
       <hr />
       <h2 className="subtitle">{t("scm-repository-mirror-plugin.form.verificationFilters")}</h2>
       <Checkbox

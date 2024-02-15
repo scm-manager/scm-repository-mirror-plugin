@@ -132,6 +132,7 @@ public class MirrorConfigurationStore implements Initable {
 
   private MirrorConfiguration applyLocalFilterConfiguration(MirrorConfiguration existingConfiguration, LocalFilterConfiguration newFilterConfiguration) {
     existingConfiguration.setOverwriteGlobalConfiguration(newFilterConfiguration.isOverwriteGlobalConfiguration());
+    existingConfiguration.setIgnoreLfs(newFilterConfiguration.isIgnoreLfs());
     return applyFilterConfiguration(existingConfiguration, newFilterConfiguration);
   }
 
@@ -139,7 +140,6 @@ public class MirrorConfigurationStore implements Initable {
     existingConfiguration.setFastForwardOnly(newFilterConfiguration.isFastForwardOnly());
     existingConfiguration.setGpgVerificationType(newFilterConfiguration.getGpgVerificationType());
     existingConfiguration.setAllowedGpgKeys(newFilterConfiguration.getAllowedGpgKeys());
-    existingConfiguration.setIgnoreLfs(newFilterConfiguration.isIgnoreLfs());
     existingConfiguration.setBranchesAndTagsPatterns(newFilterConfiguration.getBranchesAndTagsPatterns());
     return existingConfiguration;
   }

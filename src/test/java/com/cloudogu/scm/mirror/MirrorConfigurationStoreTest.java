@@ -250,6 +250,8 @@ class MirrorConfigurationStoreTest {
       newConfiguration.setBranchesAndTagsPatterns(singletonList("develop,feature/*"));
       newConfiguration.setGpgVerificationType(MirrorGpgVerificationType.SCM_USER_SIGNATURE);
 
+      newConfiguration.setIgnoreLfs(true);
+
       storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
       store.setFilterConfiguration(REPOSITORY, newConfiguration);
 
@@ -262,6 +264,8 @@ class MirrorConfigurationStoreTest {
         assertThat(it.getSynchronizationPeriod()).isEqualTo(100);
         assertThat(it.getUsernamePasswordCredential()).isNotNull();
         assertThat(it.getCertificateCredential()).isNotNull();
+
+        assertThat(it.isIgnoreLfs()).isTrue();
 
         // Filters should be overwritten
         assertThat(it.isOverwriteGlobalConfiguration()).isTrue();
@@ -421,6 +425,24 @@ class MirrorConfigurationStoreTest {
 
       assertThat(applicableConfiguration).hasValueSatisfying(it -> {
         assertThat(it.isHttpsOnly()).isTrue();
+      });
+    }
+
+    @Test
+    void shouldNotOverrideLfsSettingWithGlobalSettings() {
+      final GlobalMirrorConfiguration globalMirrorConfiguration = new GlobalMirrorConfiguration();
+      globalMirrorConfiguration.setIgnoreLfs(false);
+
+      mockGlobalConfiguration(globalMirrorConfiguration);
+
+      final MirrorConfiguration mirrorConfiguration = new MirrorConfiguration();
+      mirrorConfiguration.setIgnoreLfs(true);
+      mockExistingConfiguration(mirrorConfiguration);
+
+      final Optional<MirrorConfiguration> applicableConfiguration = store.getApplicableConfiguration(REPOSITORY);
+
+      assertThat(applicableConfiguration).hasValueSatisfying(it -> {
+        assertThat(it.isIgnoreLfs()).isTrue();
       });
     }
 

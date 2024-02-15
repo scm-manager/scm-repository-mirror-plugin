@@ -118,6 +118,7 @@
         "label": "Branches and Tags",
         "helpText": "Comma-separated glob patterns describing which branches and/or tags should be mirrored. If left blank, all branches and tags will be mirrored."
       },
+      "lfs": "LFS",
       "verificationFilters": "Filters",
       "verificationFiltersHint": "These filters have no effects for mirrors of SVN repositories.",
       "fastForwardOnly": {
