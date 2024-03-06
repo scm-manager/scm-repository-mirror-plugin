@@ -1,5 +1,5 @@
 ---
-title: Spiegelung erstellen
+title: Mirror erstellen
 ---
 
 Im SCM-Manager gibt es neben dem Erstellen eines neuen Repositories 
@@ -43,13 +43,13 @@ Ein roter Tag bedeutet, dass während der Synchronisation Fehler aufgetreten sin
 Wurden Branches oder Tags aufgrund eines konfigurierten Filters (mit Ausnahme der Muster für Namen) nicht
 übernommen, ist der Tag gelb.
 
-Die Einstellungen zur Spiegelung wie Zugangsdaten, Synchronisationsintervall und Filter können auch nachträglich
+Die Mirror-Einstellungen wie Zugangsdaten, Synchronisationsintervall und Filter können auch nachträglich
 über das entsprechende [Einstellungsmenü](../config) im Repository angepasst werden. Zu beachten ist, dass die
 URL **nicht mehr** geändert werden kann.
 
 ![Repository Spiegeln Dialog in SCM-Manager](assets/create-dialog.png)
 
-Die Ergebnisse der Synchronisation können in dem "Protokoll der Spiegelung" in der Navigation für das
+Die Ergebnisse der Synchronisation können in dem "Mirror-Protokoll" in der Navigation für das
 Repository eingesehen werden.
 
 ![Mirror Log in SCM-Manager for a repository](assets/mirror-log.png)

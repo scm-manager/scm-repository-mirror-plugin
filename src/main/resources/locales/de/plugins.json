@@ -1,8 +1,8 @@
 {
   "scm-repository-mirror-plugin": {
     "settings": {
-      "navLink": "Spiegelung",
-      "title": "Globale Spiegel Konfiguration"
+      "navLink": "Mirror",
+      "title": "Globale Mirror Konfiguration"
     },
     "create": {
       "subtitle": "Ein existierendes Repository spiegeln"
@@ -11,7 +11,7 @@
       "createButton": "Repository spiegeln"
     },
     "form": {
-      "subtitle": "Konfiguration der Spiegelung",
+      "subtitle": "Konfiguration des Mirrors",
       "withBaseAuth": {
         "label": "Verwende Standard-Authentifizierung"
       },
@@ -19,7 +19,7 @@
         "label": "Verwende zertifikats-basierte Authentifizierung (PKCS12)"
       },
       "url": {
-        "label": "Url",
+        "label": "URL",
         "helpText": "Die URL des Repositories, welches gespiegelt werden sollte. Nach der Erstellung kann diese URL nicht mehr geändert werden.",
         "errors": {
           "required": "Die URL ist erforderlich",
@@ -70,7 +70,7 @@
         "addButton": "Benutzer hinzufügen",
         "autocompletePlaceholder": "Nutzer zum Benachrichtigen hinzufügen"
       },
-      "manualSync": "Spiegelung jetzt aktualisieren",
+      "manualSync": "Mirror jetzt aktualisieren",
       "keyList": {
         "displayName": "Anzeigename",
         "delete": "Löschen",
@@ -96,9 +96,9 @@
       },
       "unmirror": {
         "button": "Repository entspiegeln",
-        "subtitle": "Repository Spiegelung beenden",
-        "shortDescription": "Die Spiegelung wird in ein normales Repository umgewandelt.",
-        "description": "Wenn das Repository entspiegelt wird, finden keine regelmäßigen Aktualisierungen mehr von der externen Quelle statt. Auf das Repository kann schreibend zugegriffen werden. Das Repository kann nicht wieder in einen Spiegel umgewandelt werden!"
+        "subtitle": "Repository Mirror beenden",
+        "shortDescription": "Das gespiegelte Repository wird in ein normales Repository umgewandelt.",
+        "description": "Wenn das Repository entspiegelt wird, finden keine regelmäßigen Aktualisierungen mehr von der externen Quelle statt. Auf das Repository kann schreibend zugegriffen werden. Das Repository kann nicht wieder in ein gespiegeltes Repository umgewandelt werden!"
       },
       "gpgVerificationType": {
         "options": {
@@ -120,7 +120,7 @@
       },
       "lfs": "LFS",
       "verificationFilters": "Filter",
-      "verificationFiltersHint": "Diese Filter haben keinen Einfluss auf die Spiegelung von SVN Repositories.",
+      "verificationFiltersHint": "Diese Filter haben keinen Einfluss auf das Spiegeln von SVN Repositories.",
       "fastForwardOnly": {
         "label": "Nur Fast-Forward",
         "helpText": "Es werden nur Änderungen an Branches übernommen, die durch einen Fast-Forward entstanden sind."
@@ -131,7 +131,7 @@
       },
       "disableRepositoryFilterOverwrite": {
         "label": "Überschreiben der Filterkonfiguration durch Repositories deaktivieren",
-        "helpText": "Repository Owner dürfen die Filterkonfiguration für Spiegelungen nicht mehr überschreiben."
+        "helpText": "Repository Owner dürfen die Mirror-Filterkonfiguration nicht mehr überschreiben."
       },
       "overwriteGlobalConfiguration": {
         "label": "Globale Filterkonfiguration überschreiben",
@@ -170,7 +170,7 @@
       }
     },
     "flag": {
-      "label": "gespiegelt",
+      "label": "Mirror",
       "success": "Letzte Synchronisation erfolgreich",
       "failedUpdates": "Letzte Synchronisation teilweise fehlgeschlagen",
       "failed": "Letzte Synchronisation fehlgeschlagen",
@@ -178,8 +178,8 @@
       "disabled": "Automatische Synchronisierung deaktiviert"
     },
     "logs": {
-      "navLink": "Protokoll der Spiegelung",
-      "subtitle": "Protokoll der Spiegelung",
+      "navLink": "Mirror-Protokoll",
+      "subtitle": "Mirror-Protokoll",
       "success": {
         "label": "erfolgreich",
         "title": "Synchronisation erfolgreich"
@@ -205,16 +205,16 @@
     "configuration": {
       "read,write": {
         "mirror": {
-          "displayName": "Globale Spiegel Konfiguration ändern",
-          "description": "Darf die globale Spiegel Konfiguration verändern"
+          "displayName": "Globale Mirror Konfiguration ändern",
+          "description": "Darf die globale Mirror Konfiguration verändern"
         }
       }
     },
     "repository": {
       "mirror": {
         "*": {
-          "displayName": "Repository-spezifische Spiegel Konfiguration ändern",
-          "description": "Darf die repository-spezifischen Spiegel Konfiguration verändern"
+          "displayName": "Repository-spezifische Mirror Konfiguration ändern",
+          "description": "Darf die repository-spezifischen Mirror Konfiguration verändern"
         }
       }
     }
@@ -222,20 +222,20 @@
   "verbs": {
     "repository": {
       "mirror": {
-        "displayName": "Spiegel Konfiguration ändern",
+        "displayName": "Mirror Konfiguration ändern",
         "description": "Darf die Spiegel Konfiguration verändern"
       }
     }
   },
   "errors": {
     "23SZx2QZE1": {
-      "displayName": "Url verwendet kein HTTPS",
-      "description": "Gespiegelte Verbindungen sind global als ausschließlich gesichert konfiguriert, aber die angegebene Url verwendet kein HTTPS."
+      "displayName": "URL verwendet kein HTTPS",
+      "description": "Gespiegelte Verbindungen sind global als ausschließlich gesichert konfiguriert, aber die angegebene URL verwendet kein HTTPS."
     }
   },
   "mailTopics": {
     "scm-repository-mirror-plugin": {
-      "label": "Repository Spiegel",
+      "label": "Repository Mirror",
       "mirrorStatusChanged": {
         "label": "Statusänderungen bei gespiegelten Repositories",
         "helpText": "Mails bei geändertem Status gespiegelter Repositories, z. B. beim ersten Fehlschlag oder nachdem eine Synchronisierung wieder ohne Fehler gelaufen ist."
