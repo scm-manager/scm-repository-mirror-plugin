@@ -24,20 +24,13 @@
 
 import React, { FC, useState } from "react";
 import { Repository } from "@scm-manager/ui-types";
-import {
-  DateFromNow,
-  Duration,
-  ErrorNotification,
-  Icon,
-  Loading,
-  RepositoryFlag,
-  Subtitle
-} from "@scm-manager/ui-components";
+import { DateFromNow, Duration, ErrorNotification, Icon, Loading, Subtitle } from "@scm-manager/ui-components";
 import useMirrorLogs from "./useMirrorLogs";
 import { LogEntry } from "./types";
 import { Trans, useTranslation } from "react-i18next";
 import styled from "styled-components";
 import classNames from "classnames";
+import RepositoryFlag from "./RepositoryFlag";
 
 type Props = {
   repository: Repository;
@@ -46,7 +39,7 @@ type Props = {
 const SuccessTag = () => {
   const [t] = useTranslation("plugins");
   return (
-    <RepositoryFlag color={"success"} title={t("scm-repository-mirror-plugin.logs.success.title")}>
+    <RepositoryFlag variant="success" title={t("scm-repository-mirror-plugin.logs.success.title")}>
       {t("scm-repository-mirror-plugin.logs.success.label")}
     </RepositoryFlag>
   );
@@ -55,7 +48,7 @@ const SuccessTag = () => {
 const FailedTag = () => {
   const [t] = useTranslation("plugins");
   return (
-    <RepositoryFlag color={"danger"} title={t("scm-repository-mirror-plugin.logs.failed.title")}>
+    <RepositoryFlag variant="danger" title={t("scm-repository-mirror-plugin.logs.failed.title")}>
       {t("scm-repository-mirror-plugin.logs.failed.label")}
     </RepositoryFlag>
   );
@@ -64,7 +57,7 @@ const FailedTag = () => {
 const FailedUpdatesTag = () => {
   const [t] = useTranslation("plugins");
   return (
-    <RepositoryFlag color={"warning"} title={t("scm-repository-mirror-plugin.logs.failedUpdates.title")}>
+    <RepositoryFlag variant="warning" title={t("scm-repository-mirror-plugin.logs.failedUpdates.title")}>
       {t("scm-repository-mirror-plugin.logs.failedUpdates.label")}
     </RepositoryFlag>
   );

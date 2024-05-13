@@ -24,7 +24,7 @@
 
 import React, { FC } from "react";
 import { Repository } from "@scm-manager/ui-types";
-import { RepositoryFlag } from "@scm-manager/ui-components";
+import RepositoryFlag from "./RepositoryFlag";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { MirrorStatus } from "./types";
@@ -46,53 +46,31 @@ const MirrorRepositoryFlag: FC<Props> = ({ repository }) => {
   switch (mirrorStatus?.result) {
     case "SUCCESS":
       return (
-        <RepositoryFlag
-          tooltipLocation="right"
-          onClick={onClick}
-          color={"success"}
-          title={t("scm-repository-mirror-plugin.flag.success")}
-        >
+        <RepositoryFlag onClick={onClick} variant="success" title={t("scm-repository-mirror-plugin.flag.success")}>
           {t("scm-repository-mirror-plugin.flag.label")}
         </RepositoryFlag>
       );
     case "FAILED_UPDATES":
       return (
-        <RepositoryFlag
-          tooltipLocation="right"
-          color={"warning"}
-          title={t("scm-repository-mirror-plugin.flag.failedUpdates")}
-        >
+        <RepositoryFlag variant="warning" title={t("scm-repository-mirror-plugin.flag.failedUpdates")}>
           {t("scm-repository-mirror-plugin.flag.label")}
         </RepositoryFlag>
       );
     case "FAILED":
       return (
-        <RepositoryFlag
-          tooltipLocation="right"
-          onClick={onClick}
-          color={"danger"}
-          title={t("scm-repository-mirror-plugin.flag.failed")}
-        >
+        <RepositoryFlag onClick={onClick} variant="danger" title={t("scm-repository-mirror-plugin.flag.failed")}>
           {t("scm-repository-mirror-plugin.flag.label")}
         </RepositoryFlag>
       );
     case "NOT_YET_RUN":
       return (
-        <RepositoryFlag
-          tooltipLocation="right"
-          onClick={onClick}
-          title={t("scm-repository-mirror-plugin.flag.notYetRun")}
-        >
+        <RepositoryFlag onClick={onClick} title={t("scm-repository-mirror-plugin.flag.notYetRun")}>
           {t("scm-repository-mirror-plugin.flag.label")}
         </RepositoryFlag>
       );
     case "DISABLED":
       return (
-        <RepositoryFlag
-          tooltipLocation="right"
-          onClick={onClick}
-          title={t("scm-repository-mirror-plugin.flag.disabled")}
-        >
+        <RepositoryFlag onClick={onClick} title={t("scm-repository-mirror-plugin.flag.disabled")}>
           {t("scm-repository-mirror-plugin.flag.label")}
         </RepositoryFlag>
       );
