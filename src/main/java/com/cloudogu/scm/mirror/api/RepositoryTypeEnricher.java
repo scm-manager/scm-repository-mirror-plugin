@@ -35,8 +35,8 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.RepositoryType;
 import sonia.scm.repository.api.Command;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 @Extension
 @Enrich(RepositoryType.class)

@@ -35,7 +35,7 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.security.PublicKey;
 import sonia.scm.security.PublicKeyParser;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

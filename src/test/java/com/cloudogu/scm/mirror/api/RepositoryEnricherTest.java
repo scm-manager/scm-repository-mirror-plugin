@@ -45,7 +45,7 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.web.MockScmPathInfoStore;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 import static com.cloudogu.scm.mirror.MirrorStatus.Result.SUCCESS;
 import static java.util.Optional.empty;

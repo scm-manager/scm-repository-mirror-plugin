@@ -27,8 +27,8 @@ package com.cloudogu.scm.mirror;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.ReadOnlyCheck;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.Collection;
 
 import static java.util.Arrays.asList;

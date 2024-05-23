@@ -56,10 +56,10 @@ import sonia.scm.web.JsonMockHttpRequest;
 import sonia.scm.web.JsonMockHttpResponse;
 import sonia.scm.web.RestDispatcher;
 
-import javax.validation.ConstraintViolationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;

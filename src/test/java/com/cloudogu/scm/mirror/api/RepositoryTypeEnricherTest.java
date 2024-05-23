@@ -37,7 +37,7 @@ import sonia.scm.repository.RepositoryType;
 import sonia.scm.repository.api.Command;
 import sonia.scm.web.MockScmPathInfoStore;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 import static java.util.Collections.singleton;
 import static org.mockito.ArgumentMatchers.any;

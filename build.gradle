@@ -33,7 +33,7 @@ dependencies {
 }
 
 scmPlugin {
-  scmVersion = "2.47.0"
+  scmVersion = "3.2.0"
   displayName = "Repository Mirror Plugin"
   description = "Mirror external repositories into SCM-Manager"
 

@@ -26,7 +26,7 @@ package com.cloudogu.scm.mirror;
 
 import sonia.scm.repository.Repository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

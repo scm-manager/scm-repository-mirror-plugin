@@ -37,8 +37,8 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.MirrorCommandBuilder;
 import sonia.scm.repository.api.MirrorCommandResult;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;

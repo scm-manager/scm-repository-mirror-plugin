@@ -36,8 +36,8 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
 import sonia.scm.repository.Repository;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Map;

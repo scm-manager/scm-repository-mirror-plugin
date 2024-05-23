@@ -31,9 +31,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sonia.scm.auditlog.AuditEntry;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 @Getter
 @Setter

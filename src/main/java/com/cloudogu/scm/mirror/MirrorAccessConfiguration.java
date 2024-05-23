@@ -31,9 +31,9 @@ import sonia.scm.auditlog.AuditEntry;
 import sonia.scm.xml.XmlCipherByteArrayAdapter;
 import sonia.scm.xml.XmlCipherStringAdapter;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.List;
 
 public interface MirrorAccessConfiguration {

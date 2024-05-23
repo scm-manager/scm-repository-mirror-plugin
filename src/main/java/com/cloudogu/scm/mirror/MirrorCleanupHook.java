@@ -32,8 +32,8 @@ import sonia.scm.HandlerEventType;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.RepositoryEvent;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 @Extension
 @EagerSingleton

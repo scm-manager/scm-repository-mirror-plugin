@@ -36,7 +36,7 @@ import sonia.scm.mail.api.MailService;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 import java.time.Instant;
 import java.util.Optional;
 

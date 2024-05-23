@@ -28,7 +28,7 @@ import sonia.scm.EagerSingleton;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.plugin.Extension;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @EagerSingleton
 @Extension

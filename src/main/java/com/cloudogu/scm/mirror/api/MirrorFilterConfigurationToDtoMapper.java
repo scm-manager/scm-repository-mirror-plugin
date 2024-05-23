@@ -25,7 +25,6 @@ package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.LocalFilterConfiguration;
 import com.cloudogu.scm.mirror.MirrorPermissions;
-import com.cloudogu.scm.mirror.MirrorFilterConfiguration;
 import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
@@ -36,8 +35,8 @@ import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.repository.Repository;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import java.util.List;
 
 import static de.otto.edison.hal.Link.link;
