@@ -4,10 +4,6 @@
     "./src/main/js"
   ],
   "compilerOptions": {
-    "jsx":"react",
-    "strict": true,
-    "paths": {
-      "react": [ "./node_modules/@types/react" ]
-    }
+    "jsx": "react"
   }
 }

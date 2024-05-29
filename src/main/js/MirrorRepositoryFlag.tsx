@@ -24,7 +24,7 @@
 
 import React, { FC } from "react";
 import { Repository } from "@scm-manager/ui-types";
-import RepositoryFlag from "./RepositoryFlag";
+import { RepositoryFlag } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { MirrorStatus } from "./types";

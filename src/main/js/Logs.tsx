@@ -24,13 +24,12 @@
 
 import React, { FC, useState } from "react";
 import { Repository } from "@scm-manager/ui-types";
-import { DateFromNow, Duration, ErrorNotification, Icon, Loading, Subtitle } from "@scm-manager/ui-components";
+import { DateFromNow, Duration, ErrorNotification, Icon, Loading, RepositoryFlag, Subtitle } from "@scm-manager/ui-components";
 import useMirrorLogs from "./useMirrorLogs";
 import { LogEntry } from "./types";
 import { Trans, useTranslation } from "react-i18next";
 import styled from "styled-components";
 import classNames from "classnames";
-import RepositoryFlag from "./RepositoryFlag";
 
 type Props = {
   repository: Repository;
