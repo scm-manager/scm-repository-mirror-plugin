@@ -105,6 +105,7 @@ public class MirrorConfigurationStore implements Initable {
     setConfiguration(repository, it -> {
       applyAccessConfiguration(repository, it, mirrorConfiguration);
       applyLocalFilterConfiguration(it, mirrorConfiguration);
+      it.setAllBranchesProtected(mirrorConfiguration.isAllBranchesProtected());
       return it;
     });
   }
@@ -218,6 +219,13 @@ public class MirrorConfigurationStore implements Initable {
     return createConfigurationStore(repositoryId)
       .getOptional()
       .isPresent();
+  }
+
+  public boolean isReadOnly(String repositoryId) {
+    return createConfigurationStore(repositoryId)
+      .getOptional()
+      .map(MirrorConfiguration::isAllBranchesProtected)
+      .orElse(false);
   }
 
   public GlobalMirrorConfiguration getGlobalConfiguration() {

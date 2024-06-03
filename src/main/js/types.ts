@@ -84,7 +84,7 @@ export type PublicKey = HalRepresentation & {
   raw: string;
 };
 
-export type MirrorStatusResult = "SUCCESS" | "FAILED" | "FAILED_UPDATES" | "NOT_YET_RUN";
+export type MirrorStatusResult = "SUCCESS" | "FAILED" | "FAILED_UPDATES" | "NOT_YET_RUN" | "DISABLED";
 
 export type MirrorStatus = {
   result: MirrorStatusResult;

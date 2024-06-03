@@ -1,0 +1,2 @@
+- type: added
+  description: Hidden option to make mirrors writable for not-mirrored branches

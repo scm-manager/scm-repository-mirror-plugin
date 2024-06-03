@@ -69,5 +69,5 @@ public class MirrorCreationDto {
   private List<RawGpgKeyDto> allowedGpgKeys;
   private boolean fastForwardOnly;
   private boolean ignoreLfs;
-
+  private boolean allBranchesProtected = true;
 }

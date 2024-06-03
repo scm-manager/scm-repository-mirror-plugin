@@ -75,12 +75,11 @@ class MirrorConfigurationStoreTest {
   @Mock
   private AdministrationContext administrationContext;
 
+  private final InMemoryConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
   private MirrorConfigurationStore store;
-  private InMemoryConfigurationStoreFactory storeFactory;
 
   @BeforeEach
   void createService() {
-    storeFactory = new InMemoryConfigurationStoreFactory();
     store = new MirrorConfigurationStore(storeFactory, scheduler, repositoryManager, administrationContext);
   }
 
@@ -524,6 +523,33 @@ class MirrorConfigurationStoreTest {
       assertThat(applicableConfiguration.isFastForwardOnly()).isTrue();
     }
 
+    @Test
+    void shouldNotBeReadOnlyIfRepositoryIsNoMirror() {
+      boolean readOnly = store.isReadOnly(REPOSITORY.getId());
+
+      assertThat(readOnly).isFalse();
+    }
+
+    @Test
+    void shouldBeReadOnlyByDefaultForMirro() {
+      MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
+      storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
+
+      boolean readOnly = store.isReadOnly(REPOSITORY.getId());
+
+      assertThat(readOnly).isTrue();
+    }
+
+    @Test
+    void shouldNotBeReadOnlyForMirrorIfDeactivated() {
+      MirrorConfiguration existingMirrorConfiguration = new MirrorConfiguration();
+      existingMirrorConfiguration.setAllBranchesProtected(false);
+      storeFactory.get("mirror", REPOSITORY.getId()).set(existingMirrorConfiguration);
+
+      boolean readOnly = store.isReadOnly(REPOSITORY.getId());
+
+      assertThat(readOnly).isFalse();
+    }
   }
 
   @Nested

@@ -54,6 +54,7 @@ public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilt
   private boolean fastForwardOnly = false;
   private boolean overwriteGlobalConfiguration = false;
   private boolean ignoreLfs = false;
+  private boolean allBranchesProtected = true;
   private MirrorProxyConfiguration proxyConfiguration = new MirrorProxyConfiguration();
 
   @XmlTransient
