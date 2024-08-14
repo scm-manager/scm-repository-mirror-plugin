@@ -1,0 +1,2 @@
+- type: fixed
+  description: Mirror workers are now immediately cancelled, after the corresponding repository was deleted

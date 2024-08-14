@@ -24,12 +24,14 @@
 
 package com.cloudogu.scm.mirror;
 
+import jakarta.inject.Singleton;
 import sonia.scm.repository.Repository;
 
 import jakarta.inject.Inject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Singleton
 class MirrorScheduler  {
 
   private final MirrorWorker worker;
