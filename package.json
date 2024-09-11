@@ -2,7 +2,7 @@
     "name": "@scm-manager/scm-repository-mirror-plugin",
     "private": true,
     "version": "2.5.2-SNAPSHOT",
-    "license": "MIT",
+    "license": "AGPLv3",
     "main": "./src/main/js/index.tsx",
     "scripts": {
         "build": "plugin-scripts build",
