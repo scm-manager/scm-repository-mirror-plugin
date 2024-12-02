@@ -1,0 +1,4 @@
+- type: added
+  description: Required symbol for corresponding inputs of create mirror
+- type: added
+  description: Screen reader reads whether a create mirror form input is required

@@ -265,6 +265,8 @@ export const UrlControl: FC<MirrorAccessConfigControlProps> = ({ control, isRead
         validationError={!!fieldState.error}
         disabled={isReadonly}
         testId="url-input"
+        required={true}
+        aria-required={true}
         {...field}
       />
     </Column>
@@ -298,6 +300,8 @@ export const ProxyHostControl: FC<MirrorAccessConfigControlProps> = ({ control, 
         validationError={!!fieldState.error}
         disabled={isReadonly}
         className="mb-0"
+        required={true}
+        aria-required={true}
         {...field}
       />
     </div>
@@ -336,6 +340,8 @@ export const ProxyPortControl: FC<MirrorAccessConfigControlProps> = ({ control, 
         type="number"
         disabled={isReadonly}
         className="mb-0"
+        required={true}
+        aria-required={true}
         {...field}
       />
     </div>
