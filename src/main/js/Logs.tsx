@@ -16,12 +16,21 @@
 
 import React, { FC, useState } from "react";
 import { Repository } from "@scm-manager/ui-types";
-import { DateFromNow, Duration, ErrorNotification, Icon, Loading, RepositoryFlag, Subtitle } from "@scm-manager/ui-components";
+import {
+  DateFromNow,
+  Duration,
+  ErrorNotification,
+  Icon,
+  Loading,
+  RepositoryFlag,
+  Subtitle,
+} from "@scm-manager/ui-components";
 import useMirrorLogs from "./useMirrorLogs";
 import { LogEntry } from "./types";
 import { Trans, useTranslation } from "react-i18next";
 import styled from "styled-components";
 import classNames from "classnames";
+import { useDocumentTitleForRepository } from "@scm-manager/ui-core";
 
 type Props = {
   repository: Repository;
@@ -82,14 +91,14 @@ type ColumnProps = {
 
 const TagColumn = styled.span<ColumnProps>`
   display: inline-block;
-  min-width: ${props => props.minWidth}rem;
+  min-width: ${(props) => props.minWidth}rem;
 `;
 
 const Column = styled.span<ColumnProps>`
   display: inline-block;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: ${props => props.minWidth}rem;
+  min-width: ${(props) => props.minWidth}rem;
 `;
 
 type LogLinesProps = {
@@ -98,7 +107,7 @@ type LogLinesProps = {
 
 const LogLines: FC<LogLinesProps> = ({ lines }) => (
   <ul className="m-3 p-3 has-background-secondary-less is-family-monospace is-size-7 has-text-secondary-most">
-    {lines.map(line => (
+    {lines.map((line) => (
       <li key={line}>{line}</li>
     ))}
   </ul>
@@ -117,9 +126,9 @@ const LogRow: FC<LogRowProps> = ({ entry, initialOpenState }) => {
       <div
         className={classNames(
           {
-            "has-cursor-pointer": !!entry.log
+            "has-cursor-pointer": !!entry.log,
           },
-          "is-flex is-align-items-center"
+          "is-flex is-align-items-center",
         )}
         onClick={() => setOpen(!open)}
       >
@@ -161,6 +170,7 @@ const LogTable: FC<LogTableProps> = ({ entries }) => {
 const Logs: FC<Props> = ({ repository }) => {
   const { isLoading, error, data } = useMirrorLogs(repository);
   const [t] = useTranslation("plugins");
+  useDocumentTitleForRepository(repository, t("scm-repository-mirror-plugin.logs.subtitle"));
   return (
     <>
       <Subtitle>{t(t("scm-repository-mirror-plugin.logs.subtitle"))}</Subtitle>

@@ -2,7 +2,8 @@
   "scm-repository-mirror-plugin": {
     "settings": {
       "navLink": "Mirror",
-      "title": "Globale Mirror Konfiguration"
+      "title": "Globale Mirror-Konfiguration",
+      "repositorySettingsTitle": "Repository-Mirror-Konfiguration"
     },
     "create": {
       "subtitle": "Ein existierendes Repository spiegeln"
@@ -241,5 +242,8 @@
         "helpText": "Mails bei geändertem Status gespiegelter Repositories, z. B. beim ersten Fehlschlag oder nachdem eine Synchronisierung wieder ohne Fehler gelaufen ist."
       }
     }
+  },
+  "repository-mirrorSettings": {
+    "title": "Repository-Mirror-Konfiguration"
   }
 }
