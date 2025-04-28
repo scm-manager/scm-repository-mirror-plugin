@@ -21,7 +21,6 @@ import { useForm } from "react-hook-form";
 import { useConfigLink } from "@scm-manager/ui-api";
 import { GpgVerificationControl } from "./FormControls";
 import { useTranslation } from "react-i18next";
-import { useDocumentTitle }from "@scm-manager/ui-core";
 
 type Props = {
   link: string;
@@ -29,7 +28,6 @@ type Props = {
 
 const GlobalConfig: FC<Props> = ({ link }) => {
   const [t] = useTranslation("plugins");
-  useDocumentTitle(t("scm-repository-mirror-plugin.settings.title"));
   const { initialConfiguration, update, isReadOnly, ...formProps } = useConfigLink<GlobalConfigurationDto>(link);
   const { formState, handleSubmit, register, reset, control } = useForm<GlobalConfigurationDto>({
     mode: "onChange"

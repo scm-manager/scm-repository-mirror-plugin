@@ -22,13 +22,13 @@ import {
   ConfigurationForm,
   ErrorNotification,
   InputField,
-  Subtitle,
+  Subtitle
 } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
 import {
   LocalMirrorFilterConfigurationDto,
   MirrorAccessConfigurationDto,
-  MirrorAccessConfigurationForm,
+  MirrorAccessConfigurationForm
 } from "../types";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
@@ -42,12 +42,11 @@ import {
   ProxyPortControl,
   ProxyUsernameControl,
   SynchronizationPeriodControl,
-  UrlControl,
+  UrlControl
 } from "./FormControls";
 import { Link, Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";
 import { MirrorDangerZone } from "./MirrorDangerZone";
-import { useDocumentTitleForRepository } from "@scm-manager/ui-core";
 
 const Columns = styled.div`
   padding: 0.75rem 0 0;
@@ -68,7 +67,7 @@ export const SyncButton: FC<{ link: string }> = ({ link }) => {
     apiClient
       .post(link)
       .then(() => setTriggerLoading(false))
-      .catch((error) => {
+      .catch(error => {
         setTriggerError(error);
         setTriggerLoading(false);
       });
@@ -94,7 +93,7 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
   const [t] = useTranslation("plugins");
   const { initialConfiguration, update, isReadOnly, ...formProps } = useConfigLink<MirrorAccessConfigurationDto>(link);
   const { formState, handleSubmit, control, reset, watch, register } = useForm<MirrorAccessConfigurationForm>({
-    mode: "onChange",
+    mode: "onChange"
   });
   const showProxyForm = watch("proxyConfiguration.overwriteGlobalConfiguration");
 
@@ -104,13 +103,13 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
       if (initialConfiguration.usernamePasswordCredential) {
         form.usernamePasswordCredential = {
           ...initialConfiguration.usernamePasswordCredential,
-          enabled: true,
+          enabled: true
         };
       }
       if (initialConfiguration.certificateCredential) {
         form.certificateCredential = {
           ...initialConfiguration.certificateCredential,
-          enabled: true,
+          enabled: true
         };
       }
       if (!initialConfiguration.synchronizationPeriod) {
@@ -120,10 +119,10 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
     }
   }, [initialConfiguration]);
 
-  const onSubmit = handleSubmit((formValue) =>
+  const onSubmit = handleSubmit(formValue =>
     // Because the url field is disabled (sets url to undefined) but the dto expects the url to be present in the request,
     // we have to manually set the url to the initial configuration
-    update(coalesceFormValue({ ...formValue, url: initialConfiguration?.url || "" })),
+    update(coalesceFormValue({ ...formValue, url: initialConfiguration?.url || "" }))
   );
 
   return (
@@ -159,10 +158,11 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
 
 const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => {
   const [t] = useTranslation("plugins");
-  const { initialConfiguration, update, isReadOnly, ...formProps } =
-    useConfigLink<LocalMirrorFilterConfigurationDto>(link);
+  const { initialConfiguration, update, isReadOnly, ...formProps } = useConfigLink<LocalMirrorFilterConfigurationDto>(
+    link
+  );
   const { formState, handleSubmit, control, reset, register, watch } = useForm<LocalMirrorFilterConfigurationDto>({
-    mode: "onChange",
+    mode: "onChange"
   });
   const showFilterForm = watch("overwriteGlobalConfiguration");
 
@@ -172,7 +172,7 @@ const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
     }
   }, [initialConfiguration]);
 
-  const onSubmit = handleSubmit((formValue) =>
+  const onSubmit = handleSubmit(formValue =>
     // Because the url field is disabled (sets url to undefined) but the dto expects the url to be present in the request,
     // we have to manually set the url to the initial configuration
     update(
@@ -180,10 +180,10 @@ const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
         ? ({
             ...initialConfiguration,
             overwriteGlobalConfiguration: false,
-            ignoreLfs: formValue.ignoreLfs,
+            ignoreLfs: formValue.ignoreLfs
           } as LocalMirrorFilterConfigurationDto)
-        : formValue,
-    ),
+        : formValue
+    )
   );
 
   return (
@@ -229,8 +229,6 @@ const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
 };
 
 const RepositoryConfig: FC<Props> = ({ link, repository }) => {
-  const [t] = useTranslation("plugins");
-  useDocumentTitleForRepository(repository, t("scm-repository-mirror-plugin.settings.repositorySettingsTitle"));
   const filtersLink = repository._links["mirrorFilterConfiguration"];
   return (
     <>
