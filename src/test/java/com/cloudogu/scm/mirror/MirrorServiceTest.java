@@ -23,6 +23,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.ScmConstraintViolationException;
@@ -79,22 +81,24 @@ class MirrorServiceTest {
 
   @Test
   void shouldFailToSyncMirrorWithoutPermission() {
-    assertThrows(AuthorizationException.class, () -> service.updateMirror(repository));
+    assertThrows(AuthorizationException.class, () -> service.updateMirror(repository, false));
+    assertThrows(AuthorizationException.class, () -> service.updateMirror(repository, true));
   }
 
-  @Test
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
   @SubjectAware(
     permissions = "repository:mirror:42"
   )
-  void shouldCallUpdateCommand() {
+  void shouldCallUpdateCommand(boolean reloadLfs) {
     repository.setId("42");
     MirrorConfiguration configuration = mock(MirrorConfiguration.class);
     when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
-    service.updateMirror(repository);
+    service.updateMirror(repository, reloadLfs);
 
     verify(configurationStore).getApplicableConfiguration(repository);
-    verify(mirrorWorker).startUpdate(repository, configuration);
+    verify(mirrorWorker).startUpdate(repository, configuration, reloadLfs);
   }
 
   @Test
@@ -105,7 +109,7 @@ class MirrorServiceTest {
     repository.setId("42");
     when(configurationStore.getApplicableConfiguration(repository)).thenReturn(empty());
 
-    assertThrows(NotConfiguredForMirrorException.class, () -> service.updateMirror(repository));
+    assertThrows(NotConfiguredForMirrorException.class, () -> service.updateMirror(repository, false));
   }
 
   @Nested

@@ -15,17 +15,20 @@
  */
 
 import React, { FC, useState } from "react";
-import { Repository } from "@scm-manager/ui-types";
+import { Link, Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";
 import { useUnmirrorRepository } from "../useMirrorRepository";
 import { useHistory } from "react-router-dom";
 import { Button, ErrorNotification, Level, Modal, DangerZone } from "@scm-manager/ui-components";
+import { SyncButton } from "./SyncButton";
+import { useConfigLink } from "@scm-manager/ui-api";
+import { LocalMirrorFilterConfigurationDto } from "../types";
 
 const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repository }) => {
   const [t] = useTranslation("plugins");
   const [openModal, setOpenModal] = useState(false);
   const { isLoading, error, unmirror } = useUnmirrorRepository(repository, {
-    onSuccess: () => history.push(`/repo/${repository.namespace}/${repository.name}`)
+    onSuccess: () => history.push(`/repo/${repository.namespace}/${repository.name}`),
   });
   const history = useHistory();
 
@@ -78,12 +81,36 @@ const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repo
   );
 };
 
-export const MirrorDangerZone: FC<{ repository: Repository; link: string }> = ({ repository, link }) => {
+const LfsSyncDangerZone: FC<{ syncLink: string }> = ({ syncLink }) => {
+  const [t] = useTranslation("plugins");
+  return (
+    <DangerZone className="px-4 py-5" borderColor={"warning"}>
+      <Level
+        left={
+          <p>
+            <strong>{t("scm-repository-mirror-plugin.form.manualSyncWithLfs.subtitle")}</strong>
+            <br />
+            {t("scm-repository-mirror-plugin.form.manualSyncWithLfs.shortDescription")}
+          </p>
+        }
+        right={<SyncButton link={syncLink} reloadLfs />}
+      />
+    </DangerZone>
+  );
+};
+
+export const MirrorDangerZone: FC<{ repository: Repository; unmirrorLink: string; syncLink: string }> = ({
+  repository,
+  unmirrorLink,
+  syncLink,
+}) => {
   return (
     <>
       <hr />
+      {syncLink ? <LfsSyncDangerZone syncLink={syncLink} /> : null}
+      <br />
       <DangerZone className="px-4 py-5">
-        <UnmirrorRepo repository={repository} link={link} />
+        <UnmirrorRepo repository={repository} link={unmirrorLink} />
       </DangerZone>
     </>
   );

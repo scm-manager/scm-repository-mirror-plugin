@@ -72,6 +72,11 @@
         "autocompletePlaceholder": "Nutzer zum Benachrichtigen hinzufügen"
       },
       "manualSync": "Mirror jetzt aktualisieren",
+      "manualSyncWithLfs": {
+        "subtitle": "Mirror aktualisieren und LFS erneut prüfen",
+        "shortDescription": "Neben dem Standard-Update wird das gesamte Repository auf LFS-Dateien geprüft und bei Bedarf synchronisiert.",
+        "button": "Aktualisieren"
+      },
       "keyList": {
         "displayName": "Anzeigename",
         "delete": "Löschen",

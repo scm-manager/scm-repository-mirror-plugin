@@ -386,7 +386,18 @@ class MirrorRootResourceTest {
       dispatcher.invoke(request, response);
 
       assertThat(response.getStatus()).isEqualTo(204);
-      verify(mirrorService).updateMirror(repository);
+      verify(mirrorService).updateMirror(repository, false);
+    }
+
+    @Test
+    void shouldExecuteUpdateRequestWithLfsReload() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories/hitchhiker/HeartOfGold/sync?reloadLfs=true");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(204);
+      verify(mirrorService).updateMirror(repository, true);
     }
 
     @Nested

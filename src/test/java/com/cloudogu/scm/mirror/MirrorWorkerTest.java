@@ -22,6 +22,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -43,7 +45,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static com.cloudogu.scm.mirror.MirrorStatus.Result.SUCCESS;
-import static com.google.inject.util.Providers.of;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
@@ -123,6 +124,14 @@ class MirrorWorkerTest {
         .thenAnswer(invocation -> new MirrorCommandCaller.CallResult(invocation.getArgument(2, Function.class).apply(mirrorCommandBuilder), appliedFilter));
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldSetReloadLfsInCommand(boolean reloadLfs) {
+      worker.startUpdate(repository, createMirrorConfig(), reloadLfs);
+      verify(mirrorCommandBuilder).setReloadLfs(reloadLfs);
+    }
+
+
     @Test
     void shouldSetSuccessStatus() {
       MirrorConfiguration configuration = createMirrorConfig();
@@ -151,7 +160,7 @@ class MirrorWorkerTest {
       void shouldSetSuccessStatusAndSendNotificationToManagingUsers() {
         MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
 
-        worker.startUpdate(repository, configuration);
+        worker.startUpdate(repository, configuration, false);
 
         verify(statusStore).setStatus(
           eq(repository),
@@ -183,7 +192,7 @@ class MirrorWorkerTest {
         void shouldSetFailedStatusAndSendNotificationToManagingUsers() {
           MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
 
-          worker.startUpdate(repository, configuration);
+          worker.startUpdate(repository, configuration, false);
 
           verify(statusStore).setStatus(
             eq(repository),
@@ -202,7 +211,7 @@ class MirrorWorkerTest {
         void shouldPostSyncEvent() {
           MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
 
-          worker.startUpdate(repository, configuration);
+          worker.startUpdate(repository, configuration, false);
 
           verify(eventBus).post(
             argThat(event -> {
@@ -227,7 +236,7 @@ class MirrorWorkerTest {
           // start two updates in parallel
           for (int i = 0; i < 2; ++i) {
             new Thread(() -> {
-              worker.startUpdate(repository, configuration);
+              worker.startUpdate(repository, configuration, false);
               startedLatch.countDown();
               doneLatch.countDown();
             }).start();
@@ -268,7 +277,7 @@ class MirrorWorkerTest {
 
         MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
 
-        worker.startUpdate(repository, configuration);
+        worker.startUpdate(repository, configuration, false);
 
         verify(statusStore).setStatus(
           eq(repository),
@@ -284,7 +293,7 @@ class MirrorWorkerTest {
 
         MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
 
-        worker.startUpdate(repository, configuration);
+        worker.startUpdate(repository, configuration, false);
 
         verify(statusStore).setStatus(
           eq(repository),
@@ -299,7 +308,7 @@ class MirrorWorkerTest {
 
         MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
 
-        worker.startUpdate(repository, configuration);
+        worker.startUpdate(repository, configuration, false);
 
         verify(statusStore).setStatus(
           eq(repository),
@@ -314,7 +323,7 @@ class MirrorWorkerTest {
 
         MirrorConfiguration configuration = createMirrorConfig(ImmutableList.of("trillian"), null, null);
 
-        worker.startUpdate(repository, configuration);
+        worker.startUpdate(repository, configuration, false);
 
         verify(statusStore).setStatus(
           eq(repository),

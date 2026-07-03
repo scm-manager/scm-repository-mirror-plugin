@@ -27,6 +27,7 @@ import com.cloudogu.scm.mirror.NotConfiguredForMirrorException;
 import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
+import jakarta.ws.rs.QueryParam;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -129,8 +130,8 @@ public class MirrorResource {
 
   @POST
   @Path("/sync")
-  public void syncMirror(@PathParam("namespace") String namespace, @PathParam("name") String name) {
-    mirrorService.updateMirror(loadRepository(namespace, name));
+  public void syncMirror(@PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("reloadLfs") boolean reloadLfs) {
+    mirrorService.updateMirror(loadRepository(namespace, name), reloadLfs);
   }
 
   @POST

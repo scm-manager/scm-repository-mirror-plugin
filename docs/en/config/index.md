@@ -15,10 +15,17 @@ The details for the other settings can be found in the [documentation for the cr
 
 [^1]: Please note, that at most four synchronisations will run in parallel.
 
+The button in the yellow-bordered area below can be used to start an update together with a check for LFS files in
+the complete repository. In this case, the LFS files will be synchronized even if they had been configured to be ignored
+for the repository.
+
+![Reload LFS Dialog](assets/reload-lfs.png)
+
 In the red-bordered area below, the mirroring can be finally terminated via the `Unmirror Repository` action.
 As a consequence, the repository will no longer be updated from the external source and the repository can be edited directly.
 Once a mirroring has been terminated, this repository can no longer be converted into a mirror!
-![Spiegelung beenden](assets/unmirror.png)
+
+![End Mirroring Dialog](assets/unmirror.png)
 
 ## Global Configuration
 

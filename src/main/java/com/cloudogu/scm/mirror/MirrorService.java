@@ -73,11 +73,11 @@ public class MirrorService {
     );
   }
 
-  public void updateMirror(Repository repository) {
+  public void updateMirror(Repository repository, boolean reloadLfs) {
     MirrorPermissions.checkRepositoryMirrorPermission(repository);
     MirrorConfiguration configuration = configurationStore.getApplicableConfiguration(repository)
       .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
-    mirrorWorker.startUpdate(repository, configuration);
+    mirrorWorker.startUpdate(repository, configuration, reloadLfs);
   }
 
   public void unmirror(Repository repository) {

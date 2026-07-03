@@ -71,7 +71,12 @@
         "addButton": "Add user",
         "autocompletePlaceholder": "Add users to notify"
       },
-      "manualSync": "Refresh mirror now",
+      "manualSync": "Update mirror now",
+      "manualSyncWithLfs": {
+        "subtitle": "Update mirror now and recheck LFS",
+        "shortDescription": "Besides the standard update, all repository LFS files are checked and synchronized if required.",
+        "button": "Update"
+      },
       "keyList": {
         "displayName": "Display Name",
         "delete": "Delete",

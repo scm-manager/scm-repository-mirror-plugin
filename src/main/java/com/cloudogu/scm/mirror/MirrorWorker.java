@@ -95,9 +95,15 @@ class MirrorWorker {
     startAsynchronously(repository, configuration, MirrorCommandBuilder::initialCall);
   }
 
-  void startUpdate(Repository repository, MirrorConfiguration configuration) {
+  void startUpdate(Repository repository, MirrorConfiguration configuration, boolean reloadLfs) {
     LOG.info("enqueuing update for mirror {} from url {}", repository, configuration.getUrl());
-    startAsynchronously(repository, configuration, MirrorCommandBuilder::update);
+    startAsynchronously(repository, configuration, mirrorCommandBuilder -> {
+      if (reloadLfs) {
+        mirrorCommandBuilder.setIgnoreLfs(false);
+      }
+      mirrorCommandBuilder.setReloadLfs(reloadLfs);
+      return mirrorCommandBuilder.update();
+    });
   }
 
 

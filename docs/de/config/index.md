@@ -15,9 +15,16 @@ Die Details zu den anderen Einstellungen finden sich in der [Dokumentation zur E
 
 [^1]: Es laufen grundsätzlich höchstens vier Synchronisationen gleichzeitig.
 
-In dem rot-umrandeten Bereich unten kann über die Aktion `Repository entspiegeln` der Mirror endgültig beendet werden. 
+Über den Button in dem gelb umrandeten Bereich unten kann eine Aktualisierung zusammen mit einer Prüfung auf LFS Dateien
+für das gesamte Repository angestoßen werden. In diesem Fall werden LFS Dateien auch dann synchronisiert, wenn die
+für das Repository als zu ignorieren eingestellt wurden.
+
+![LFS Dateien prüfen](assets/reload-lfs.png)
+
+In dem rot umrandeten Bereich unten kann über die Aktion `Repository entspiegeln` der Mirror endgültig beendet werden. 
 Als Folgen daraus wird das Repository nicht mehr von der externen Quelle aktualisiert und das Repository kann direkt bearbeitet werden.
 Sobald ein Mirror beendet wurde, kann dieses Repository nicht mehr in ein gespiegeltes Repository umgewandelt werden!
+
 ![Spiegelung beenden](assets/unmirror.png)
 
 ## Globale Konfiguration
