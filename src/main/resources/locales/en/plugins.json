@@ -77,6 +77,10 @@
         "shortDescription": "Besides the standard update, all repository LFS files are checked and synchronized if required.",
         "button": "Update"
       },
+      "syncStarted": {
+        "title": "Update started",
+        "description": "The mirror is being synchronized with the source repository."
+      },
       "keyList": {
         "displayName": "Display Name",
         "delete": "Delete",
@@ -186,6 +190,7 @@
     "logs": {
       "navLink": "Mirror Log",
       "subtitle": "Mirror Log",
+      "note": "No log available.",
       "success": {
         "label": "success",
         "title": "Synchronization successful"
@@ -200,12 +205,31 @@
       },
       "finishedAt": "finished <0/>",
       "duration": "took <0/>"
+    },
+    "progress": {
+      "firstSynchronization": {
+        "header": "Data transfer",
+        "description": {
+          "git": "Sources and commits will be displayed as soon as the mirroring is complete.",
+          "svn": "Data is being loaded from the source repository."
+        }
+      },
+      "followUpSynchronization": {
+        "header": "Updating mirror",
+        "description": "Data is compared with the source repository."
+      },
+      "progressLabel": "Progress: {{percent}}%",
+      "starting": "Starting"
+    },
+    "syncFailed": {
+      "title": "Mirroring the repository failed.",
+      "moreInformation": "<0>For more information, check the mirror log.</0>."
     }
   },
   "notifications": {
-    "mirrorSuccess": "Repository mirroring succeeded.",
+    "mirrorSuccess": "Mirroring the repository succeeded.",
     "mirrorUpdatesRejected": "Repository mirroring has partially failed.",
-    "mirrorFailed": "Repository mirroring has failed."
+    "mirrorFailed": "Mirroring the repository failed."
   },
   "permissions": {
     "configuration": {

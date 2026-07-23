@@ -27,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.MirrorCommandBuilder;
+import sonia.scm.repository.api.MirrorCommandBuilder.LogCallback;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.security.PublicKey;
@@ -188,6 +189,16 @@ class MirrorCommandCallerTest {
     invokeCaller(configuration, null);
 
     verify(mirrorCommandBuilder).setIgnoreLfs(eq(true));
+  }
+
+  @Test
+  void shouldSetProgressCallbackInCommand() {
+    MirrorConfiguration configuration = createMirrorConfig();
+    LogCallback progressCallback = mock(LogCallback.class);
+
+    caller.call(repository, configuration, progressCallback, mirrorCommandBuilder1 -> null);
+
+    verify(mirrorCommandBuilder).setProgressCallback(progressCallback);
   }
 
   private MirrorCommandCaller.CallResult<Object> invokeCaller(MirrorConfiguration configuration, Object mockedResult) {

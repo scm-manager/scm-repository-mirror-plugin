@@ -58,6 +58,7 @@ public class RepositoryEnricher implements HalEnricher {
           LinkBuilder linkBuilder = linkBuilder(repository);
           appendConfigurationLinks(appender, linkBuilder);
           appendLogsLink(appender, linkBuilder);
+          appendProgressLink(appender, linkBuilder);
         }
       }
     );
@@ -85,6 +86,11 @@ public class RepositoryEnricher implements HalEnricher {
   private void appendLogsLink(HalAppender appender, LinkBuilder linkBuilder) {
     String configurationUrl = linkBuilder.method("getLogs").parameters().href();
     appender.appendLink("mirrorLogs", configurationUrl);
+  }
+
+  private void appendProgressLink(HalAppender appender, LinkBuilder linkBuilder) {
+    String progressUrl = linkBuilder.method("getProgress").parameters().href();
+    appender.appendLink("mirrorProgress", progressUrl);
   }
 
   private LinkBuilder linkBuilder(Repository repository) {

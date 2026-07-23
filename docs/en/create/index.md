@@ -42,6 +42,14 @@ using the corresponding [settings](../config) menu in the repository. The source
 
 ![Create_Mirror Dialog in SCM-Manager](assets/create-dialog.png)
 
+The synchronization status of a mirror is shown directly in the repository's code view as a banner:
+
+- **While a synchronization is running**, a banner is displayed – "Data transfer" for the initial mirroring, "Mirror is being updated" for later runs – together with a single continuous progress bar.
+- **If the last synchronization failed**, a red banner with a link to the mirror log is shown.
+- **As long as there are no sources yet** (e.g. before the first successful run or for an empty source), the hint "No sources found for this branch." is displayed.
+
+![Banner in SCM-Manager](assets/banner.png)
+
 The synchronization results can be found in the "Mirror Log" in the navigation for the repository.
 
 ![Mirror Log in SCM-Manager for a repository](assets/mirror-log.png)

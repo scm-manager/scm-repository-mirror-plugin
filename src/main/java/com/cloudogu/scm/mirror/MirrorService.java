@@ -80,6 +80,13 @@ public class MirrorService {
     mirrorWorker.startUpdate(repository, configuration, reloadLfs);
   }
 
+  public MirrorProgress getProgress(Repository repository) {
+    MirrorPermissions.checkRepositoryMirrorPermission(repository);
+    configurationStore.getApplicableConfiguration(repository)
+      .orElseThrow(() -> new NotConfiguredForMirrorException(repository));
+    return mirrorWorker.getProgress(repository);
+  }
+
   public void unmirror(Repository repository) {
     MirrorPermissions.checkRepositoryMirrorPermission(repository);
     configurationStore.deleteConfiguration(repository);

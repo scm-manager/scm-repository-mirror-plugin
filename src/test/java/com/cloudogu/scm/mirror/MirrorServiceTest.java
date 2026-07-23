@@ -85,6 +85,11 @@ class MirrorServiceTest {
     assertThrows(AuthorizationException.class, () -> service.updateMirror(repository, true));
   }
 
+  @Test
+  void shouldFailToGetProgressWithoutPermission() {
+    assertThrows(AuthorizationException.class, () -> service.getProgress(repository));
+  }
+
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   @SubjectAware(
@@ -105,11 +110,38 @@ class MirrorServiceTest {
   @SubjectAware(
     permissions = "repository:mirror:42"
   )
+  void shouldReturnProgress() {
+    repository.setId("42");
+    MirrorConfiguration configuration = mock(MirrorConfiguration.class);
+    MirrorProgress expectedProgress = MirrorProgress.idle();
+    when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
+    when(mirrorWorker.getProgress(repository)).thenReturn(expectedProgress);
+
+    MirrorProgress progress = service.getProgress(repository);
+
+    assertThat(progress).isSameAs(expectedProgress);
+  }
+
+  @Test
+  @SubjectAware(
+    permissions = "repository:mirror:42"
+  )
   void shouldFailUpdateCommandWhenNotConfiguredAsMirror() {
     repository.setId("42");
     when(configurationStore.getApplicableConfiguration(repository)).thenReturn(empty());
 
     assertThrows(NotConfiguredForMirrorException.class, () -> service.updateMirror(repository, false));
+  }
+
+  @Test
+  @SubjectAware(
+    permissions = "repository:mirror:42"
+  )
+  void shouldFailProgressWhenNotConfiguredAsMirror() {
+    repository.setId("42");
+    when(configurationStore.getApplicableConfiguration(repository)).thenReturn(empty());
+
+    assertThrows(NotConfiguredForMirrorException.class, () -> service.getProgress(repository));
   }
 
   @Nested

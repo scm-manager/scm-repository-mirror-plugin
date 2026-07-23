@@ -34,11 +34,13 @@ import sonia.scm.notifications.Type;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.MirrorCommandBuilder;
+import sonia.scm.repository.api.MirrorCommandBuilder.LogCallback;
 import sonia.scm.repository.api.MirrorCommandResult;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +76,9 @@ class MirrorWorkerTest {
   @Mock
   private NotificationSender notificationSender;
   @Mock
-  private ScheduledExecutorService executor;
+  private ScheduledExecutorService scheduler;
+  @Mock
+  private ExecutorService syncExecutor;
   @Mock
   private ScmEventBus eventBus;
   @Mock
@@ -92,17 +96,17 @@ class MirrorWorkerTest {
     lenient().doAnswer(invocation -> {
       invocation.getArgument(0, Runnable.class).run();
       return null;
-    }).when(executor).submit(any(Runnable.class));
+    }).when(syncExecutor).submit(any(Runnable.class));
     lenient().when(taskDecoratorFactory.decorate(any()))
       .thenAnswer(invocation -> invocation.getArgument(0));
-    worker = new MirrorWorker(new SimpleMeterRegistry(), executor, statusStore, notificationSender, eventBus, mirrorCommandCaller, taskDecoratorFactory);
+    worker = new MirrorWorker(new SimpleMeterRegistry(), scheduler, syncExecutor, statusStore, notificationSender, eventBus, mirrorCommandCaller, taskDecoratorFactory);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void shouldCancelUpdates() {
     MirrorConfiguration configuration = createMirrorConfig();
-    when(executor.scheduleAtFixedRate(any(), anyLong(), anyLong(), any()))
+    when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any()))
       .thenReturn(cancelableSchedule);
 
     worker.scheduleUpdate(repository, configuration, 23)
@@ -120,8 +124,49 @@ class MirrorWorkerTest {
 
     @BeforeEach
     void supportMirrorCommand() {
-      when(mirrorCommandCaller.call(eq(repository), any(), any()))
-        .thenAnswer(invocation -> new MirrorCommandCaller.CallResult(invocation.getArgument(2, Function.class).apply(mirrorCommandBuilder), appliedFilter));
+      lenient().when(mirrorCommandCaller.call(eq(repository), any(), any(), any()))
+        .thenAnswer(invocation -> new MirrorCommandCaller.CallResult(invocation.getArgument(3, Function.class).apply(mirrorCommandBuilder), appliedFilter));
+    }
+
+    @Test
+    void shouldReturnIdleProgressIfNoSyncIsRunning() {
+      MirrorProgress progress = worker.getProgress(repository);
+
+      assertThat(progress.isRunning()).isFalse();
+    }
+
+    @Test
+    void shouldReturnProgressForRunningSync() throws InterruptedException {
+      MirrorConfiguration configuration = createMirrorConfig();
+      CountDownLatch progressStarted = new CountDownLatch(1);
+      CountDownLatch finishUpdate = new CountDownLatch(1);
+      when(mirrorCommandCaller.call(eq(repository), any(), any(), any()))
+        .thenAnswer(invocation -> {
+          LogCallback progressCallback = invocation.getArgument(2);
+          progressCallback.stepStarted("Build bypass", 42);
+          progressCallback.currentStepProgressed(21);
+          progressStarted.countDown();
+          return new MirrorCommandCaller.CallResult(invocation.getArgument(3, Function.class).apply(mirrorCommandBuilder), appliedFilter);
+        });
+      when(mirrorCommandBuilder.update())
+        .thenAnswer(invocation -> {
+          finishUpdate.await();
+          return new MirrorCommandResult(FAILED, emptyList(), Duration.ZERO);
+        });
+
+      Thread updateThread = new Thread(() -> worker.startUpdate(repository, configuration, false));
+      updateThread.start();
+      progressStarted.await();
+
+      MirrorProgress progress = worker.getProgress(repository);
+      finishUpdate.countDown();
+      updateThread.join();
+
+      assertThat(progress.isRunning()).isTrue();
+      assertThat(progress.getStep()).isEqualTo("Build bypass");
+      assertThat(progress.getTotalWork()).isEqualTo(42);
+      assertThat(progress.getWorked()).isEqualTo(21);
+      assertThat(worker.getProgress(repository).isRunning()).isFalse();
     }
 
     @ParameterizedTest
@@ -257,7 +302,7 @@ class MirrorWorkerTest {
 
           worker.scheduleUpdate(repository, configuration, 23);
 
-          verify(executor).scheduleAtFixedRate(
+          verify(scheduler).scheduleAtFixedRate(
             runnableArgumentCaptor.capture(),
             eq(23L),
             eq(42L),

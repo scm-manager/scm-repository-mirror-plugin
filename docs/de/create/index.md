@@ -49,6 +49,14 @@ URL **nicht mehr** geändert werden kann.
 
 ![Repository Spiegeln Dialog in SCM-Manager](assets/create-dialog.png)
 
+Der Synchronisationsstatus eines Mirrors wird direkt in der Code-Ansicht des Repositorys als Banner angezeigt:
+
+- **Während einer Synchronisation** erscheint ein Banner – „Datenübertragung“ beim ersten Spiegeln bzw. „Spiegelung wird aktualisiert“ bei Folge-Läufen – mit einem durchgehenden Fortschrittsbalken.
+- **Ist die letzte Synchronisation fehlgeschlagen**, wird ein rotes Banner mit einem Verweis auf das Mirror-Protokoll angezeigt.
+- **Solange noch keine Sources vorhanden sind** (z. B. vor dem ersten erfolgreichen Lauf oder bei einer leeren Quelle), erscheint der Hinweis „Keine Sources in diesem Branch gefunden.“.
+
+![Banner in SCM-Manager](assets/banner.png)
+
 Die Ergebnisse der Synchronisation können in dem "Mirror-Protokoll" in der Navigation für das
 Repository eingesehen werden.
 

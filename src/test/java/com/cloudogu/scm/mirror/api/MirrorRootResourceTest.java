@@ -21,6 +21,7 @@ import com.cloudogu.scm.mirror.LogStore;
 import com.cloudogu.scm.mirror.MirrorAccessConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
+import com.cloudogu.scm.mirror.MirrorProgress;
 import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
 import com.cloudogu.scm.mirror.MirrorService;
 import com.cloudogu.scm.mirror.MirrorStatus;
@@ -398,6 +399,42 @@ class MirrorRootResourceTest {
 
       assertThat(response.getStatus()).isEqualTo(204);
       verify(mirrorService).updateMirror(repository, true);
+    }
+
+    @Test
+    void shouldReturnIdleProgress() throws URISyntaxException, UnsupportedEncodingException {
+      when(mirrorService.getProgress(repository)).thenReturn(MirrorProgress.idle());
+      MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/progress");
+      JsonMockHttpResponse response = new JsonMockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(200);
+      JsonNode json = response.getContentAsJson();
+      assertThat(json.get("running").asBoolean()).isFalse();
+      assertThat(json.get("_links").get("self").get("href").asText())
+        .isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/progress");
+    }
+
+    @Test
+    void shouldReturnRunningProgress() throws URISyntaxException, UnsupportedEncodingException {
+      Instant started = Instant.parse("2026-07-09T10:15:30Z");
+      Instant updated = Instant.parse("2026-07-09T10:15:42Z");
+      when(mirrorService.getProgress(repository)).thenReturn(new MirrorProgress(true, "Build bypass", 42, 21, false, started, updated));
+      MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/progress");
+      JsonMockHttpResponse response = new JsonMockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(200);
+      JsonNode json = response.getContentAsJson();
+      assertThat(json.get("running").asBoolean()).isTrue();
+      assertThat(json.get("step").asText()).isEqualTo("Build bypass");
+      assertThat(json.get("totalWork").asInt()).isEqualTo(42);
+      assertThat(json.get("worked").asInt()).isEqualTo(21);
+      assertThat(json.get("stepFinished").asBoolean()).isFalse();
+      assertThat(json.get("started").asDouble()).isEqualTo(started.toEpochMilli() / 1000.0);
+      assertThat(json.get("updated").asDouble()).isEqualTo(updated.toEpochMilli() / 1000.0);
     }
 
     @Nested

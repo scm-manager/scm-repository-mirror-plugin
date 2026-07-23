@@ -23,6 +23,7 @@ import com.cloudogu.scm.mirror.MirrorAccessConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorService;
+import com.cloudogu.scm.mirror.MirrorProgress;
 import com.cloudogu.scm.mirror.NotConfiguredForMirrorException;
 import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
@@ -64,6 +65,7 @@ public class MirrorResource {
   private final MirrorFilterConfigurationToDtoMapper toFiltersDtoMapper;
 
   private final LogEntryMapper logEntryMapper = getMapper(LogEntryMapper.class);
+  private final MirrorProgressMapper mirrorProgressMapper = getMapper(MirrorProgressMapper.class);
 
   @Inject
   public MirrorResource(MirrorConfigurationStore configurationService,
@@ -132,6 +134,14 @@ public class MirrorResource {
   @Path("/sync")
   public void syncMirror(@PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("reloadLfs") boolean reloadLfs) {
     mirrorService.updateMirror(loadRepository(namespace, name), reloadLfs);
+  }
+
+  @GET
+  @Path("/progress")
+  @Produces("application/json")
+  public MirrorProgressDto getProgress(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name) {
+    MirrorProgress progress = mirrorService.getProgress(loadRepository(namespace, name));
+    return mirrorProgressMapper.map(progress, uriInfo);
   }
 
   @POST

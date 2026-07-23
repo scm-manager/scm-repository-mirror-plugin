@@ -82,6 +82,16 @@ export type MirrorStatus = {
   result: MirrorStatusResult;
 };
 
+export type MirrorProgress = HalRepresentation & {
+  running: boolean;
+  step: string | null;
+  totalWork: number;
+  worked: number;
+  stepFinished: boolean;
+  started: string | null;
+  updated: string | null;
+};
+
 export type MirrorLogStatusResult = Omit<MirrorStatusResult, "NOT_YET_RUN">;
 
 export type LogEntry = HalRepresentation & {

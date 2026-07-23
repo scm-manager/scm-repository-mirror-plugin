@@ -31,6 +31,7 @@ import { Trans, useTranslation } from "react-i18next";
 import styled from "styled-components";
 import classNames from "classnames";
 import { useDocumentTitleForRepository } from "@scm-manager/ui-core";
+import MirrorProgressNotification from "./MirrorProgressNotification";
 
 type Props = {
   repository: Repository;
@@ -173,9 +174,15 @@ const Logs: FC<Props> = ({ repository }) => {
   useDocumentTitleForRepository(repository, t("scm-repository-mirror-plugin.logs.subtitle"));
   return (
     <>
-      <Subtitle>{t(t("scm-repository-mirror-plugin.logs.subtitle"))}</Subtitle>
+      <MirrorProgressNotification repository={repository} />
       <ErrorNotification error={error} />
+      <Subtitle>{t(t("scm-repository-mirror-plugin.logs.subtitle"))}</Subtitle>
       {isLoading || !data ? <Loading /> : <LogTable entries={data._embedded.entries} />}
+      {(isLoading || !data || data._embedded.entries.length === 0) && (
+        <div className="notification">
+          {t("scm-repository-mirror-plugin.logs.note")}
+        </div>
+      )}
     </>
   );
 };

@@ -23,6 +23,10 @@ import GlobalConfig from "./config/GlobalConfig";
 import { Repository } from "@scm-manager/ui-types";
 import LogRoute from "./LogRoute";
 import LogNavLink from "./LogNavLink";
+import MirrorProgressNotification from "./MirrorProgressNotification";
+import MirrorFailedNotification from "./MirrorFailedNotification";
+import MirrorNoSourcesNotification from "./MirrorNoSourcesNotification";
+import { getMirrorProgressLink } from "./useMirrorProgress";
 
 binder.bind<extensionPoints.RepositoryCreator>("repos.creator", {
   subtitle: "scm-repository-mirror-plugin.create.subtitle",
@@ -52,9 +56,18 @@ type PredicateProps = {
   repository: Repository;
 };
 
+const progressPredicate = ({ repository }: PredicateProps) => {
+  return !!getMirrorProgressLink(repository);
+};
+
 const logPredicate = ({ repository }: PredicateProps) => {
   return !!repository._links["mirrorLogs"];
 };
 
+binder.bind("repository.code.overview.banner", MirrorProgressNotification, progressPredicate);
+binder.bind("repository.code.overview.noSources.banner", MirrorProgressNotification, progressPredicate);
+binder.bind("repository.code.overview.banner", MirrorFailedNotification, progressPredicate);
+binder.bind("repository.code.overview.noSources.banner", MirrorFailedNotification, progressPredicate);
+binder.bind("repository.code.overview.noSources.banner", MirrorNoSourcesNotification, progressPredicate);
 binder.bind("repository.route", LogRoute, logPredicate);
 binder.bind("repository.navigation", LogNavLink, logPredicate);

@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Credential;
 import sonia.scm.repository.api.MirrorCommandBuilder;
+import sonia.scm.repository.api.MirrorCommandBuilder.LogCallback;
 import sonia.scm.repository.api.Pkcs12ClientCertificateCredential;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
@@ -55,6 +56,10 @@ class MirrorCommandCaller {
   }
 
   <T> CallResult<T> call(Repository repository, MirrorConfiguration configuration, Function<MirrorCommandBuilder, T> callback) {
+    return call(repository, configuration, null, callback);
+  }
+
+  <T> CallResult<T> call(Repository repository, MirrorConfiguration configuration, LogCallback progressCallback, Function<MirrorCommandBuilder, T> callback) {
     ConfigurableFilter filter;
     T result;
 
@@ -75,6 +80,9 @@ class MirrorCommandCaller {
       mirrorCommand.setPublicKeys(keys);
       filter = filterBuilder.createFilter(configuration, keys);
       mirrorCommand.setFilter(filter);
+      if (progressCallback != null) {
+        mirrorCommand.setProgressCallback(progressCallback);
+      }
       setCredentials(configuration, mirrorCommand);
       result = callback.apply(mirrorCommand);
     }

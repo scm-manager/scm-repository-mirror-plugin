@@ -77,6 +77,10 @@
         "shortDescription": "Neben dem Standard-Update wird das gesamte Repository auf LFS-Dateien geprüft und bei Bedarf synchronisiert.",
         "button": "Aktualisieren"
       },
+      "syncStarted": {
+        "title": "Aktualisierung gestartet",
+        "description": "Die Spiegelung wird mit dem Quell-Repository abgeglichen."
+      },
       "keyList": {
         "displayName": "Anzeigename",
         "delete": "Löschen",
@@ -186,6 +190,7 @@
     "logs": {
       "navLink": "Mirror-Protokoll",
       "subtitle": "Mirror-Protokoll",
+      "note": "Kein Protokoll vorhanden.",
       "success": {
         "label": "erfolgreich",
         "title": "Synchronisation erfolgreich"
@@ -200,6 +205,35 @@
       },
       "finishedAt": "<0/> beendet",
       "duration": "dauerte <0/>"
+    },
+    "progress": {
+      "firstSynchronization": {
+        "header": "Datenübertragung",
+        "description": {
+          "git": "Sources und Commits werden angezeigt, sobald die Spiegelung abgeschlossen ist.",
+          "svn": "Daten aus dem Quell-Repository werden geladen."
+        }
+      },
+      "followUpSynchronization": {
+        "header": "Spiegelung wird aktualisiert",
+        "description": "Daten werden mit dem Quell-Repository abgeglichen."
+      },
+      "progressLabel": "Fortschritt: {{percent}}%",
+      "starting": "Wird gestartet",
+      "step": {
+        "remoteCountingobjects": "Remote: Objekte zählen",
+        "remoteFindingsources": "Remote: Quellen finden",
+        "remoteGettingsizes": "Remote: Größen ermitteln",
+        "remoteCompressingobjects": "Remote: Objekte komprimieren",
+        "Receivingobjects": "Empfange Objekte",
+        "Resolvingdeltas": "Berechne Delta",
+        "LoadingLFSfiles": "Lade LFS Dateien",
+        "SynchronizingSVNrevisions": "SVN-Revisionen synchronisieren"
+      }
+    },
+    "syncFailed": {
+      "title": "Das Spiegeln des Repositorys ist fehlgeschlagen",
+      "moreInformation": "Mehr Informationen finden Sie im <0>Mirror-Protokoll</0>."
     }
   },
   "notifications": {
