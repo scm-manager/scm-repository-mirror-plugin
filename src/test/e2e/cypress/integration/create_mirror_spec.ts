@@ -62,7 +62,7 @@ describe("Create Mirror", () => {
     // -- There is a success notification
     cy.get("#toastRoot")
       .should("exist")
-      .and("contain", "mirroring succeeded", {});
+      .and("contain", "Mirroring the repository succeeded", {});
   });
   it("should assure repository mirror is write protected", () => {
     // Act
