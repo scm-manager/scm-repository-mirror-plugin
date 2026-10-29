@@ -32,11 +32,11 @@ const MirrorRepositoryTypeSelect: FC<Props> = ({ value, disabled, repositoryType
   const createSelectOptions = (repositoryTypeCollection?: RepositoryTypeCollection) => {
     if (repositoryTypeCollection) {
       return repositoryTypeCollection._embedded.repositoryTypes
-        .filter(type => "mirror" in type._links)
-        .map(type => {
+        .filter((type) => "mirror" in type._links)
+        .map((type) => {
           return {
             label: type.displayName,
-            value: type.name
+            value: type.name,
           };
         });
     }
@@ -46,8 +46,8 @@ const MirrorRepositoryTypeSelect: FC<Props> = ({ value, disabled, repositoryType
   return (
     <Select
       label={t("repository.type")}
-      onChange={repositoryTypeName =>
-        onChange(repositoryTypes._embedded.repositoryTypes.find(type => type.name === repositoryTypeName))
+      onChange={(repositoryTypeName) =>
+        onChange(repositoryTypes._embedded.repositoryTypes.find((type) => type.name === repositoryTypeName))
       }
       value={value}
       options={createSelectOptions(repositoryTypes)}

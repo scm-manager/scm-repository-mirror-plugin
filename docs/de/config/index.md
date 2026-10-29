@@ -21,7 +21,7 @@ für das Repository als zu ignorieren eingestellt wurden.
 
 ![LFS Dateien prüfen](assets/reload-lfs.png)
 
-In dem rot umrandeten Bereich unten kann über die Aktion `Repository entspiegeln` der Mirror endgültig beendet werden. 
+In dem rot umrandeten Bereich unten kann über die Aktion `Repository entspiegeln` der Mirror endgültig beendet werden.
 Als Folgen daraus wird das Repository nicht mehr von der externen Quelle aktualisiert und das Repository kann direkt bearbeitet werden.
 Sobald ein Mirror beendet wurde, kann dieses Repository nicht mehr in ein gespiegeltes Repository umgewandelt werden!
 

@@ -15,22 +15,21 @@
  */
 
 import React, { FC, useState } from "react";
-import { Link, Repository } from "@scm-manager/ui-types";
+import { Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";
 import { useUnmirrorRepository } from "../useMirrorRepository";
-import { useHistory } from "react-router-dom";
-import { Button, ErrorNotification, Level, Modal, DangerZone } from "@scm-manager/ui-components";
+import { Modal, DangerZone } from "@scm-manager/ui-components";
+import { Button, ErrorNotification, Icon, Level } from "@scm-manager/ui-core";
+import { useNavigate } from "react-router";
 import { SyncButton } from "./SyncButton";
-import { useConfigLink } from "@scm-manager/ui-api";
-import { LocalMirrorFilterConfigurationDto } from "../types";
 
 const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repository }) => {
   const [t] = useTranslation("plugins");
   const [openModal, setOpenModal] = useState(false);
   const { isLoading, error, unmirror } = useUnmirrorRepository(repository, {
-    onSuccess: () => history.push(`/repo/${repository.namespace}/${repository.name}`),
+    onSuccess: () => navigate(`/repo/${repository.namespace}/${repository.name}`),
   });
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -48,13 +47,10 @@ const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repo
           headColor="danger"
           headTextColor="white"
           footer={
-            <Button
-              icon="ban"
-              color="danger"
-              action={() => unmirror(link)}
-              loading={isLoading}
-              label={t("scm-repository-mirror-plugin.form.unmirror.button")}
-            />
+            <Button variant="danger" onClick={() => unmirror(link)} isLoading={isLoading}>
+              <Icon>ban</Icon>
+              <span>{t("scm-repository-mirror-plugin.form.unmirror.button")}</span>
+            </Button>
           }
         />
       ) : null}
@@ -67,14 +63,10 @@ const UnmirrorRepo: FC<{ repository: Repository; link: string }> = ({ link, repo
           </p>
         }
         right={
-          <Button
-            color="danger"
-            icon="ban"
-            label={t("scm-repository-mirror-plugin.form.unmirror.button")}
-            action={() => setOpenModal(true)}
-            loading={isLoading}
-            type="button"
-          />
+          <Button variant="danger" onClick={() => setOpenModal(true)} isLoading={isLoading}>
+            <Icon>ban</Icon>
+            <span>{t("scm-repository-mirror-plugin.form.unmirror.button")}</span>
+          </Button>
         }
       />
     </>

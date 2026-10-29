@@ -16,7 +16,7 @@
 
 import { apiClient } from "@scm-manager/ui-components";
 import { Link, Repository } from "@scm-manager/ui-types";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { MirrorProgress } from "./types";
 
@@ -44,20 +44,18 @@ const useMirrorProgress = (repository: Repository) => {
   const link = getMirrorProgressLink(repository);
   const available = !!link;
   const queryClient = useQueryClient();
-  const { error, isLoading, data } = useQuery<MirrorProgress, Error>(
-    createCacheKey(repository),
-    () => fetchMirrorProgress(link || ""),
-    {
-      enabled: available,
-      refetchInterval: getProgressRefetchInterval,
-    },
-  );
+  const { error, isLoading, data } = useQuery<MirrorProgress, Error>({
+    queryKey: createCacheKey(repository),
+    queryFn: () => fetchMirrorProgress(link || ""),
+    enabled: available,
+    refetchInterval: (query) => getProgressRefetchInterval(query.state.data),
+  });
 
   const running = !!data?.running;
   const wasRunning = useRef(running);
   useEffect(() => {
     if (wasRunning.current && !running) {
-      queryClient.invalidateQueries(repositoryCacheKey(repository));
+      queryClient.invalidateQueries({ queryKey: repositoryCacheKey(repository) });
     }
     wasRunning.current = running;
   }, [running, queryClient, repository.namespace, repository.name]);

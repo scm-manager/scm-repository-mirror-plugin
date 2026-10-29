@@ -18,8 +18,8 @@ import React, { FC } from "react";
 import { Repository } from "@scm-manager/ui-types";
 import { RepositoryFlag } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
 import { MirrorStatus } from "./types";
+import { useNavigate } from "react-router";
 
 type Props = {
   repository: Repository;
@@ -27,12 +27,12 @@ type Props = {
 
 const MirrorRepositoryFlag: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
-  const history = useHistory();
+  const navigate = useNavigate();
   const mirrorStatus = repository._embedded?.mirrorStatus as MirrorStatus;
 
   let onClick = undefined;
   if (repository._links["mirrorLogs"]) {
-    onClick = () => history.push(`/repo/${repository.namespace}/${repository.name}/mirror-logs`);
+    onClick = () => navigate(`/repo/${repository.namespace}/${repository.name}/mirror-logs`);
   }
 
   switch (mirrorStatus?.result) {

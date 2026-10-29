@@ -19,27 +19,24 @@ import {
   MirrorAccessConfigurationForm,
   MirrorFilterConfigurationDto,
   mirrorGpgVerificationTypes,
-  PublicKey
+  PublicKey,
 } from "../types";
 import React, { ChangeEvent, FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { SelectValue } from "@scm-manager/ui-types";
+import { AutocompleteObject, Option } from "@scm-manager/ui-types";
 import {
-  AutocompleteAddEntryToTableField,
-  Button,
   Checkbox,
   FileInput,
-  Icon,
   InputField,
-  Level,
   MemberNameTagGroup,
   Select,
   SelectItem,
-  Textarea
+  Textarea,
 } from "@scm-manager/ui-components";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import readBinaryFileAsBase64String from "../readBinaryFileAsBase64String";
 import styled from "styled-components";
+import { Button, ComboboxField, Icon, IconButton, Level } from "@scm-manager/ui-core";
 
 const Column = styled.div`
   padding: 0 0.75rem;
@@ -57,11 +54,40 @@ export const ManagingUsersControl: FC<MirrorAccessConfigControlProps> = ({ contr
   const { field } = useController({ control, name: "managingUsers" });
   const [t] = useTranslation("plugins");
 
-  const addManagingUser = (selectValue: SelectValue) => {
-    if (field.value?.includes(selectValue.value.id)) {
-      return;
+  const addManagingUser = (userId: string) => {
+    const trimmedId = userId.trim();
+    if (trimmedId && !field.value?.includes(trimmedId)) {
+      field.onChange([...(field.value || []), trimmedId]);
     }
-    field.onChange([...(field.value || []), selectValue.value.id]);
+  };
+
+  const loadAutocompletion = (query: string) => {
+    if (query.length < 2) return [];
+
+    return userSuggestions(query).then((options: any) => {
+      const apiResults = options.map((opt: any) => ({
+        value: opt.value,
+        label: opt.label,
+      }));
+
+      const exactMatch = apiResults.find((o: any) => o.value.id.toLowerCase() === query.toLowerCase());
+
+      if (!exactMatch) {
+        const customOption = {
+          value: { id: query, displayName: query },
+          label: query,
+        };
+        return [customOption, ...apiResults];
+      }
+
+      return apiResults;
+    });
+  };
+
+  const onSelectFromAutocomplete = (option?: Option<AutocompleteObject>) => {
+    if (option?.value?.id) {
+      addManagingUser(option.value.id);
+    }
   };
 
   return (
@@ -72,12 +98,13 @@ export const ManagingUsersControl: FC<MirrorAccessConfigControlProps> = ({ contr
         label={t("scm-repository-mirror-plugin.form.managingUsers.label")}
         helpText={t("scm-repository-mirror-plugin.form.managingUsers.helpText")}
       />
-      <AutocompleteAddEntryToTableField
-        addEntry={addManagingUser}
-        buttonLabel={t("scm-repository-mirror-plugin.form.managingUsers.addButton")}
-        loadSuggestions={userSuggestions}
-        placeholder={t("scm-repository-mirror-plugin.form.managingUsers.autocompletePlaceholder")}
+      <ComboboxField
+        label={t("scm-repository-mirror-plugin.form.managingUsers.autocompletePlaceholder")}
         disabled={isReadonly}
+        placeholder={t("scm-repository-mirror-plugin.form.managingUsers.autocompletePlaceholder")}
+        options={loadAutocompletion}
+        onChange={onSelectFromAutocomplete}
+        value={null}
       />
     </Column>
   );
@@ -97,7 +124,7 @@ export const FileInputControl: FC<MirrorAccessConfigControlProps> = ({ control, 
       onChange={(event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target?.files?.[0];
         if (file) {
-          readBinaryFileAsBase64String(file).then(base64String => field.onChange(base64String));
+          readBinaryFileAsBase64String(file).then((base64String) => field.onChange(base64String));
         }
       }}
     />
@@ -169,55 +196,55 @@ export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control
   );
 };
 
-export const createPeriodOptions: (t: (key: string) => string) => SelectItem[] = t => [
+export const createPeriodOptions: (t: (key: string) => string) => SelectItem[] = (t) => [
   {
     label: t("scm-repository-mirror-plugin.form.period.options.oneMinute"),
-    value: "1"
+    value: "1",
   },
   {
     label: t("scm-repository-mirror-plugin.form.period.options.twoMinutes"),
-    value: "2"
+    value: "2",
   },
   {
     label: t("scm-repository-mirror-plugin.form.period.options.threeMinutes"),
-    value: "3"
+    value: "3",
   },
   {
     label: t("scm-repository-mirror-plugin.form.period.options.fiveMinutes"),
-    value: "5"
+    value: "5",
   },
   {
     label: t("scm-repository-mirror-plugin.form.period.options.fifteenMinutes"),
-    value: "15"
+    value: "15",
   },
   {
     label: t("scm-repository-mirror-plugin.form.period.options.thirtyMinutes"),
-    value: "30"
+    value: "30",
   },
   {
     label: t("scm-repository-mirror-plugin.form.period.options.oneHour"),
-    value: "60"
+    value: "60",
   },
   {
     label: t("scm-repository-mirror-plugin.form.period.options.twoHours"),
-    value: "120"
+    value: "120",
   },
   {
     label: t("scm-repository-mirror-plugin.form.period.options.fourHours"),
-    value: "240"
+    value: "240",
   },
   {
     label: t("scm-repository-mirror-plugin.form.period.options.twelveHours"),
-    value: "720"
+    value: "720",
   },
   {
     label: t("scm-repository-mirror-plugin.form.period.options.oneDay"),
-    value: "1440"
+    value: "1440",
   },
   {
     label: t("scm-repository-mirror-plugin.form.period.options.disabled"),
-    value: "0"
-  }
+    value: "0",
+  },
 ];
 
 export const SynchronizationPeriodControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
@@ -247,13 +274,13 @@ export const UrlControl: FC<MirrorAccessConfigControlProps> = ({ control, isRead
     rules: {
       required: {
         value: true,
-        message: t("scm-repository-mirror-plugin.form.url.errors.required")
+        message: t("scm-repository-mirror-plugin.form.url.errors.required"),
       },
       pattern: {
         value: /^[A-Za-z0-9]+:\/\/[^\s$.?#].[^\s]*$/,
-        message: t("scm-repository-mirror-plugin.form.url.errors.invalid")
-      }
-    }
+        message: t("scm-repository-mirror-plugin.form.url.errors.invalid"),
+      },
+    },
   });
 
   return (
@@ -281,14 +308,14 @@ export const ProxyHostControl: FC<MirrorAccessConfigControlProps> = ({ control, 
     rules: {
       required: {
         value: true,
-        message: t("scm-repository-mirror-plugin.form.proxy.host.errors.required")
+        message: t("scm-repository-mirror-plugin.form.proxy.host.errors.required"),
       },
       pattern: {
         value: /^[^\s$.?#].[^\s]*$/,
-        message: t("scm-repository-mirror-plugin.form.proxy.host.errors.invalid")
-      }
+        message: t("scm-repository-mirror-plugin.form.proxy.host.errors.invalid"),
+      },
     },
-    shouldUnregister: true
+    shouldUnregister: true,
   });
 
   return (
@@ -316,18 +343,18 @@ export const ProxyPortControl: FC<MirrorAccessConfigControlProps> = ({ control, 
     rules: {
       required: {
         value: true,
-        message: t("scm-repository-mirror-plugin.form.proxy.port.errors.required")
+        message: t("scm-repository-mirror-plugin.form.proxy.port.errors.required"),
       },
       min: {
         value: 1,
-        message: t("scm-repository-mirror-plugin.form.proxy.port.errors.range")
+        message: t("scm-repository-mirror-plugin.form.proxy.port.errors.range"),
       },
       max: {
         value: 65535,
-        message: t("scm-repository-mirror-plugin.form.proxy.port.errors.range")
-      }
+        message: t("scm-repository-mirror-plugin.form.proxy.port.errors.range"),
+      },
     },
-    shouldUnregister: true
+    shouldUnregister: true,
   });
 
   return (
@@ -353,7 +380,7 @@ export const ProxyUsernameControl: FC<MirrorAccessConfigControlProps> = ({ contr
   const { field, fieldState } = useController({
     control,
     name: "proxyConfiguration.username",
-    shouldUnregister: true
+    shouldUnregister: true,
   });
 
   return (
@@ -376,7 +403,7 @@ export const ProxyPasswordControl: FC<MirrorAccessConfigControlProps> = ({ contr
   const { field, fieldState } = useController({
     control,
     name: "proxyConfiguration.password",
-    shouldUnregister: true
+    shouldUnregister: true,
   });
 
   return (
@@ -421,12 +448,12 @@ export const PublicKeysControl: FC<MirrorFilterConfigControlProps> = ({ control,
     control,
     name: "allowedGpgKeys",
     rules: {
-      validate: v => v?.length > 0
+      validate: (v) => v?.length > 0,
     },
-    shouldUnregister: true
+    shouldUnregister: true,
   });
   const { register, handleSubmit, reset, formState } = useForm<PublicKey>({
-    mode: "onChange"
+    mode: "onChange",
   });
   const gpgVerificationType = useWatch({ control, name: "gpgVerificationType" });
   const { isValid, errors } = formState;
@@ -437,7 +464,7 @@ export const PublicKeysControl: FC<MirrorFilterConfigControlProps> = ({ control,
   }, [gpgVerificationType]);
 
   const deleteKey = (displayName: string) =>
-    field.onChange(value?.filter(key => key.displayName !== displayName) || []);
+    field.onChange(value?.filter((key) => key.displayName !== displayName) || []);
   const addNewKey = (key: PublicKey) => {
     field.onChange([...(value || []), key]);
     reset();
@@ -459,11 +486,13 @@ export const PublicKeysControl: FC<MirrorFilterConfigControlProps> = ({ control,
             <tr key={index}>
               <VerticalAlignCell>{displayName}</VerticalAlignCell>
               <td className="has-text-right">
-                <button className="button" onClick={() => deleteKey(displayName)}>
-                  <span className="icon">
-                    <Icon name="trash" title={t("scm-repository-mirror-plugin.form.keyList.delete")} color="inherit" />
-                  </span>
-                </button>
+                <IconButton
+                  title={t("scm-repository-mirror-plugin.form.keyList.delete")}
+                  aria-label={t("scm-repository-mirror-plugin.form.keyList.delete")}
+                  onClick={() => deleteKey(displayName)}
+                >
+                  <Icon>trash</Icon>
+                </IconButton>
               </td>
             </tr>
           ))}
@@ -480,7 +509,7 @@ export const PublicKeysControl: FC<MirrorFilterConfigControlProps> = ({ control,
               errorMessage={t("scm-repository-mirror-plugin.form.keyList.new.displayName.errors.required")}
               validationError={!!errors.displayName}
               {...register("displayName", {
-                required: true
+                required: true,
               })}
             />
             <Textarea
@@ -489,16 +518,14 @@ export const PublicKeysControl: FC<MirrorFilterConfigControlProps> = ({ control,
               errorMessage={t("scm-repository-mirror-plugin.form.keyList.new.raw.errors.required")}
               validationError={!!errors.raw}
               {...register("raw", {
-                required: true
+                required: true,
               })}
             />
             <Level
               right={
-                <Button
-                  action={handleSubmit(addNewKey)}
-                  disabled={!isValid}
-                  label={t("scm-repository-mirror-plugin.form.keyList.new.submit")}
-                />
+                <Button onClick={handleSubmit(addNewKey)} disabled={!isValid}>
+                  {t("scm-repository-mirror-plugin.form.keyList.new.submit")}
+                </Button>
               }
             />
           </form>
@@ -508,12 +535,12 @@ export const PublicKeysControl: FC<MirrorFilterConfigControlProps> = ({ control,
   );
 };
 
-export const createGpgVerificationTypeOptions: (t: (key: string) => string) => SelectItem[] = t =>
-  mirrorGpgVerificationTypes.map(mirrorGpgVerificationType => ({
+export const createGpgVerificationTypeOptions: (t: (key: string) => string) => SelectItem[] = (t) =>
+  mirrorGpgVerificationTypes.map((mirrorGpgVerificationType) => ({
     label: t(
-      `scm-repository-mirror-plugin.form.gpgVerificationType.options.${mirrorGpgVerificationType.toLowerCase()}`
+      `scm-repository-mirror-plugin.form.gpgVerificationType.options.${mirrorGpgVerificationType.toLowerCase()}`,
     ),
-    value: mirrorGpgVerificationType
+    value: mirrorGpgVerificationType,
   }));
 
 export const GpgVerificationControl: FC<MirrorFilterConfigControlProps> = ({ control, isReadonly }) => {
@@ -522,7 +549,7 @@ export const GpgVerificationControl: FC<MirrorFilterConfigControlProps> = ({ con
     control,
     name: "gpgVerificationType",
     defaultValue: "NONE",
-    shouldUnregister: true
+    shouldUnregister: true,
   });
   const { value } = verificationTypeField;
   const showKeyList = value === "KEY_LIST";

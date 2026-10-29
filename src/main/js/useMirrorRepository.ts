@@ -14,7 +14,7 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Repository } from "@scm-manager/ui-types";
 import { MirrorCreationDto } from "./types";
 import { apiClient } from "@scm-manager/ui-components";
@@ -27,34 +27,38 @@ type UseCreateRepositoryRequest = {
 const mirrorRepository = ({ link, payload }: UseCreateRepositoryRequest) => {
   return apiClient
     .post(link, payload, "application/json")
-    .then(response => {
+    .then((response) => {
       const location = response.headers.get("Location");
       if (!location) {
         throw new Error("Server does not return required Location header");
       }
       return apiClient.get(location);
     })
-    .then(response => response.json());
+    .then((response) => response.json());
 };
 
 export const useMirrorRepository = () => {
   const queryClient = useQueryClient();
-  const { mutate, data, isLoading, error } = useMutation<Repository, Error, UseCreateRepositoryRequest>(
-    mirrorRepository,
-    {
-      onSuccess: repository => {
-        queryClient.setQueryData(["repository", repository.namespace, repository.name], repository);
-        return queryClient.invalidateQueries(["repositories"]);
-      }
-    }
-  );
+  const {
+    mutate,
+    data,
+    isPending: isLoading,
+    error,
+  } = useMutation<Repository, Error, UseCreateRepositoryRequest>({
+    mutationFn: mirrorRepository,
+
+    onSuccess: (repository) => {
+      queryClient.setQueryData(["repository", repository.namespace, repository.name], repository);
+      return queryClient.invalidateQueries({ queryKey: ["repositories"] });
+    },
+  });
   return {
     mirror: (link: string, payload: MirrorCreationDto) => {
       mutate({ link, payload });
     },
     isLoading,
     error,
-    repository: data
+    repository: data,
   };
 };
 
@@ -64,23 +68,27 @@ export type UnmirrorOptions = {
 
 export const useUnmirrorRepository = (repository: Repository, options?: UnmirrorOptions) => {
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error } = useMutation<unknown, Error, string>(
-    link => {
+  const {
+    mutate,
+    isPending: isLoading,
+    error,
+  } = useMutation<unknown, Error, string>({
+    mutationFn: (link) => {
       return apiClient.post(link);
     },
-    {
-      onSuccess: () => {
-        if (options?.onSuccess) {
-          options.onSuccess();
-        }
-        queryClient.invalidateQueries(["repository", repository.namespace, repository.name]);
-        return queryClient.invalidateQueries(["repositories"]);
+    onSuccess: () => {
+      if (options?.onSuccess) {
+        options.onSuccess();
       }
-    }
-  );
+      queryClient.invalidateQueries({
+        queryKey: ["repository", repository.namespace, repository.name],
+      });
+      return queryClient.invalidateQueries({ queryKey: ["repositories"] });
+    },
+  });
   return {
     unmirror: (link: string) => mutate(link),
     isLoading,
-    error
+    error,
   };
 };

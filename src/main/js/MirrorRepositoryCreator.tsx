@@ -17,31 +17,31 @@
 import { extensionPoints } from "@scm-manager/ui-extensions";
 import React, { useEffect, useState } from "react";
 import { Link, RepositoryType } from "@scm-manager/ui-types";
-import { ErrorNotification } from "@scm-manager/ui-components";
+import { ErrorNotification } from "@scm-manager/ui-core";
 import styled from "styled-components";
-import { useHistory } from "react-router-dom";
 import { useMirrorRepository } from "./useMirrorRepository";
 import MirrorRepositoryForm from "./MirrorRepositoryForm";
 import MirrorRepositoryTypeSelect from "./MirrorRepositoryTypeSelect";
+import { useNavigate } from "react-router";
 
 const SelectWrapper = styled.div`
   flex: 1;
   margin-bottom: 1rem;
 `;
 
-const MirrorRepositoryCreator: extensionPoints.RepositoryCreatorExtension["component"] = ({
+const MirrorRepositoryCreator: extensionPoints.RepositoryCreator["type"]["component"] = ({
   repositoryTypes,
   informationForm: InformationForm,
-  nameForm: NameForm
+  nameForm: NameForm,
 }) => {
   const { repository: createdRepository, mirror, error, isLoading: loading } = useMirrorRepository();
   const [repositoryType, setRepositoryType] = useState<RepositoryType | undefined>();
-  const history = useHistory();
+  const navigate = useNavigate();
   const mirrorLink = (repositoryType?._links.mirror as Link)?.href;
 
   useEffect(() => {
     if (createdRepository) {
-      history.push(`/repo/${createdRepository.namespace}/${createdRepository.name}/code/sources`);
+      navigate(`/repo/${createdRepository.namespace}/${createdRepository.name}/code/sources`);
     }
   }, [createdRepository, history]);
 
@@ -64,7 +64,7 @@ const MirrorRepositoryCreator: extensionPoints.RepositoryCreatorExtension["compo
       </SelectWrapper>
       {repositoryType ? (
         <MirrorRepositoryForm
-          onSubmit={requestPayload => mirror(mirrorLink, requestPayload)}
+          onSubmit={(requestPayload) => mirror(mirrorLink, requestPayload)}
           repositoryType={repositoryType}
           disabled={loading}
           NameForm={NameForm}

@@ -27,19 +27,20 @@ type Props = {
 };
 
 const StyledBannerNotification = styled(Notification)`
-  .panel &&&, .column > & {
+  .panel &&&,
+  .column > & {
     padding: 1.5rem;
   }
-  
+
   .panel &&& {
     margin: 1.5rem 1.25rem 0 1.25rem;
     padding: 1.5rem;
   }
 
   .panel-block &&& {
-    margin: 1rem 0.5rem ;
+    margin: 1rem 0.5rem;
   }
-  
+
   .progress {
     border: 1px solid #dbdbdb;
   }
@@ -49,32 +50,26 @@ const StyledBannerNotification = styled(Notification)`
   }
 
   .progress.is-loading::-webkit-progress-value {
-    background-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.6) 50%,
-      transparent 100%
-    );
+    background-image: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
     background-size: 200% 100%;
     animation: progress-shine 2.5s ease-in-out infinite;
   }
 
   .progress.is-loading::-moz-progress-bar {
-    background-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(40, 241, 255, 1) 50%,
-      transparent 100%
-    );
+    background-image: linear-gradient(90deg, transparent 0%, rgba(40, 241, 255, 1) 50%, transparent 100%);
     background-size: 200% 100%;
     animation: progress-shine 2.5s ease-in-out infinite;
   }
 
   @keyframes progress-shine {
-    0% { background-position: 150% 0; }
-    100% { background-position: -50% 0; }
+    0% {
+      background-position: 150% 0;
+    }
+    100% {
+      background-position: -50% 0;
+    }
   }
-  
+
   @media (prefers-reduced-motion: reduce) {
     .progress.is-loading::-webkit-progress-value,
     .progress.is-loading::-moz-progress-bar {

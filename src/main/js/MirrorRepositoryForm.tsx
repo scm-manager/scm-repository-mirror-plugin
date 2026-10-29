@@ -14,7 +14,8 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { Checkbox, InputField, Level, SubmitButton, urls } from "@scm-manager/ui-components";
+import { Checkbox, InputField, urls } from "@scm-manager/ui-components";
+import { Button, Level } from "@scm-manager/ui-core";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { MirrorCreationDto, MirrorCreationForm } from "./types";
 import { useForm } from "react-hook-form";
@@ -31,7 +32,7 @@ import {
   ProxyPortControl,
   ProxyUsernameControl,
   SynchronizationPeriodControl,
-  UrlControl
+  UrlControl,
 } from "./config/FormControls";
 import { useLocation } from "react-router-dom";
 
@@ -51,7 +52,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
   const [t] = useTranslation("plugins");
   const location = useLocation();
   const { handleSubmit, formState, getValues, control, register, watch } = useForm<MirrorCreationForm>({
-    mode: "onChange"
+    mode: "onChange",
   });
   const [repository, setRepository] = useState<RepositoryCreation>({
     type: "",
@@ -59,19 +60,20 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     description: "",
     name: "",
     namespace: urls.getValueStringFromLocationByKey(location, "namespace") || "",
-    contextEntries: {}
+    contextEntries: {},
   });
   const [valid, setValid] = useState({ namespaceAndName: false, contact: true });
   const { isValid: isFormValid, touchedFields } = formState;
   const showFilterForm = watch("overwriteGlobalConfiguration");
   const showProxyForm = watch("proxyConfiguration.overwriteGlobalConfiguration");
   const allowLocalFilterConfiguration = !!repositoryType._links["mirrorFilterConfiguration"];
-  const setContactValid = useCallback((contact: boolean) => setValid(currentValid => ({ ...currentValid, contact })), [
-    setValid
-  ]);
+  const setContactValid = useCallback(
+    (contact: boolean) => setValid((currentValid) => ({ ...currentValid, contact })),
+    [setValid],
+  );
   const setNamespaceAndNameValid = useCallback(
-    (namespaceAndName: boolean) => setValid(currentValid => ({ ...currentValid, namespaceAndName })),
-    [setValid]
+    (namespaceAndName: boolean) => setValid((currentValid) => ({ ...currentValid, namespaceAndName })),
+    [setValid],
   );
 
   useEffect(() => {
@@ -85,12 +87,12 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
     }
   }, [getValues, touchedFields.url]);
 
-  const isValid = () => Object.values(valid).every(v => v) && isFormValid;
+  const isValid = () => Object.values(valid).every((v) => v) && isFormValid;
   const innerOnSubmit = (configFormValue: MirrorCreationForm) => {
     const request: MirrorCreationForm = {
       ...configFormValue,
       ...repository,
-      type: repositoryType?.name
+      type: repositoryType?.name,
     };
     onSubmit(coalesceFormValue(request));
   };
@@ -172,11 +174,16 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
       <hr />
       <Level
         right={
-          <SubmitButton
+          <Button
+            type="submit"
+            variant="primary"
             disabled={!isValid()}
-            loading={disabled}
-            label={t("scm-repository-mirror-plugin.repositoryForm.createButton")}
-          />
+            isLoading={disabled}
+            testId="submit-button"
+            onClick={() => window.scrollTo(0, 0)}
+          >
+            {t("scm-repository-mirror-plugin.repositoryForm.createButton")}
+          </Button>
         }
       />
     </form>

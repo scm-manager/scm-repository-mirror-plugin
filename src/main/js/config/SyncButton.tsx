@@ -16,7 +16,8 @@
 
 import React, { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { apiClient, Button, ErrorNotification, ToastArea, ToastNotification } from "@scm-manager/ui-components";
+import { apiClient, ToastArea, ToastNotification } from "@scm-manager/ui-components";
+import { Button, ErrorNotification, Icon } from "@scm-manager/ui-core";
 
 export const SyncButton: FC<{ link: string; reloadLfs?: boolean }> = ({ link, reloadLfs }) => {
   const [t] = useTranslation("plugins");
@@ -50,19 +51,16 @@ export const SyncButton: FC<{ link: string; reloadLfs?: boolean }> = ({ link, re
   return (
     <>
       <ErrorNotification error={triggerError} />
-      <Button
-        icon="sync-alt"
-        action={triggerMirroring}
-        label={t(
-          reloadLfs
-            ? "scm-repository-mirror-plugin.form.manualSyncWithLfs.button"
-            : "scm-repository-mirror-plugin.form.manualSync",
-        )}
-        loading={triggerLoading}
-        disabled={!link}
-        type="button"
-        color="warning"
-      />
+      <Button onClick={triggerMirroring} isLoading={triggerLoading} disabled={!link} type="button" variant="signal">
+        <Icon>sync-alt</Icon>
+        <span>
+          {t(
+            reloadLfs
+              ? "scm-repository-mirror-plugin.form.manualSyncWithLfs.button"
+              : "scm-repository-mirror-plugin.form.manualSync",
+          )}
+        </span>
+      </Button>
       {syncStarted ? (
         <ToastArea>
           <ToastNotification

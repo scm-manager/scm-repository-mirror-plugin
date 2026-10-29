@@ -16,7 +16,7 @@
 
 import { apiClient } from "@scm-manager/ui-components";
 import { Link, Repository } from "@scm-manager/ui-types";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { LogCollection } from "./types";
 
 const createCacheKey = (repository: Repository) => {
@@ -24,7 +24,7 @@ const createCacheKey = (repository: Repository) => {
 };
 
 const fetchMirrorLogs = (link: string) => {
-  return apiClient.get(link).then(res => res.json());
+  return apiClient.get(link).then((res) => res.json());
 };
 
 const useMirrorLogs = (repository: Repository) => {
@@ -32,14 +32,15 @@ const useMirrorLogs = (repository: Repository) => {
   if (!link) {
     throw new Error("repository has not mirror logs");
   }
-  const { error, isLoading, data } = useQuery<LogCollection, Error>(createCacheKey(repository), () =>
-    fetchMirrorLogs(link)
-  );
+  const { error, isLoading, data } = useQuery<LogCollection, Error>({
+    queryKey: createCacheKey(repository),
+    queryFn: () => fetchMirrorLogs(link),
+  });
 
   return {
     error,
     isLoading,
-    data
+    data,
   };
 };
 

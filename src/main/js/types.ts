@@ -69,7 +69,7 @@ export type GlobalConfigurationDto = MirrorFilterConfigurationDto & {
 };
 
 export const mirrorGpgVerificationTypes = ["NONE", "SIGNATURE", "SCM_USER_SIGNATURE", "KEY_LIST"] as const;
-export type MirrorGpgVerificationType = typeof mirrorGpgVerificationTypes[number];
+export type MirrorGpgVerificationType = (typeof mirrorGpgVerificationTypes)[number];
 
 export type PublicKey = HalRepresentation & {
   displayName: string;

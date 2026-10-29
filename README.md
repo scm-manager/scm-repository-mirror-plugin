@@ -7,7 +7,7 @@
   Repository Mirror Plugin
 </h1>
 
-Mirror external repositories into SCM-Manager
+Mirror external repositories into SCM-Manager.
 
 ## Usage
 

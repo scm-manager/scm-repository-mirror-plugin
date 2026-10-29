@@ -15,27 +15,22 @@
  */
 
 import React, { FC, useState } from "react";
-import { Repository } from "@scm-manager/ui-types";
-import {
-  DateFromNow,
-  Duration,
-  ErrorNotification,
-  Icon,
-  Loading,
-  RepositoryFlag,
-  Subtitle,
-} from "@scm-manager/ui-components";
+import { Duration, RepositoryFlag } from "@scm-manager/ui-components";
 import useMirrorLogs from "./useMirrorLogs";
 import { LogEntry } from "./types";
 import { Trans, useTranslation } from "react-i18next";
 import styled from "styled-components";
 import classNames from "classnames";
-import { useDocumentTitleForRepository } from "@scm-manager/ui-core";
+import {
+  useDocumentTitleForRepository,
+  useRepositoryFromParams,
+  DateFromNow,
+  ErrorNotification,
+  Icon,
+  Subtitle,
+  Loading,
+} from "@scm-manager/ui-core";
 import MirrorProgressNotification from "./MirrorProgressNotification";
-
-type Props = {
-  repository: Repository;
-};
 
 const SuccessTag = () => {
   const [t] = useTranslation("plugins");
@@ -134,7 +129,7 @@ const LogRow: FC<LogRowProps> = ({ entry, initialOpenState }) => {
         onClick={() => setOpen(!open)}
       >
         <Column minWidth={2}>
-          <Icon name={open ? "angle-down" : "angle-right"} />
+          <Icon className="has-text-secondary">{open ? "angle-down" : "angle-right"}</Icon>
         </Column>
         <TagColumn minWidth={7}>
           <ResultTag entry={entry} />
@@ -168,8 +163,10 @@ const LogTable: FC<LogTableProps> = ({ entries }) => {
   );
 };
 
-const Logs: FC<Props> = ({ repository }) => {
+const Logs: FC = () => {
+  const repository = useRepositoryFromParams();
   const { isLoading, error, data } = useMirrorLogs(repository);
+  const entries = data?._embedded?.entries ?? [];
   const [t] = useTranslation("plugins");
   useDocumentTitleForRepository(repository, t("scm-repository-mirror-plugin.logs.subtitle"));
   return (
@@ -177,11 +174,9 @@ const Logs: FC<Props> = ({ repository }) => {
       <MirrorProgressNotification repository={repository} />
       <ErrorNotification error={error} />
       <Subtitle>{t(t("scm-repository-mirror-plugin.logs.subtitle"))}</Subtitle>
-      {isLoading || !data ? <Loading /> : <LogTable entries={data._embedded.entries} />}
-      {(isLoading || !data || data._embedded.entries.length === 0) && (
-        <div className="notification">
-          {t("scm-repository-mirror-plugin.logs.note")}
-        </div>
+      {isLoading || !data ? <Loading /> : <LogTable entries={entries} />}
+      {(isLoading || !data || entries.length === 0) && (
+        <div className="notification">{t("scm-repository-mirror-plugin.logs.note")}</div>
       )}
     </>
   );

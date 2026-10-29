@@ -14,20 +14,13 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, {FC} from "react";
-import {Repository} from "@scm-manager/ui-types";
-import {Route} from "react-router-dom";
+import React from "react";
+
 import Logs from "./Logs";
 
-type Props = {
-  url: string;
-  repository: Repository;
-};
-
-const LogRoute: FC<Props> = ({url, repository}) => (
-  <Route path={`${url}/mirror-logs`} exact>
-    <Logs repository={repository}/>
-  </Route>
-);
+const LogRoute = () => ({
+  path: `mirror-logs`,
+  element: <Logs />,
+});
 
 export default LogRoute;

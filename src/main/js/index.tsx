@@ -33,21 +33,21 @@ binder.bind<extensionPoints.RepositoryCreator>("repos.creator", {
   path: "mirror",
   icon: "copy",
   label: "scm-repository-mirror-plugin.repositoryForm.createButton",
-  component: MirrorRepositoryCreator
+  component: MirrorRepositoryCreator,
 });
 
 configurationBinder.bindRepositorySetting(
   "/mirror",
   "scm-repository-mirror-plugin.settings.navLink",
   "mirrorAccessConfiguration",
-  RepositoryConfig
+  RepositoryConfig,
 );
 
-configurationBinder.bindGlobal(
+configurationBinder.bindAdminSetting(
   "/mirror",
   "scm-repository-mirror-plugin.settings.navLink",
   "mirrorConfiguration",
-  GlobalConfig
+  GlobalConfig,
 );
 
 binder.bind<extensionPoints.RepositoryFlags>("repository.flags", MirrorRepositoryFlag);
@@ -69,5 +69,5 @@ binder.bind("repository.code.overview.noSources.banner", MirrorProgressNotificat
 binder.bind("repository.code.overview.banner", MirrorFailedNotification, progressPredicate);
 binder.bind("repository.code.overview.noSources.banner", MirrorFailedNotification, progressPredicate);
 binder.bind("repository.code.overview.noSources.banner", MirrorNoSourcesNotification, progressPredicate);
-binder.bind("repository.route", LogRoute, logPredicate);
+binder.bind("repository.route", LogRoute);
 binder.bind("repository.navigation", LogNavLink, logPredicate);

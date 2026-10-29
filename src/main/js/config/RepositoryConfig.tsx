@@ -15,12 +15,7 @@
  */
 
 import React, { FC, useEffect } from "react";
-import {
-  Checkbox,
-  ConfigurationForm,
-  InputField,
-  Subtitle,
-} from "@scm-manager/ui-components";
+import { Checkbox, ConfigurationForm, InputField } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
 import {
   LocalMirrorFilterConfigurationDto,
@@ -44,6 +39,7 @@ import {
 import { Link, Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";
 import { MirrorDangerZone } from "./MirrorDangerZone";
+import { Subtitle, useRepositoryFromParams } from "@scm-manager/ui-core";
 import { SyncButton } from "./SyncButton";
 
 const Columns = styled.div`
@@ -93,7 +89,8 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
 
   return (
     <ConfigurationForm isValid={formState.isValid} isReadOnly={isReadOnly} onSubmit={onSubmit} {...formProps}>
-      <SyncButton link={(initialConfiguration?._links.syncMirror as Link)?.href} /> <hr />
+      <SyncButton link={(initialConfiguration?._links.syncMirror as Link)?.href} />
+      <hr />
       <Subtitle subtitle={t("scm-repository-mirror-plugin.form.subtitle")} />
       <Columns className="columns is-multiline">
         <UrlControl control={control} isReadonly={true} />
@@ -192,8 +189,10 @@ const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
   );
 };
 
-const RepositoryConfig: FC<Props> = ({ link, repository }) => {
+const RepositoryConfig: FC = () => {
+  const repository = useRepositoryFromParams();
   const filtersLink = repository._links["mirrorFilterConfiguration"];
+  const link = (repository._links["mirrorAccessConfiguration"] as Link).href;
   const { initialConfiguration } = useConfigLink<MirrorAccessConfigurationDto>(link);
   return (
     <>

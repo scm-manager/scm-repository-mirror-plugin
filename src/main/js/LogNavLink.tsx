@@ -17,6 +17,8 @@
 import React, { FC } from "react";
 import { SecondaryNavigationItem } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
+import { useRepositoryFromParams } from "@scm-manager/ui-core";
+import { SINGLE_REPOSITORY_BASE_ROUTE } from "@scm-manager/ui-core";
 
 type Props = {
   url: string;
@@ -24,9 +26,10 @@ type Props = {
 
 const LogNavLink: FC<Props> = ({ url }) => {
   const [t] = useTranslation("plugins");
+  const repository = useRepositoryFromParams();
   return (
     <SecondaryNavigationItem
-      to={`${url}/mirror-logs`}
+      to={`/${SINGLE_REPOSITORY_BASE_ROUTE}/${repository.namespace}/${repository.name}/mirror-logs`}
       icon="fas fa-copy"
       label={t("scm-repository-mirror-plugin.logs.navLink")}
       title={t("scm-repository-mirror-plugin.logs.navLink")}

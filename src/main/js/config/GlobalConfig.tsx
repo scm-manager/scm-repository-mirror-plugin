@@ -15,7 +15,8 @@
  */
 
 import React, { FC, useEffect } from "react";
-import { Checkbox, ConfigurationForm, InputField, Notification, Title } from "@scm-manager/ui-components";
+import { Checkbox, ConfigurationForm, InputField } from "@scm-manager/ui-components";
+import { Notification, Title } from "@scm-manager/ui-core";
 import { GlobalConfigurationDto } from "../types";
 import { useForm } from "react-hook-form";
 import { useConfigLink } from "@scm-manager/ui-api";
@@ -30,7 +31,7 @@ const GlobalConfig: FC<Props> = ({ link }) => {
   const [t] = useTranslation("plugins");
   const { initialConfiguration, update, isReadOnly, ...formProps } = useConfigLink<GlobalConfigurationDto>(link);
   const { formState, handleSubmit, register, reset, control } = useForm<GlobalConfigurationDto>({
-    mode: "onChange"
+    mode: "onChange",
   });
 
   useEffect(() => {
