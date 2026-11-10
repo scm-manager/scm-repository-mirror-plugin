@@ -1,0 +1,2 @@
+- type: fixed
+  description: Show authentication checkboxes as selected for existing mirror credentials

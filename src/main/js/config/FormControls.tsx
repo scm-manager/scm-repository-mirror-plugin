@@ -147,6 +147,7 @@ export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control
           label={t("scm-repository-mirror-plugin.form.withBaseAuth.label")}
           testId="base-auth-checkbox"
           {...enabledField}
+          checked={!!enabledField.value}
         />
       </Column>
       {enabledField.value ? (
@@ -173,7 +174,11 @@ export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control
         </>
       ) : null}
       <Column className="column is-full">
-        <Checkbox label={t("scm-repository-mirror-plugin.form.withKeyAuth.label")} {...certificateEnabledField} />
+        <Checkbox
+          label={t("scm-repository-mirror-plugin.form.withKeyAuth.label")}
+          {...certificateEnabledField}
+          checked={!!certificateEnabledField.value}
+        />
       </Column>
       {certificateEnabledField.value ? (
         <>
