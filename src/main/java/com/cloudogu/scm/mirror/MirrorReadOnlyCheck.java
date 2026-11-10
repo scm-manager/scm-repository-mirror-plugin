@@ -71,7 +71,7 @@ class MirrorReadOnlyCheck implements ReadOnlyCheck {
     if (Authentications.PRINCIPAL_SYSTEM.equals(SecurityUtils.getSubject().getPrincipal().toString())) {
       return;
     }
-    Optional<MirrorConfiguration> configuration = configurationStore.getConfiguration(event.getRepository());
+    Optional<MirrorConfiguration> configuration = configurationStore.getApplicableConfiguration(event.getRepository());
     if (configuration.isPresent() && event.getContext().isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
       List<String> branchesAndTagsPatterns = configuration.get().getBranchesAndTagsPatterns();
       if (branchesAndTagsPatterns.isEmpty() || isReadOnly(event, branchesAndTagsPatterns)) {

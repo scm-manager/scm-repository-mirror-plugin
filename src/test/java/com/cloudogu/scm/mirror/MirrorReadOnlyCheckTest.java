@@ -111,7 +111,7 @@ class MirrorReadOnlyCheckTest {
 
     @Test
     void shouldDoNothingWithoutConfiguration() {
-      when(configurationStore.getConfiguration(repository)).thenReturn(empty());
+      when(configurationStore.getApplicableConfiguration(repository)).thenReturn(empty());
       check.checkForReadOnlyBranch(event);
 
       // no exception should be thrown
@@ -121,7 +121,7 @@ class MirrorReadOnlyCheckTest {
     void shouldThrowExceptionWhenNoPatternsAreConfigured() {
       MirrorConfiguration configuration = new MirrorConfiguration();
       configuration.setBranchesAndTagsPatterns(emptyList());
-      when(configurationStore.getConfiguration(repository)).thenReturn(of(configuration));
+      when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
       Assert.assertThrows(
         ReadOnlyException.class,
@@ -134,7 +134,7 @@ class MirrorReadOnlyCheckTest {
       MirrorConfiguration configuration = new MirrorConfiguration();
       configuration.setBranchesAndTagsPatterns(List.of("main"));
       when(hookContext.getBranchProvider().getCreatedOrModified()).thenReturn(List.of("main"));
-      when(configurationStore.getConfiguration(repository)).thenReturn(of(configuration));
+      when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
       Assert.assertThrows(
         ReadOnlyException.class,
@@ -147,7 +147,7 @@ class MirrorReadOnlyCheckTest {
       MirrorConfiguration configuration = new MirrorConfiguration();
       configuration.setBranchesAndTagsPatterns(List.of("main"));
       when(hookContext.getBranchProvider().getDeletedOrClosed()).thenReturn(List.of("main"));
-      when(configurationStore.getConfiguration(repository)).thenReturn(of(configuration));
+      when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
       Assert.assertThrows(
         ReadOnlyException.class,
@@ -160,7 +160,7 @@ class MirrorReadOnlyCheckTest {
       MirrorConfiguration configuration = new MirrorConfiguration();
       configuration.setBranchesAndTagsPatterns(List.of("feature/*"));
       when(hookContext.getBranchProvider().getCreatedOrModified()).thenReturn(List.of("feature/nice"));
-      when(configurationStore.getConfiguration(repository)).thenReturn(of(configuration));
+      when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
       Assert.assertThrows(
         ReadOnlyException.class,
@@ -173,7 +173,7 @@ class MirrorReadOnlyCheckTest {
       MirrorConfiguration configuration = new MirrorConfiguration();
       configuration.setBranchesAndTagsPatterns(List.of("feature/*"));
       when(hookContext.getBranchProvider().getCreatedOrModified()).thenReturn(List.of("develop"));
-      when(configurationStore.getConfiguration(repository)).thenReturn(of(configuration));
+      when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
       check.checkForReadOnlyBranch(event);
 

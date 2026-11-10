@@ -1,0 +1,2 @@
+- type: fixed
+  description: Use the effective global or repository mirror filters to protect branches from user changes
