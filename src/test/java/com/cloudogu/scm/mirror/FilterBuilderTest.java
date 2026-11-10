@@ -28,7 +28,6 @@ import sonia.scm.security.PublicKey;
 
 import static com.cloudogu.scm.mirror.ConfigurableFilter.MESSAGE_NO_FAST_FORWARD;
 import static com.cloudogu.scm.mirror.ConfigurableFilter.MESSAGE_NO_VALID_SIGNATURE;
-import static com.cloudogu.scm.mirror.ConfigurableFilter.MESSAGE_PATTERN_NOT_MATCHED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -429,25 +428,25 @@ class FilterBuilderTest {
     }
 
     @Test
-    void shouldRejectBranchesWithOtherName() {
+    void shouldRemoveBranchesWithOtherName() {
       Changeset changeset = new Changeset();
       MirrorFilter.BranchUpdate branchUpdate = mockBranchUpdate(changeset, "testing/something");
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
       assertThat(filter.acceptBranch(branchUpdate).isAccepted()).isFalse();
-      assertThat(filter.acceptBranch(branchUpdate).getRejectReason()).get().isEqualTo(MESSAGE_PATTERN_NOT_MATCHED);
+      assertThat(filter.acceptBranch(branchUpdate).isRemovalRequested()).isTrue();
     }
 
     @Test
-    void shouldRejectTagsWithOtherName() {
+    void shouldRemoveTagsWithOtherName() {
       Tag tag = new Tag("beta/0.0.0.1", "abc");
       MirrorFilter.TagUpdate tagUpdate = mockTagUpdate(tag);
 
       MirrorFilter.Filter filter = mirrorFilter.getFilter(null);
 
       assertThat(filter.acceptTag(tagUpdate).isAccepted()).isFalse();
-      assertThat(filter.acceptTag(tagUpdate).getRejectReason()).get().isEqualTo(MESSAGE_PATTERN_NOT_MATCHED);
+      assertThat(filter.acceptTag(tagUpdate).isRemovalRequested()).isTrue();
     }
   }
 
@@ -490,6 +489,7 @@ class FilterBuilderTest {
     MirrorFilter.BranchUpdate branchUpdate = mock(MirrorFilter.BranchUpdate.class);
     when(branchUpdate.getChangeset()).thenReturn(ofNullable(changeset));
     when(branchUpdate.getBranchName()).thenReturn(name);
+    when(branchUpdate.getUpdateType()).thenReturn(ofNullable(changeset == null ? MirrorFilter.UpdateType.DELETE : MirrorFilter.UpdateType.UPDATE));
     return branchUpdate;
   }
 
@@ -498,6 +498,7 @@ class FilterBuilderTest {
     MirrorFilter.TagUpdate tagUpdate = mock(MirrorFilter.TagUpdate.class);
     when(tagUpdate.getTag()).thenReturn(ofNullable(tag));
     when(tagUpdate.getTagName()).thenReturn(tagName);
+    when(tagUpdate.getUpdateType()).thenReturn(ofNullable(tag == null ? MirrorFilter.UpdateType.DELETE : MirrorFilter.UpdateType.UPDATE));
     return tagUpdate;
   }
 

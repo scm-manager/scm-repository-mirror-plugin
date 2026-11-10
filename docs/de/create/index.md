@@ -16,9 +16,14 @@ Wenn dieses gewählt ist, werden Änderungen an Branches oder Tags nicht überno
 
 **Branches und Tags**
 
-Wenn hier eine durch Kommata getrennte Liste an Mustern eingetragen wird, werden Branches und Tags nur
-übernommen, wenn diese einem dieser Muster entsprechen, z. B. `main, develop, release/*`.
+Jedes Glob-Muster, zum Beispiel `main`, `develop` oder `release/*`, wird mit der Eingabetaste hinzugefügt.
+Bestätigte Muster erscheinen als Chips und können einzeln entfernt werden. Nur hinzugefügte Muster werden gespeichert;
+noch nicht bestätigter Text wird nicht gespeichert. Branches und Tags werden nur übernommen, wenn sie einem der hinzugefügten Muster entsprechen.
 Ist hier nichts eingetragen, wird nicht nach Namen gefiltert.
+
+Werden diese Muster später geändert, werden Branches und Tags, die nicht mehr passen, bei der nächsten Synchronisation aus dem Mirror entfernt,
+auch wenn sich das Quell-Repository nicht geändert hat.
+Werden Aktualisierungen durch Fast-Forward- oder Signaturprüfungen abgelehnt, bleibt der bestehende Branch oder Tag erhalten.
 
 **GPG Verifikation**
 
@@ -59,5 +64,9 @@ Der Synchronisationsstatus eines Mirrors wird direkt in der Code-Ansicht des Rep
 
 Die Ergebnisse der Synchronisation können in dem "Mirror-Protokoll" in der Navigation für das
 Repository eingesehen werden.
+
+Das Protokoll unterscheidet abgelehnte Aktualisierungen (`update rejected`, vorhandene Referenzen bleiben erhalten),
+ausgeschlossene neue Referenzen (`excluded`) und entfernte vorhandene Referenzen (`deleted`).
+Ein Filtergrund folgt nach einem Doppelpunkt.
 
 ![Mirror Log in SCM-Manager for a repository](assets/mirror-log.png)

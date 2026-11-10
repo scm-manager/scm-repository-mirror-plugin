@@ -15,7 +15,11 @@ If selected, changes on branches and tags will be rejected when they have been f
 
 **Branches and Tags**
 
-If given, only branches and tags matching the given patterns (devided by commas) will be synchronized, eg. `main, develop, release/*`. If nothing is specified, branches and tags will not be filtered by name.
+Add each glob pattern, for example `main`, `develop`, or `release/*`, by pressing Enter. Each confirmed pattern appears as a chip and can be removed individually. Only added patterns are saved; text still being typed is not saved. Only branches and tags matching an added pattern will be synchronized. If no patterns are added, branches and tags will not be filtered by name.
+
+If these patterns are changed later, branches and tags that no longer match are removed from the mirror during the next synchronization,
+even if the source repository has not changed.
+Updates rejected by fast-forward or signature checks preserve the existing branch or tag.
 
 **GPG Verification**
 
@@ -51,5 +55,8 @@ The synchronization status of a mirror is shown directly in the repository's cod
 ![Banner in SCM-Manager](assets/banner.png)
 
 The synchronization results can be found in the "Mirror Log" in the navigation for the repository.
+
+The log distinguishes rejected updates (`update rejected`, preserving existing refs), skipped new refs (`skipped`),
+and removed existing refs (`deleted`). A filter reason follows the action after a colon.
 
 ![Mirror Log in SCM-Manager for a repository](assets/mirror-log.png)

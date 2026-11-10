@@ -1,0 +1,2 @@
+- type: changed
+  description: Use chip inputs for branch and tag patterns in mirror creation, repository settings, and global settings

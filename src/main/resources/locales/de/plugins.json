@@ -126,7 +126,8 @@
       },
       "branchesAndTagsPatterns": {
         "label": "Branches und Tags",
-        "helpText": "Komma-separierte Liste mit glob Patterns die besagt, welche Branches und Tags gespiegelt werden sollen. Bei einer leeren Liste werden alle Branches bzw. Tags gespiegelt."
+        "helpText": "Glob-Muster, die festlegen, welche Branches und Tags gespiegelt werden sollen. Jedes Muster mit der Enter hinzufügen. Nur hinzugefügte Muster werden gespeichert. Ohne Muster werden alle Branches und Tags gespiegelt.",
+        "information": "Glob-Muster, die festlegen, welche Branches und Tags gespiegelt werden sollen (jeweils mit Enter bestätigen)."
       },
       "lfs": "LFS",
       "verificationFilters": "Filter",

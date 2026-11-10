@@ -14,8 +14,9 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
+import BranchTagPatternsControl from "./BranchTagPatternsControl";
 import React, { FC, useEffect } from "react";
-import { Checkbox, ConfigurationForm, InputField } from "@scm-manager/ui-components";
+import { Checkbox, ConfigurationForm } from "@scm-manager/ui-components";
 import { Notification, Title } from "@scm-manager/ui-core";
 import { GlobalConfigurationDto } from "../types";
 import { useForm } from "react-hook-form";
@@ -69,12 +70,7 @@ const GlobalConfig: FC<Props> = ({ link }) => {
         disabled={isReadOnly}
         {...register("fastForwardOnly", { shouldUnregister: true })}
       />
-      <InputField
-        label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
-        helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
-        disabled={isReadOnly}
-        {...register("branchesAndTagsPatterns")}
-      />
+      <BranchTagPatternsControl control={control} name="branchesAndTagsPatterns" disabled={isReadOnly} />
       <GpgVerificationControl control={control} isReadonly={isReadOnly} />
     </ConfigurationForm>
   );

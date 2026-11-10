@@ -14,8 +14,9 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { Checkbox, InputField, urls } from "@scm-manager/ui-components";
+import { Checkbox, urls } from "@scm-manager/ui-components";
 import { Button, Level } from "@scm-manager/ui-core";
+import BranchTagPatternsControl from "./config/BranchTagPatternsControl";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { MirrorCreationDto, MirrorCreationForm } from "./types";
 import { useForm } from "react-hook-form";
@@ -144,11 +145,11 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
                 disabled={disabled}
                 {...register("fastForwardOnly", { shouldUnregister: true })}
               />
-              <InputField
-                label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
-                helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
+              <BranchTagPatternsControl
+                control={control}
+                name="branchesAndTagsPatterns"
                 disabled={disabled}
-                {...register("branchesAndTagsPatterns", { shouldUnregister: true })}
+                shouldUnregister
               />
               <GpgVerificationControl control={control} isReadonly={disabled} />
             </>

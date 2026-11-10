@@ -14,8 +14,9 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
+import BranchTagPatternsControl from "./BranchTagPatternsControl";
 import React, { FC, useEffect } from "react";
-import { Checkbox, ConfigurationForm, InputField } from "@scm-manager/ui-components";
+import { Checkbox, ConfigurationForm } from "@scm-manager/ui-components";
 import { useConfigLink } from "@scm-manager/ui-api";
 import {
   LocalMirrorFilterConfigurationDto,
@@ -175,11 +176,11 @@ const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
               disabled={isReadOnly}
               {...register("fastForwardOnly", { shouldUnregister: true })}
             />
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.label")}
-              helpText={t("scm-repository-mirror-plugin.form.branchesAndTagsPatterns.helpText")}
+            <BranchTagPatternsControl
+              control={control}
+              name="branchesAndTagsPatterns"
               disabled={isReadOnly}
-              {...register("branchesAndTagsPatterns", { shouldUnregister: true })}
+              shouldUnregister
             />
             <GpgVerificationControl control={control} isReadonly={isReadOnly} />
           </>

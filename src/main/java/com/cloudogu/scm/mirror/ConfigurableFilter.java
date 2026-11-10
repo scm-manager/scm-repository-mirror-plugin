@@ -32,9 +32,9 @@ import static sonia.scm.repository.api.MirrorFilter.Result.accept;
 @SuppressWarnings("UnstableApiUsage")
 class ConfigurableFilter implements MirrorFilter {
 
-  public static final String MESSAGE_PATTERN_NOT_MATCHED = "skipped: does not match configured patterns";
-  public static final String MESSAGE_NO_VALID_SIGNATURE = "skipped: no valid signature";
-  public static final String MESSAGE_NO_FAST_FORWARD = "skipped: no fast forward";
+  public static final String MESSAGE_PATTERN_NOT_MATCHED = "does not match configured patterns";
+  public static final String MESSAGE_NO_VALID_SIGNATURE = "no valid signature";
+  public static final String MESSAGE_NO_FAST_FORWARD = "no fast forward";
 
   private final MirrorConfiguration configuration;
   private final Collection<String> keysIds;
@@ -52,7 +52,10 @@ class ConfigurableFilter implements MirrorFilter {
       @Override
       public Result acceptBranch(BranchUpdate branch) {
         if (!matchesPattern(branch.getBranchName())) {
-          return Result.reject(MESSAGE_PATTERN_NOT_MATCHED);
+          return excludeReference();
+        }
+        if (branch.getUpdateType().isEmpty()) {
+          return accept();
         }
         if (configuration.isFastForwardOnly() && branch.isForcedUpdate()) {
           issuesFound = true;
@@ -67,7 +70,10 @@ class ConfigurableFilter implements MirrorFilter {
       @Override
       public Result acceptTag(TagUpdate tag) {
         if (!matchesPattern(tag.getTagName())) {
-          return Result.reject(MESSAGE_PATTERN_NOT_MATCHED);
+          return excludeReference();
+        }
+        if (tag.getUpdateType().isEmpty()) {
+          return accept();
         }
         if (configuration.getGpgVerificationType() == NONE) {
           return accept();
@@ -101,6 +107,12 @@ class ConfigurableFilter implements MirrorFilter {
   private boolean matchesPattern(String name) {
     return configuration.getBranchesAndTagsPatterns().isEmpty() ||
       configuration.getBranchesAndTagsPatterns().stream().anyMatch(globPattern -> GlobUtil.matches(globPattern, name));
+  }
+
+  private Result excludeReference() {
+    return configuration.isAllBranchesProtected()
+      ? Result.remove(MESSAGE_PATTERN_NOT_MATCHED)
+      : Result.reject(MESSAGE_PATTERN_NOT_MATCHED);
   }
 
   private boolean hasSignatureFromUser(Signature signature) {

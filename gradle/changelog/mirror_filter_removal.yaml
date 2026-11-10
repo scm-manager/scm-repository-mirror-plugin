@@ -1,0 +1,4 @@
+- type: fixed
+  description: Remove mirrored branches and tags that no longer match configured name filters
+- type: fixed
+  description: Apply mirror write protection to tags as well as branches

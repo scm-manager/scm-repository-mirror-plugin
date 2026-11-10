@@ -1,0 +1,2 @@
+- type: changed
+  description: Report mirror filter causes separately from the log actions for rejected updates, excluded refs and deleted refs

@@ -24,8 +24,11 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PreReceiveRepositoryHookEvent;
 import sonia.scm.repository.ReadOnlyCheck;
 import sonia.scm.repository.ReadOnlyException;
+import sonia.scm.repository.Tag;
 import sonia.scm.repository.api.HookBranchProvider;
+import sonia.scm.repository.api.HookContext;
 import sonia.scm.repository.api.HookFeature;
+import sonia.scm.repository.api.HookTagProvider;
 import sonia.scm.security.Authentications;
 import sonia.scm.util.GlobUtil;
 
@@ -67,12 +70,14 @@ class MirrorReadOnlyCheck implements ReadOnlyCheck {
   }
 
   @Subscribe(async = false)
-  public void checkForReadOnlyBranch(PreReceiveRepositoryHookEvent event) {
+  public void checkForReadOnlyRefs(PreReceiveRepositoryHookEvent event) {
     if (Authentications.PRINCIPAL_SYSTEM.equals(SecurityUtils.getSubject().getPrincipal().toString())) {
       return;
     }
     Optional<MirrorConfiguration> configuration = configurationStore.getApplicableConfiguration(event.getRepository());
-    if (configuration.isPresent() && event.getContext().isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
+    HookContext context = event.getContext();
+    if (configuration.isPresent() &&
+      (context.isFeatureSupported(HookFeature.BRANCH_PROVIDER) || context.isFeatureSupported(HookFeature.TAG_PROVIDER))) {
       List<String> branchesAndTagsPatterns = configuration.get().getBranchesAndTagsPatterns();
       if (branchesAndTagsPatterns.isEmpty() || isReadOnly(event, branchesAndTagsPatterns)) {
         throw new ReadOnlyException(entity(event.getRepository()).build(), getReason());
@@ -81,10 +86,23 @@ class MirrorReadOnlyCheck implements ReadOnlyCheck {
   }
 
   private boolean isReadOnly(PreReceiveRepositoryHookEvent event, List<String> branchesAndTagsPatterns) {
-    HookBranchProvider branchProvider = event.getContext().getBranchProvider();
+    HookContext context = event.getContext();
+    Stream<String> branches = context.isFeatureSupported(HookFeature.BRANCH_PROVIDER)
+      ? getBranchNames(context.getBranchProvider()) : Stream.empty();
+    Stream<String> tags = context.isFeatureSupported(HookFeature.TAG_PROVIDER)
+      ? getTagNames(context.getTagProvider()) : Stream.empty();
+    return Stream.concat(branches, tags)
+      .anyMatch(name -> branchesAndTagsPatterns.stream().anyMatch(globPattern -> GlobUtil.matches(globPattern, name)));
+  }
+
+  private Stream<String> getBranchNames(HookBranchProvider branchProvider) {
     return Stream.concat(
       branchProvider.getCreatedOrModified().stream(),
       branchProvider.getDeletedOrClosed().stream()
-    ).anyMatch(branch -> branchesAndTagsPatterns.stream().anyMatch(globPattern -> GlobUtil.matches(globPattern, branch)));
+    );
+  }
+
+  private Stream<String> getTagNames(HookTagProvider tagProvider) {
+    return Stream.concat(tagProvider.getCreatedTags().stream(), tagProvider.getDeletedTags().stream()).map(Tag::getName);
   }
 }

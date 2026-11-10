@@ -112,7 +112,7 @@ class MirrorReadOnlyCheckTest {
     @Test
     void shouldDoNothingWithoutConfiguration() {
       when(configurationStore.getApplicableConfiguration(repository)).thenReturn(empty());
-      check.checkForReadOnlyBranch(event);
+      check.checkForReadOnlyRefs(event);
 
       // no exception should be thrown
     }
@@ -125,7 +125,7 @@ class MirrorReadOnlyCheckTest {
 
       Assert.assertThrows(
         ReadOnlyException.class,
-        () -> check.checkForReadOnlyBranch(event)
+        () -> check.checkForReadOnlyRefs(event)
       );
     }
 
@@ -138,7 +138,7 @@ class MirrorReadOnlyCheckTest {
 
       Assert.assertThrows(
         ReadOnlyException.class,
-        () -> check.checkForReadOnlyBranch(event)
+        () -> check.checkForReadOnlyRefs(event)
       );
     }
 
@@ -151,7 +151,7 @@ class MirrorReadOnlyCheckTest {
 
       Assert.assertThrows(
         ReadOnlyException.class,
-        () -> check.checkForReadOnlyBranch(event)
+        () -> check.checkForReadOnlyRefs(event)
       );
     }
 
@@ -164,7 +164,7 @@ class MirrorReadOnlyCheckTest {
 
       Assert.assertThrows(
         ReadOnlyException.class,
-        () -> check.checkForReadOnlyBranch(event)
+        () -> check.checkForReadOnlyRefs(event)
       );
     }
 
@@ -175,7 +175,7 @@ class MirrorReadOnlyCheckTest {
       when(hookContext.getBranchProvider().getCreatedOrModified()).thenReturn(List.of("develop"));
       when(configurationStore.getApplicableConfiguration(repository)).thenReturn(of(configuration));
 
-      check.checkForReadOnlyBranch(event);
+      check.checkForReadOnlyRefs(event);
 
       // no exception should be thrown
     }
@@ -187,7 +187,7 @@ class MirrorReadOnlyCheckTest {
       configuration.setBranchesAndTagsPatterns(List.of("main"));
       when(hookContext.getBranchProvider().getCreatedOrModified()).thenReturn(List.of("main"));
 
-      check.checkForReadOnlyBranch(event);
+      check.checkForReadOnlyRefs(event);
 
       // no exception should be thrown
     }
