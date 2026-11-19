@@ -11,6 +11,9 @@ Benutzer werden benachrichtigt, wenn sich der Mirror-Status ändert.
 
 Die Details zu den anderen Einstellungen finden sich in der [Dokumentation zur Erstellung](../create).
 
+Die Quell-URL kann geändert werden, wenn das Repository-Backend dies unterstützt (Git). Bei anderen Backends bleibt sie
+schreibgeschützt. Änderungen gelten ab der nächsten Synchronisierung; die konfigurierten Filter gelten weiterhin.
+
 ![Mirror-Konfiguration](assets/mirror-configuration.png)
 
 [^1]: Es laufen grundsätzlich höchstens vier Synchronisationen gleichzeitig.

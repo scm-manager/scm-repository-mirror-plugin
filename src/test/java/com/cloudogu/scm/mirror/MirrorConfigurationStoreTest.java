@@ -69,10 +69,12 @@ class MirrorConfigurationStoreTest {
 
   private final InMemoryConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
   private MirrorConfigurationStore store;
+  @Mock
+  private MirrorSourceUrlSupport sourceUrlSupport;
 
   @BeforeEach
   void createService() {
-    store = new MirrorConfigurationStore(storeFactory, scheduler, repositoryManager, administrationContext);
+    store = new MirrorConfigurationStore(storeFactory, scheduler, repositoryManager, administrationContext, sourceUrlSupport);
   }
 
   @BeforeAll
@@ -382,6 +384,37 @@ class MirrorConfigurationStoreTest {
       newConfiguration.setUrl("http://magrathea.com/");
 
       assertThrows(ScmConstraintViolationException.class, () -> store.setAccessConfiguration(REPOSITORY, newConfiguration));
+    }
+
+    @Test
+    void shouldChangeUrlWhenSupported() {
+      MirrorConfiguration existing = new MirrorConfiguration();
+      existing.setUrl("https://old.example/repository");
+      mockExistingConfiguration(existing);
+      when(sourceUrlSupport.isUrlModifiable(REPOSITORY)).thenReturn(true);
+      MirrorAccessConfigurationImpl updated = new MirrorAccessConfigurationImpl();
+      updated.setUrl("https://new.example/repository");
+
+      store.setAccessConfiguration(REPOSITORY, updated);
+
+      assertThat(store.getConfiguration(REPOSITORY)).get()
+        .extracting(MirrorConfiguration::getUrl).isEqualTo(updated.getUrl());
+    }
+
+    @Test
+    void shouldKeepUrlWhenUnsupportedAndUnchanged() {
+      MirrorConfiguration existing = new MirrorConfiguration();
+      existing.setUrl("https://old.example/repository");
+      mockExistingConfiguration(existing);
+      MirrorAccessConfigurationImpl updated = new MirrorAccessConfigurationImpl();
+      updated.setUrl(existing.getUrl());
+      updated.setSynchronizationPeriod(10);
+
+      store.setAccessConfiguration(REPOSITORY, updated);
+
+      assertThat(existing.getUrl()).isEqualTo(updated.getUrl());
+      assertThat(existing.getSynchronizationPeriod()).isEqualTo(10);
+      verify(sourceUrlSupport, never()).isUrlModifiable(any());
     }
 
     @Test

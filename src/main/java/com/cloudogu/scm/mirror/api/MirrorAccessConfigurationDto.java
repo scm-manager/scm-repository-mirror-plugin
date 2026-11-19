@@ -16,6 +16,7 @@
 
 package com.cloudogu.scm.mirror.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
@@ -36,6 +37,9 @@ public class MirrorAccessConfigurationDto extends HalRepresentation {
 
   @NotBlank
   private String url;
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  private boolean urlModifiable;
   @Min(1)
   private Integer synchronizationPeriod;
   private List<String> managingUsers;

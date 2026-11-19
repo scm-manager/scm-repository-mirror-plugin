@@ -20,6 +20,7 @@ import com.cloudogu.scm.mirror.LogEntry;
 import com.cloudogu.scm.mirror.LogStore;
 import com.cloudogu.scm.mirror.MirrorAccessConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfiguration;
+import com.cloudogu.scm.mirror.MirrorSourceUrlSupport;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorProgress;
 import com.cloudogu.scm.mirror.MirrorProxyConfiguration;
@@ -74,6 +75,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.web.MockScmPathInfoStore.forUri;
@@ -101,6 +103,7 @@ class MirrorRootResourceTest {
   @BeforeEach
   void initResource() {
     MirrorResource mirrorResource = new MirrorResource(configurationStore, mirrorService, repositoryManager, configurationToConfigurationDtoMapper, logStore, toFiltersDtoMapper);
+    configurationToConfigurationDtoMapper.sourceUrlSupport = mock(MirrorSourceUrlSupport.class);
     configurationToConfigurationDtoMapper.setScmPathInfoStore(forUri("/"));
     toDtoMapper.setScmPathInfoStore(forUri("/"));
     toFiltersDtoMapper.setScmPathInfoStore(forUri("/"));
@@ -452,6 +455,18 @@ class MirrorRootResourceTest {
             new MirrorProxyConfiguration(true, "foo.bar", 1337, "trillian", "secret123"));
         when(configurationStore.getConfiguration(repository))
           .thenReturn(Optional.of(existingConfiguration));
+      }
+
+      @Test
+      void shouldExposeSourceUrlCapabilityInRestResponse() throws URISyntaxException {
+        when(configurationToConfigurationDtoMapper.sourceUrlSupport.isUrlModifiable(repository)).thenReturn(true);
+        MockHttpRequest request = MockHttpRequest.get("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration");
+        JsonMockHttpResponse response = new JsonMockHttpResponse();
+
+        dispatcher.invoke(request, response);
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getContentAs(JsonNode.class).get("urlModifiable").asBoolean()).isTrue();
       }
 
       @Test

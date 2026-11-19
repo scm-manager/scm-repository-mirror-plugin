@@ -1,0 +1,4 @@
+- type: added
+  description: Allow changing mirror source URLs when supported by the repository backend and expose this capability in the access configuration API
+- type: fixed
+  description: Changes to mirror configrations are logged if auditlog plugin is installed

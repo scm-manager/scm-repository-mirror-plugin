@@ -17,8 +17,10 @@
 package com.cloudogu.scm.mirror.api;
 
 import com.cloudogu.scm.mirror.MirrorConfiguration;
+import com.cloudogu.scm.mirror.MirrorSourceUrlSupport;
 import com.cloudogu.scm.mirror.MirrorGpgVerificationType;
 import com.cloudogu.scm.mirror.RawGpgKey;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.util.Providers;
 import org.github.sdorra.jse.ShiroExtension;
@@ -31,10 +33,13 @@ import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SubjectAware(value = "trillian")
 @ExtendWith(ShiroExtension.class)
@@ -46,6 +51,7 @@ class MirrorConfigurationToConfigurationDtoMapperTest {
   void setup() {
     final ScmPathInfoStore scmPathInfoStore = new ScmPathInfoStore();
     scmPathInfoStore.set(() -> URI.create("/scm"));
+    mapper.sourceUrlSupport = mock(MirrorSourceUrlSupport.class);
     mapper.setScmPathInfoStore(Providers.of(scmPathInfoStore));
 
     repository = RepositoryTestData.createHeartOfGold();
@@ -86,6 +92,32 @@ class MirrorConfigurationToConfigurationDtoMapperTest {
     final MirrorAccessConfigurationDto output = mapper.map(input, repository);
     assertThat(output.getLinks().getLinkBy("update"))
       .hasValueSatisfying(link -> assertThat(link.getHref()).isEqualTo("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration"));
+  }
+
+  @Test
+  void shouldExposeCapabilityWithoutUpdatePermission() {
+    when(mapper.sourceUrlSupport.isUrlModifiable(repository)).thenReturn(true);
+
+    MirrorAccessConfigurationDto output = mapper.map(new MirrorConfiguration(), repository);
+
+    assertThat(output.isUrlModifiable()).isTrue();
+    assertThat(output.getLinks().getLinkBy("update")).isEmpty();
+  }
+
+  @Test
+  void shouldReportUnsupportedSourceChange() {
+    assertThat(mapper.map(new MirrorConfiguration(), repository).isUrlModifiable()).isFalse();
+  }
+
+  @Test
+  void shouldIgnoreClientSuppliedCapability() throws IOException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    MirrorAccessConfigurationDto input = objectMapper.readValue(
+      "{\"url\":\"https://example.org/source\",\"urlModifiable\":true}", MirrorAccessConfigurationDto.class);
+
+    assertThat(input.isUrlModifiable()).isFalse();
+    input.setUrlModifiable(true);
+    assertThat(objectMapper.readTree(objectMapper.writeValueAsString(input)).get("urlModifiable").asBoolean()).isTrue();
   }
 
   @Test

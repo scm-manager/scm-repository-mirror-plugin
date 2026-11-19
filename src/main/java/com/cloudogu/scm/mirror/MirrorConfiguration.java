@@ -25,6 +25,8 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
+import sonia.scm.auditlog.AuditEntry;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -34,6 +36,7 @@ import java.util.List;
 @AllArgsConstructor
 @XmlRootElement(name = "mirror-configuration")
 @XmlAccessorType(XmlAccessType.FIELD)
+@AuditEntry(labels = {"mirror", "repository", "config"})
 public class MirrorConfiguration implements MirrorAccessConfiguration, LocalFilterConfiguration {
 
   private String url;

@@ -48,13 +48,15 @@ public class MirrorConfigurationStore implements Initable {
   private final MirrorScheduler scheduler;
   private final RepositoryManager repositoryManager;
   private final AdministrationContext administrationContext;
+  private final MirrorSourceUrlSupport sourceUrlSupport;
 
   @Inject
-  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory, MirrorScheduler scheduler, RepositoryManager repositoryManager, AdministrationContext administrationContext) {
+  MirrorConfigurationStore(ConfigurationStoreFactory storeFactory, MirrorScheduler scheduler, RepositoryManager repositoryManager, AdministrationContext administrationContext, MirrorSourceUrlSupport sourceUrlSupport) {
     this.storeFactory = storeFactory;
     this.scheduler = scheduler;
     this.repositoryManager = repositoryManager;
     this.administrationContext = administrationContext;
+    this.sourceUrlSupport = sourceUrlSupport;
     this.globalStore = storeFactory.withType(GlobalMirrorConfiguration.class).withName(STORE_NAME).build();
   }
 
@@ -141,7 +143,7 @@ public class MirrorConfigurationStore implements Initable {
     if (getGlobalConfiguration().isHttpsOnly() && !newMirrorAccessConfiguration.getUrl().startsWith("https")) {
       throw new InsecureConnectionNotAllowedException(repository);
     }
-    updateUrl(existingConfiguration, newMirrorAccessConfiguration);
+    updateUrl(repository, existingConfiguration, newMirrorAccessConfiguration);
     updateUsernamePasswordCredentials(existingConfiguration, newMirrorAccessConfiguration);
     updateCertificateCredentials(existingConfiguration, newMirrorAccessConfiguration);
     existingConfiguration.setManagingUsers(newMirrorAccessConfiguration.getManagingUsers());
@@ -154,12 +156,13 @@ public class MirrorConfigurationStore implements Initable {
     return existingConfiguration;
   }
 
-  private void updateUrl(MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
-    if (Strings.isNullOrEmpty(existingConfiguration.getUrl())) {
+  private void updateUrl(Repository repository, MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
+    if (Strings.isNullOrEmpty(existingConfiguration.getUrl())
+      || (!existingConfiguration.getUrl().equals(newMirrorAccessConfiguration.getUrl()) && sourceUrlSupport.isUrlModifiable(repository))) {
       existingConfiguration.setUrl(newMirrorAccessConfiguration.getUrl());
     } else {
       doThrow()
-        .violation("url must not be changed", "url")
+        .violation("changing source url is not supported by repository type", "url")
         .when(!existingConfiguration.getUrl().equals(newMirrorAccessConfiguration.getUrl()));
     }
   }

@@ -23,12 +23,14 @@ import lombok.Setter;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import sonia.scm.auditlog.AuditEntry;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @XmlRootElement(name = "global-mirror-configuration")
 @XmlAccessorType(XmlAccessType.FIELD)
+@AuditEntry(labels = {"mirror", "config"})
 public class GlobalMirrorConfiguration extends MirrorFilterConfigurationImpl {
 
   private boolean httpsOnly = false;

@@ -68,7 +68,11 @@ class MirrorReadOnlyCheckConfigurationTest {
   void setUp() {
     repository.setId("42");
     configurationStore = new MirrorConfigurationStore(
-      storeFactory, mock(MirrorScheduler.class), mock(RepositoryManager.class), mock(AdministrationContext.class)
+      storeFactory,
+      mock(MirrorScheduler.class),
+      mock(RepositoryManager.class),
+      mock(AdministrationContext.class),
+      mock(MirrorSourceUrlSupport.class)
     );
     check = new MirrorReadOnlyCheck(configurationStore);
     event = new PreReceiveRepositoryHookEvent(

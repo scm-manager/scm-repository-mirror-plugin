@@ -20,8 +20,8 @@
         "label": "Use Authentication with Client Certificate (PKCS12)"
       },
       "url": {
-        "label": "Url",
-        "helpText": "The url of the repository that should be mirrored. This url cannot be changed once the mirror has been created.",
+        "label": "URL Of The Source Repository",
+        "descriptionText": "Please note that changing the URL can significantly alter the mirrored data and affect external systems and follow-up processes.",
         "errors": {
           "required": "The URL is required",
           "invalid": "The URL is invalid"

@@ -11,6 +11,9 @@ users who will get a notification whenever the status of a mirror synchronizatio
 
 The details for the other settings can be found in the [documentation for the creation](../create).
 
+The source URL can also be changed when the repository backend supports it (Git). Other backends keep it read-only.
+Changes take effect on the next synchronization and still use the configured filters.
+
 ![Mirror_Configuration for a mirrored repository](assets/mirror-configuration.png)
 
 [^1]: Please note, that at most four synchronisations will run in parallel.

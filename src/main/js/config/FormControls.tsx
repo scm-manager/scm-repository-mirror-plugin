@@ -27,7 +27,6 @@ import { AutocompleteObject, Option } from "@scm-manager/ui-types";
 import {
   Checkbox,
   FileInput,
-  InputField,
   MemberNameTagGroup,
   Select,
   SelectItem,
@@ -36,7 +35,7 @@ import {
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import readBinaryFileAsBase64String from "../readBinaryFileAsBase64String";
 import styled from "styled-components";
-import { Button, ComboboxField, Icon, IconButton, Level } from "@scm-manager/ui-core";
+import { Button, ComboboxField, Icon, IconButton, Level, InputField } from "@scm-manager/ui-core";
 
 const Column = styled.div`
   padding: 0 0.75rem;
@@ -292,9 +291,8 @@ export const UrlControl: FC<MirrorAccessConfigControlProps> = ({ control, isRead
     <Column className="column is-full">
       <InputField
         label={t("scm-repository-mirror-plugin.form.url.label")}
-        helpText={t("scm-repository-mirror-plugin.form.url.helpText")}
-        errorMessage={fieldState.error?.message}
-        validationError={!!fieldState.error}
+        descriptionText={isReadonly ? undefined: t("scm-repository-mirror-plugin.form.url.descriptionText")}
+        error={fieldState.error?.message}
         disabled={isReadonly}
         testId="url-input"
         required={true}
@@ -328,8 +326,7 @@ export const ProxyHostControl: FC<MirrorAccessConfigControlProps> = ({ control, 
       <InputField
         label={t("scm-repository-mirror-plugin.form.proxy.host.label")}
         helpText={t("scm-repository-mirror-plugin.form.proxy.host.helpText")}
-        errorMessage={fieldState.error?.message}
-        validationError={!!fieldState.error}
+        error={fieldState.error?.message}
         disabled={isReadonly}
         className="mb-0"
         required={true}
@@ -367,8 +364,7 @@ export const ProxyPortControl: FC<MirrorAccessConfigControlProps> = ({ control, 
       <InputField
         label={t("scm-repository-mirror-plugin.form.proxy.port.label")}
         helpText={t("scm-repository-mirror-plugin.form.proxy.port.helpText")}
-        errorMessage={fieldState.error?.message}
-        validationError={!!fieldState.error}
+        error={fieldState.error?.message}
         type="number"
         disabled={isReadonly}
         className="mb-0"
@@ -393,8 +389,7 @@ export const ProxyUsernameControl: FC<MirrorAccessConfigControlProps> = ({ contr
       <InputField
         label={t("scm-repository-mirror-plugin.form.proxy.username.label")}
         helpText={t("scm-repository-mirror-plugin.form.proxy.username.helpText")}
-        errorMessage={fieldState.error?.message}
-        validationError={!!fieldState.error}
+        error={fieldState.error?.message}
         disabled={isReadonly}
         className="mb-0"
         {...field}
@@ -417,8 +412,7 @@ export const ProxyPasswordControl: FC<MirrorAccessConfigControlProps> = ({ contr
         label={t("scm-repository-mirror-plugin.form.proxy.password.label")}
         helpText={t("scm-repository-mirror-plugin.form.proxy.password.helpText")}
         type="password"
-        errorMessage={fieldState.error?.message}
-        validationError={!!fieldState.error}
+        error={fieldState.error?.message}
         disabled={isReadonly}
         className="mb-0"
         {...field}
@@ -511,8 +505,9 @@ export const PublicKeysControl: FC<MirrorFilterConfigControlProps> = ({ control,
               className="mb-5"
               label={t("scm-repository-mirror-plugin.form.keyList.new.displayName.label")}
               helpText={t("scm-repository-mirror-plugin.form.keyList.new.displayName.helpText")}
-              errorMessage={t("scm-repository-mirror-plugin.form.keyList.new.displayName.errors.required")}
-              validationError={!!errors.displayName}
+              error={
+                errors.displayName && t("scm-repository-mirror-plugin.form.keyList.new.displayName.errors.required")
+              }
               {...register("displayName", {
                 required: true,
               })}

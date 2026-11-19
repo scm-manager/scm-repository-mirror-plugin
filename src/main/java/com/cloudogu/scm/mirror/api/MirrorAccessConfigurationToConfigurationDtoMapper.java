@@ -21,6 +21,7 @@ import com.cloudogu.scm.mirror.MirrorAccessConfiguration.UsernamePasswordCredent
 import com.cloudogu.scm.mirror.MirrorConfiguration;
 import com.cloudogu.scm.mirror.MirrorConfigurationStore;
 import com.cloudogu.scm.mirror.MirrorPermissions;
+import com.cloudogu.scm.mirror.MirrorSourceUrlSupport;
 import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
@@ -42,6 +43,10 @@ public abstract class MirrorAccessConfigurationToConfigurationDtoMapper {
   @Inject
   Provider<ScmPathInfoStore> scmPathInfoStore;
 
+  @Inject
+  MirrorSourceUrlSupport sourceUrlSupport;
+
+  @Mapping(target = "urlModifiable", expression = "java(sourceUrlSupport.isUrlModifiable(repository))")
   @Mapping(ignore = true, target = "attributes")
   abstract MirrorAccessConfigurationDto map(MirrorConfiguration configuration, @Context Repository repository);
 

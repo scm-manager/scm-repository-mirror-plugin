@@ -83,9 +83,7 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
   }, [initialConfiguration]);
 
   const onSubmit = handleSubmit((formValue) =>
-    // Because the url field is disabled (sets url to undefined) but the dto expects the url to be present in the request,
-    // we have to manually set the url to the initial configuration
-    update(coalesceFormValue({ ...formValue, url: initialConfiguration?.url || "" })),
+    update(coalesceFormValue({ ...formValue, url: formValue.url ?? initialConfiguration?.url ?? "" })),
   );
 
   return (
@@ -94,7 +92,7 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
       <hr />
       <Subtitle subtitle={t("scm-repository-mirror-plugin.form.subtitle")} />
       <Columns className="columns is-multiline">
-        <UrlControl control={control} isReadonly={true} />
+        <UrlControl control={control} isReadonly={isReadOnly || !initialConfiguration?.urlModifiable} />
         <CredentialsControl control={control} isReadonly={isReadOnly} />
         <SynchronizationPeriodControl control={control} isReadonly={isReadOnly} />
         <ManagingUsersControl control={control} isReadonly={isReadOnly} />
@@ -135,8 +133,6 @@ const RepositoryMirrorFilterConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
   }, [initialConfiguration]);
 
   const onSubmit = handleSubmit((formValue) =>
-    // Because the url field is disabled (sets url to undefined) but the dto expects the url to be present in the request,
-    // we have to manually set the url to the initial configuration
     update(
       !formValue.overwriteGlobalConfiguration
         ? ({
