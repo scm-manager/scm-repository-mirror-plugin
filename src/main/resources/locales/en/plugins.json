@@ -13,11 +13,22 @@
     },
     "form": {
       "subtitle": "Mirror Configuration",
-      "withBaseAuth": {
-        "label": "Use Basic Authentication"
+      "sourceRepositoryAuthentication": "Source repository authentication",
+      "userAuthentication": {
+        "label": "User authentication",
+        "options": {
+          "none": "None",
+          "usernamePassword": "Username and password",
+          "token": "Token"
+        }
       },
-      "withKeyAuth": {
-        "label": "Use Authentication with Client Certificate (PKCS12)"
+      "mutualTlsAuthentication": {
+        "label": "Mutual TLS Communication",
+        "helpText": "Have SCM-Manager and the source repository server authenticate each other using certificates",
+        "options": {
+          "none": "None",
+          "certificate": "Certificate (PKCS #12)"
+        }
       },
       "url": {
         "label": "URL Of The Source Repository",
@@ -29,18 +40,29 @@
       },
       "username": {
         "label": "Username",
-        "helpText": "The user to authenticate with."
+        "errors": {
+          "required": "The username is required"
+        }
       },
       "password": {
         "label": "Password",
-        "helpText": "The password for the provided user."
+        "errors": {
+          "required": "The password is required"
+        }
+      },
+      "token": {
+        "label": "Token",
+        "helpText": "An access token that you can create in the settings of the source repository server",
+        "errors": {
+          "required": "The token is required"
+        }
       },
       "certificate": {
-        "label": "Certificate with Key (PKCS12)",
-        "helpText": "A PKCS12 keystore for securing the connection.",
+        "label": "PKCS #12 file",
+        "helpText": "A file that contains a certificate and a key (.p12 or .pfx)",
         "password": {
-          "label": "Password",
-          "helpText": "If present, the password for the keystore."
+          "label": "Password of the file",
+          "helpText": "Only necessary if the file is password-protected"
         }
       },
       "period": {

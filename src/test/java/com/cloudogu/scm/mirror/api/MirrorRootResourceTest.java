@@ -154,12 +154,33 @@ class MirrorRootResourceTest {
 
       dispatcher.invoke(request, response);
 
+      assertThat(response.getStatus()).isEqualTo(201);
       verify(mirrorService).createMirror(
         argThat(mirrorRequest -> {
           assertThat(mirrorRequest.getUsernamePasswordCredential()).isNotNull();
           assertThat(mirrorRequest.getCertificateCredential()).isNull();
           assertThat(mirrorRequest.getUsernamePasswordCredential().getUsername()).isEqualTo("trillian");
           assertThat(mirrorRequest.getUsernamePasswordCredential().getPassword()).isEqualTo("hog");
+          return true;
+        }),
+        any()
+      );
+    }
+
+    @Test
+    void shouldConfigureTokenAuthenticationWithoutUsername() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest.post("/v2/mirror/repositories")
+        .json("{'namespace':'hitchhiker', 'name':'HeartOfGold', 'type':'git', 'url':'http://hog/git', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'password':'token'}, 'gpgVerificationType':'NONE','proxyConfiguration':{}}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(201);
+      verify(mirrorService).createMirror(
+        argThat(mirrorRequest -> {
+          assertThat(mirrorRequest.getUsernamePasswordCredential()).isNotNull();
+          assertThat(mirrorRequest.getUsernamePasswordCredential().getUsername()).isEmpty();
+          assertThat(mirrorRequest.getUsernamePasswordCredential().getPassword()).isEqualTo("token");
           return true;
         }),
         any()
@@ -365,6 +386,26 @@ class MirrorRootResourceTest {
           argThat(configuration -> {
             assertThat(configuration.getUsernamePasswordCredential().getUsername()).isEqualTo("dent");
             assertThat(configuration.getUsernamePasswordCredential().getPassword()).isEqualTo("hg2g");
+            return true;
+          }));
+    }
+
+    @Test
+    void shouldSetTokenCredentialWithoutUsernameInAccessConfiguration() throws URISyntaxException {
+      JsonMockHttpRequest request = JsonMockHttpRequest
+        .put("/v2/mirror/repositories/hitchhiker/HeartOfGold/accessConfiguration")
+        .json("{'url':'http://hog/scm', 'synchronizationPeriod':42, 'usernamePasswordCredential':{'password':'token'},'proxyConfiguration':{}}");
+      MockHttpResponse response = new MockHttpResponse();
+
+      dispatcher.invoke(request, response);
+
+      assertThat(response.getStatus()).isEqualTo(204);
+      verify(configurationStore)
+        .setAccessConfiguration(
+          any(),
+          argThat(configuration -> {
+            assertThat(configuration.getUsernamePasswordCredential().getUsername()).isEmpty();
+            assertThat(configuration.getUsernamePasswordCredential().getPassword()).isEqualTo("token");
             return true;
           }));
     }

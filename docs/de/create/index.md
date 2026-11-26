@@ -8,6 +8,9 @@ und dem Importieren eines bestehenden Repositories noch einen dritten Modus: **R
 Über das Formular können eine URL, mögliche Zugangsdaten und ein Synchronisierungsintervall definiert werden.
 Zusätzlich werden die SCM-Manager üblichen Informationen zum neuen Repository abgefragt.
 
+Die Benutzerauthentifizierung kann deaktiviert, mit Benutzername und Passwort oder mit einem Token über die Standardauthentifizierung konfiguriert werden.
+Mutual TLS mit einem PKCS#12-Clientzertifikat wird separat konfiguriert und kann mit jeder Benutzerauthentifizierung kombiniert werden.
+
 Optional gibt es verschiedene Filter (diese Filter haben keinen Einfluss auf das Spiegeln von SVN Repositories):
 
 **Nur Fast-Forward**

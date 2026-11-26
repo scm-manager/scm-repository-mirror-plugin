@@ -7,6 +7,9 @@ In addition to creating a new repository and importing an existing repository, S
 The form can be used to define a URL, optional credentials and a synchronization interval.
 Below this, there are SCM Manager's usual information for the new repository.
 
+User authentication can be disabled, configured with a username and password, or configured with a token using Basic Authentication.
+Mutual TLS with a PKCS#12 client certificate is configured separately and can be combined with any user authentication option.
+
 Optionally, there are different filters available (these filters have no effect on SVN repositories):
 
 **Fast-Forward only**

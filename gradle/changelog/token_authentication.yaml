@@ -1,0 +1,2 @@
+- type: changed
+  description: Allow token-only Basic Authentication and configure user authentication and mutual TLS independently

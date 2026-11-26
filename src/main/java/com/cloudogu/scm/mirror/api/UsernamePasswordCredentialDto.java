@@ -28,8 +28,11 @@ import jakarta.validation.constraints.NotBlank;
 @AllArgsConstructor
 @NoArgsConstructor
 class UsernamePasswordCredentialDto {
-  @NotBlank
-  private String username;
+  private String username = "";
   @NotBlank
   private String password;
+
+  public void setUsername(String username) {
+    this.username = username == null ? "" : username;
+  }
 }

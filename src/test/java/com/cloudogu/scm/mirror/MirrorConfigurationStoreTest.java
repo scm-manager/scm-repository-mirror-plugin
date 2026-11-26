@@ -361,13 +361,41 @@ class MirrorConfigurationStoreTest {
     }
 
     @Test
-    void shouldDeleteUsernamePasswordCredentialsIfNewUsernameIsNullOrEmpty() {
+    void shouldKeepPasswordOnlyCredentialsWhenUsernameIsEmpty() {
       MirrorConfiguration existingConfiguration = new MirrorConfiguration();
       existingConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "oldUsernamePassword"));
       mockExistingConfiguration(existingConfiguration);
 
       MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
       newConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("", "_DUMMY_"));
+
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
+
+      assertThat(existingConfiguration.getUsernamePasswordCredential().getUsername()).isEmpty();
+      assertThat(existingConfiguration.getUsernamePasswordCredential().getPassword()).isEqualTo("oldUsernamePassword");
+    }
+
+    @Test
+    void shouldCreatePasswordOnlyCredentialsWhenUsernameIsEmpty() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      mockExistingConfiguration(existingConfiguration);
+
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
+      newConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("", "token"));
+
+      store.setAccessConfiguration(REPOSITORY, newConfiguration);
+
+      assertThat(existingConfiguration.getUsernamePasswordCredential().getUsername()).isEmpty();
+      assertThat(existingConfiguration.getUsernamePasswordCredential().getPassword()).isEqualTo("token");
+    }
+
+    @Test
+    void shouldDeleteUsernamePasswordCredentialsWhenNoCredentialIsSubmitted() {
+      MirrorConfiguration existingConfiguration = new MirrorConfiguration();
+      existingConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential("dent", "secret"));
+      mockExistingConfiguration(existingConfiguration);
+
+      MirrorAccessConfigurationImpl newConfiguration = new MirrorAccessConfigurationImpl();
 
       store.setAccessConfiguration(REPOSITORY, newConfiguration);
 

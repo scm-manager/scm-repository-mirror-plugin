@@ -63,18 +63,12 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
   useEffect(() => {
     if (initialConfiguration) {
       const form = { ...initialConfiguration } as MirrorAccessConfigurationForm;
-      if (initialConfiguration.usernamePasswordCredential) {
-        form.usernamePasswordCredential = {
-          ...initialConfiguration.usernamePasswordCredential,
-          enabled: true,
-        };
-      }
-      if (initialConfiguration.certificateCredential) {
-        form.certificateCredential = {
-          ...initialConfiguration.certificateCredential,
-          enabled: true,
-        };
-      }
+      form.userAuthentication = initialConfiguration.usernamePasswordCredential
+        ? initialConfiguration.usernamePasswordCredential.username
+          ? "USERNAME_PASSWORD"
+          : "TOKEN"
+        : "NONE";
+      form.mutualTlsAuthentication = initialConfiguration.certificateCredential ? "CERTIFICATE" : "NONE";
       if (!initialConfiguration.synchronizationPeriod) {
         form.synchronizationPeriod = "0";
       }

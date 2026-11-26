@@ -190,20 +190,17 @@ public class MirrorConfigurationStore implements Initable {
   private void updateUsernamePasswordCredentials(MirrorConfiguration existingConfiguration, MirrorAccessConfiguration newMirrorAccessConfiguration) {
     if (newMirrorAccessConfiguration.getUsernamePasswordCredential() != null) {
       final boolean shouldUpdatePassword = !DUMMY_PASSWORD.equals(newMirrorAccessConfiguration.getUsernamePasswordCredential().getPassword());
-      final boolean usernameIsNullOrEmpty = Strings.isNullOrEmpty(newMirrorAccessConfiguration.getUsernamePasswordCredential().getUsername());
-      if (usernameIsNullOrEmpty) {
-        LOG.trace("empty username, deleting username-password-credentials");
-        existingConfiguration.setUsernamePasswordCredential(null);
-      } else {
-        if (existingConfiguration.getUsernamePasswordCredential() == null) {
-          existingConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential());
-        }
-        LOG.trace("updating username");
-        existingConfiguration.getUsernamePasswordCredential().setUsername(newMirrorAccessConfiguration.getUsernamePasswordCredential().getUsername());
-        if (shouldUpdatePassword) {
-          LOG.trace("updating password for username");
-          existingConfiguration.getUsernamePasswordCredential().setPassword(newMirrorAccessConfiguration.getUsernamePasswordCredential().getPassword());
-        }
+      if (existingConfiguration.getUsernamePasswordCredential() == null && !shouldUpdatePassword) {
+        return;
+      }
+      if (existingConfiguration.getUsernamePasswordCredential() == null) {
+        existingConfiguration.setUsernamePasswordCredential(new MirrorAccessConfiguration.UsernamePasswordCredential());
+      }
+      LOG.trace("updating username");
+      existingConfiguration.getUsernamePasswordCredential().setUsername(newMirrorAccessConfiguration.getUsernamePasswordCredential().getUsername());
+      if (shouldUpdatePassword) {
+        LOG.trace("updating password for username");
+        existingConfiguration.getUsernamePasswordCredential().setPassword(newMirrorAccessConfiguration.getUsernamePasswordCredential().getPassword());
       }
     } else {
       existingConfiguration.setUsernamePasswordCredential(null);

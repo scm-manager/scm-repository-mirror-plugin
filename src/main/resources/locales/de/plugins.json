@@ -13,11 +13,22 @@
     },
     "form": {
       "subtitle": "Konfiguration des Mirrors",
-      "withBaseAuth": {
-        "label": "Verwende Standard-Authentifizierung"
+      "sourceRepositoryAuthentication": "Authentifizierung beim Quell-Repository",
+      "userAuthentication": {
+        "label": "Benutzerauthentifizierung",
+        "options": {
+          "none": "Keine",
+          "usernamePassword": "Benutzername und Passwort",
+          "token": "Token"
+        }
       },
-      "withKeyAuth": {
-        "label": "Verwende zertifikats-basierte Authentifizierung (PKCS12)"
+      "mutualTlsAuthentication": {
+        "label": "Mutual-TLS-Kommunikation",
+        "helpText": "SCM-Manager und den Server des Quell-Repositorys gegenseitig per Zertifikat authentifizieren lassen",
+        "options": {
+          "none": "Keine",
+          "certificate": "Zertifikat (PKCS #12)"
+        }
       },
       "url": {
         "label": "URL des Quell-Repository",
@@ -29,18 +40,29 @@
       },
       "username": {
         "label": "Benutzername",
-        "helpText": "Der Benutzer, welcher für die Authentifizierung verwendet werden soll."
+        "errors": {
+          "required": "Der Benutzername ist erforderlich"
+        }
       },
       "password": {
         "label": "Passwort",
-        "helpText": "Das Passwort für den angegebenen Benutzer."
+        "errors": {
+          "required": "Das Passwort ist erforderlich"
+        }
+      },
+      "token": {
+        "label": "Token",
+        "helpText": "Ein Zugriffsschlüssel, den Sie in den Einstellungen des Quell-Repository-Servers erstellen können",
+        "errors": {
+          "required": "Der Token ist erforderlich"
+        }
       },
       "certificate": {
-        "label": "Zertifikat mit Schlüssel (PKCS12)",
-        "helpText": "Ein PKCS12-Keystore welcher die Verbindung sichert.",
+        "label": "PKCS-#12-Datei",
+        "helpText": "Eine Datei, die ein Zertifikat und einen Schlüssel enthält (.p12 oder .pfx)",
         "password": {
-          "label": "Passwort",
-          "helpText": "Das Passwort für den Schlüssel, falls vorhanden."
+          "label": "Passwort der Datei",
+          "helpText": "Nur notwendig, wenn die Datei passwortgeschützt ist"
         }
       },
       "period": {

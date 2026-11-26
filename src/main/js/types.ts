@@ -21,18 +21,14 @@ export type UsernamePasswordCredentialDto = {
   password: string;
 };
 
-export type UsernamePasswordCredentialForm = UsernamePasswordCredentialDto & {
-  enabled: boolean;
-};
+export type UsernamePasswordCredentialForm = UsernamePasswordCredentialDto;
 
 export type CertificateCredentialDto = {
   certificate: string;
   password: string;
 };
 
-export type CertificateCredentialForm = CertificateCredentialDto & {
-  enabled: boolean;
-};
+export type CertificateCredentialForm = CertificateCredentialDto;
 
 export type MirrorFilterConfigurationDto = HalRepresentation & {
   branchesAndTagsPatterns: string;
@@ -59,7 +55,12 @@ export type MirrorAccessConfigurationDto = HalRepresentation & {
 export type MirrorAccessConfigurationForm = MirrorAccessConfigurationDto & {
   usernamePasswordCredential?: UsernamePasswordCredentialForm;
   certificateCredential?: CertificateCredentialForm;
+  userAuthentication?: UserAuthenticationMethod;
+  mutualTlsAuthentication?: MutualTlsAuthenticationMethod;
 };
+
+export type UserAuthenticationMethod = "NONE" | "USERNAME_PASSWORD" | "TOKEN";
+export type MutualTlsAuthenticationMethod = "NONE" | "CERTIFICATE";
 
 export type MirrorCreationDto = MirrorAccessConfigurationDto & LocalMirrorFilterConfigurationDto & RepositoryCreation;
 export type MirrorCreationForm = MirrorAccessConfigurationForm & LocalMirrorFilterConfigurationDto & RepositoryCreation;

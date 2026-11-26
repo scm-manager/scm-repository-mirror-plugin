@@ -18,28 +18,44 @@ import { Control, useController, useForm, useWatch } from "react-hook-form";
 import {
   MirrorAccessConfigurationForm,
   MirrorFilterConfigurationDto,
+  MutualTlsAuthenticationMethod,
+  UserAuthenticationMethod,
   mirrorGpgVerificationTypes,
   PublicKey,
 } from "../types";
 import React, { ChangeEvent, FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { AutocompleteObject, Option } from "@scm-manager/ui-types";
-import {
-  Checkbox,
-  FileInput,
-  MemberNameTagGroup,
-  Select,
-  SelectItem,
-  Textarea,
-} from "@scm-manager/ui-components";
+import { MemberNameTagGroup } from "@scm-manager/ui-components";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import readBinaryFileAsBase64String from "../readBinaryFileAsBase64String";
 import styled from "styled-components";
-import { Button, ComboboxField, Icon, IconButton, Level, InputField } from "@scm-manager/ui-core";
+import {
+  Button,
+  ComboboxField,
+  InputField,
+  Field,
+  FieldMessage,
+  FileInputField,
+  Icon,
+  IconButton,
+  Label,
+  Level,
+  RadioGroupField,
+  SelectField,
+  Textarea,
+} from "@scm-manager/ui-core";
+
+type SelectItem = NonNullable<React.ComponentProps<typeof SelectField>["options"]>[number];
 
 const Column = styled.div`
   padding: 0 0.75rem;
   margin-bottom: 0.5rem;
+`;
+
+// Temporary Figma border color preview for the credential input areas.
+const CredentialInputPreviewColumn = styled(Column)`
+  padding: 1.5rem;
 `;
 
 export type MirrorAccessConfigControlProps = { control: Control<MirrorAccessConfigurationForm>; isReadonly: boolean };
@@ -110,20 +126,24 @@ export const ManagingUsersControl: FC<MirrorAccessConfigControlProps> = ({ contr
 };
 
 export const FileInputControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
-  const { field } = useController({ control, name: "certificateCredential.certificate" });
+  const {
+    field: { name, onBlur, onChange, ref },
+  } = useController({ control, name: "certificateCredential.certificate" });
   const [t] = useTranslation("plugins");
 
   return (
-    <FileInput
+    <FileInputField
       label={t("scm-repository-mirror-plugin.form.certificate.label")}
-      helpText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
+      descriptionText={t("scm-repository-mirror-plugin.form.certificate.helpText")}
       disabled={isReadonly}
       testId="certificate-input"
-      {...field}
+      name={name}
+      onBlur={onBlur}
+      ref={ref}
       onChange={(event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target?.files?.[0];
         if (file) {
-          readBinaryFileAsBase64String(file).then((base64String) => field.onChange(base64String));
+          readBinaryFileAsBase64String(file).then(onChange);
         }
       }}
     />
@@ -132,69 +152,144 @@ export const FileInputControl: FC<MirrorAccessConfigControlProps> = ({ control, 
 
 export const CredentialsControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
   const [t] = useTranslation("plugins");
-  const { field: enabledField } = useController({ control, name: "usernamePasswordCredential.enabled" });
-  const { field: usernameField } = useController({ control, name: "usernamePasswordCredential.username" });
-  const { field: passwordField } = useController({ control, name: "usernamePasswordCredential.password" });
+  const { field: userAuthenticationField } = useController({
+    control,
+    name: "userAuthentication",
+    defaultValue: "NONE",
+  });
+  const { field: usernameField, fieldState: usernameFieldState } = useController({
+    control,
+    name: "usernamePasswordCredential.username",
+    rules: {
+      required:
+        userAuthenticationField.value === "USERNAME_PASSWORD"
+          ? t("scm-repository-mirror-plugin.form.username.errors.required")
+          : false,
+    },
+  });
+  const { field: passwordField, fieldState: passwordFieldState } = useController({
+    control,
+    name: "usernamePasswordCredential.password",
+    rules: {
+      required:
+        userAuthenticationField.value !== "NONE"
+          ? t(
+              userAuthenticationField.value === "TOKEN"
+                ? "scm-repository-mirror-plugin.form.token.errors.required"
+                : "scm-repository-mirror-plugin.form.password.errors.required",
+            )
+          : false,
+    },
+  });
 
-  const { field: certificateEnabledField } = useController({ control, name: "certificateCredential.enabled" });
+  const { field: mutualTlsAuthenticationField } = useController({
+    control,
+    name: "mutualTlsAuthentication",
+    defaultValue: "NONE",
+  });
   const { field: certificatePasswordField } = useController({ control, name: "certificateCredential.password" });
+
+  const userAuthenticationOptions: { value: UserAuthenticationMethod; label: string }[] = [
+    {
+      value: "NONE",
+      label: t("scm-repository-mirror-plugin.form.userAuthentication.options.none"),
+    },
+    {
+      value: "USERNAME_PASSWORD",
+      label: t("scm-repository-mirror-plugin.form.userAuthentication.options.usernamePassword"),
+    },
+    {
+      value: "TOKEN",
+      label: t("scm-repository-mirror-plugin.form.userAuthentication.options.token"),
+    },
+  ];
+  const mutualTlsAuthenticationOptions: { value: MutualTlsAuthenticationMethod; label: string }[] = [
+    {
+      value: "NONE",
+      label: t("scm-repository-mirror-plugin.form.mutualTlsAuthentication.options.none"),
+    },
+    {
+      value: "CERTIFICATE",
+      label: t("scm-repository-mirror-plugin.form.mutualTlsAuthentication.options.certificate"),
+    },
+  ];
 
   return (
     <>
       <Column className="column is-full">
-        <Checkbox
-          label={t("scm-repository-mirror-plugin.form.withBaseAuth.label")}
-          testId="base-auth-checkbox"
-          {...enabledField}
-          checked={!!enabledField.value}
+        <h2 className="subtitle">{t("scm-repository-mirror-plugin.form.sourceRepositoryAuthentication")}</h2>
+      </Column>
+      <Column className="column is-full">
+        <RadioGroupField
+          label={t("scm-repository-mirror-plugin.form.userAuthentication.label")}
+          options={userAuthenticationOptions}
+          name={userAuthenticationField.name}
+          value={userAuthenticationField.value}
+          onValueChange={userAuthenticationField.onChange}
+          onBlur={userAuthenticationField.onBlur}
+          disabled={isReadonly}
+          data-testid="user-authentication-radio-group"
         />
       </Column>
-      {enabledField.value ? (
-        <>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.username.label")}
-              helpText={t("scm-repository-mirror-plugin.form.username.helpText")}
-              disabled={isReadonly}
-              testId="username-input"
-              {...usernameField}
-            />
-          </Column>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.password.label")}
-              type="password"
-              helpText={t("scm-repository-mirror-plugin.form.password.helpText")}
-              disabled={isReadonly}
-              testId="username-password-input"
-              {...passwordField}
-            />
-          </Column>
-        </>
+      {userAuthenticationField.value === "USERNAME_PASSWORD" ? (
+        <CredentialInputPreviewColumn className="column is-full">
+          <InputField
+            label={t("scm-repository-mirror-plugin.form.username.label")}
+            error={usernameFieldState.error?.message}
+            disabled={isReadonly}
+            required={true}
+            testId="username-input"
+            {...usernameField}
+          />
+          <InputField
+            label={t("scm-repository-mirror-plugin.form.password.label")}
+            type="password"
+            error={passwordFieldState.error?.message}
+            disabled={isReadonly}
+            required={true}
+            testId="username-password-input"
+            {...passwordField}
+          />
+        </CredentialInputPreviewColumn>
+      ) : userAuthenticationField.value === "TOKEN" ? (
+        <CredentialInputPreviewColumn className="column is-full">
+          <InputField
+            label={t("scm-repository-mirror-plugin.form.token.label")}
+            descriptionText={t("scm-repository-mirror-plugin.form.token.helpText")}
+            type="password"
+            error={passwordFieldState.error?.message}
+            disabled={isReadonly}
+            required={true}
+            testId="token-input"
+            {...passwordField}
+          />
+        </CredentialInputPreviewColumn>
       ) : null}
       <Column className="column is-full">
-        <Checkbox
-          label={t("scm-repository-mirror-plugin.form.withKeyAuth.label")}
-          {...certificateEnabledField}
-          checked={!!certificateEnabledField.value}
+        <RadioGroupField
+          label={t("scm-repository-mirror-plugin.form.mutualTlsAuthentication.label")}
+          helpText={t("scm-repository-mirror-plugin.form.mutualTlsAuthentication.helpText")}
+          options={mutualTlsAuthenticationOptions}
+          name={mutualTlsAuthenticationField.name}
+          value={mutualTlsAuthenticationField.value}
+          onValueChange={mutualTlsAuthenticationField.onChange}
+          onBlur={mutualTlsAuthenticationField.onBlur}
+          disabled={isReadonly}
+          data-testid="mutual-tls-authentication-radio-group"
         />
       </Column>
-      {certificateEnabledField.value ? (
-        <>
-          <Column className="column is-half">
-            <FileInputControl control={control} isReadonly={isReadonly} />
-          </Column>
-          <Column className="column is-half">
-            <InputField
-              label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
-              type="password"
-              helpText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
-              disabled={isReadonly}
-              testId="certificate-password-input"
-              {...certificatePasswordField}
-            />
-          </Column>
-        </>
+      {mutualTlsAuthenticationField.value === "CERTIFICATE" ? (
+        <CredentialInputPreviewColumn className="column is-full">
+          <FileInputControl control={control} isReadonly={isReadonly} />
+          <InputField
+            label={t("scm-repository-mirror-plugin.form.certificate.password.label")}
+            type="password"
+            descriptionText={t("scm-repository-mirror-plugin.form.certificate.password.helpText")}
+            disabled={isReadonly}
+            testId="certificate-password-input"
+            {...certificatePasswordField}
+          />
+        </CredentialInputPreviewColumn>
       ) : null}
     </>
   );
@@ -257,7 +352,7 @@ export const SynchronizationPeriodControl: FC<MirrorAccessConfigControlProps> = 
 
   return (
     <Column className="column is-half">
-      <Select
+      <SelectField
         label={t("scm-repository-mirror-plugin.form.period.label")}
         helpText={t("scm-repository-mirror-plugin.form.period.helpText")}
         options={createPeriodOptions(t)}
@@ -424,12 +519,30 @@ export const ProxyPasswordControl: FC<MirrorAccessConfigControlProps> = ({ contr
 export const coalesceFormValue = <T extends MirrorAccessConfigurationForm>(value: T): T => {
   const output: MirrorAccessConfigurationForm = { ...value };
 
-  if (!output.usernamePasswordCredential?.enabled || !output.usernamePasswordCredential?.username) {
+  if (output.userAuthentication === "TOKEN") {
+    if (output.usernamePasswordCredential?.password) {
+      output.usernamePasswordCredential = {
+        ...output.usernamePasswordCredential,
+        username: "",
+      };
+    } else {
+      delete output.usernamePasswordCredential;
+    }
+  } else if (output.userAuthentication === "USERNAME_PASSWORD") {
+    if (!output.usernamePasswordCredential?.username) {
+      delete output.usernamePasswordCredential;
+    }
+  } else {
     delete output.usernamePasswordCredential;
   }
-  if (!output.certificateCredential?.enabled) {
+
+  if (output.mutualTlsAuthentication !== "CERTIFICATE") {
     delete output.certificateCredential;
   }
+
+  delete output.userAuthentication;
+  delete output.mutualTlsAuthentication;
+
   if (output.synchronizationPeriod === "0") {
     delete output.synchronizationPeriod;
   }
@@ -506,21 +619,26 @@ export const PublicKeysControl: FC<MirrorFilterConfigControlProps> = ({ control,
               label={t("scm-repository-mirror-plugin.form.keyList.new.displayName.label")}
               helpText={t("scm-repository-mirror-plugin.form.keyList.new.displayName.helpText")}
               error={
-                errors.displayName && t("scm-repository-mirror-plugin.form.keyList.new.displayName.errors.required")
+                errors.displayName
+                  ? t("scm-repository-mirror-plugin.form.keyList.new.displayName.errors.required")
+                  : undefined
               }
               {...register("displayName", {
                 required: true,
               })}
             />
-            <Textarea
-              label={t("scm-repository-mirror-plugin.form.keyList.new.raw.label")}
-              helpText={t("scm-repository-mirror-plugin.form.keyList.new.raw.helpText")}
-              errorMessage={t("scm-repository-mirror-plugin.form.keyList.new.raw.errors.required")}
-              validationError={!!errors.raw}
-              {...register("raw", {
-                required: true,
-              })}
-            />
+            <Field>
+              <Label htmlFor="gpg-key-raw">{t("scm-repository-mirror-plugin.form.keyList.new.raw.label")}</Label>
+              <Textarea id="gpg-key-raw" aria-describedby="gpg-key-raw-help" {...register("raw", { required: true })} />
+              <p id="gpg-key-raw-help" className="help">
+                {t("scm-repository-mirror-plugin.form.keyList.new.raw.helpText")}
+              </p>
+              {errors.raw ? (
+                <FieldMessage variant="danger">
+                  {t("scm-repository-mirror-plugin.form.keyList.new.raw.errors.required")}
+                </FieldMessage>
+              ) : null}
+            </Field>
             <Level
               right={
                 <Button onClick={handleSubmit(addNewKey)} disabled={!isValid}>
@@ -555,7 +673,7 @@ export const GpgVerificationControl: FC<MirrorFilterConfigControlProps> = ({ con
   const showKeyList = value === "KEY_LIST";
   return (
     <>
-      <Select
+      <SelectField
         label={t("scm-repository-mirror-plugin.form.gpgVerificationType.label")}
         helpText={t("scm-repository-mirror-plugin.form.gpgVerificationType.helpText")}
         disabled={isReadonly}
