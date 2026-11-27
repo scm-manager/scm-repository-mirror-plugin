@@ -86,7 +86,11 @@ const RepositoryMirrorAccessConfigForm: FC<Pick<Props, "link">> = ({ link }) => 
       <hr />
       <Subtitle subtitle={t("scm-repository-mirror-plugin.form.subtitle")} />
       <Columns className="columns is-multiline">
-        <UrlControl control={control} isReadonly={isReadOnly || !initialConfiguration?.urlModifiable} />
+        <UrlControl
+          control={control}
+          isReadonly={isReadOnly || !initialConfiguration?.urlModifiable}
+          isCreation={false}
+        />
         <CredentialsControl control={control} isReadonly={isReadOnly} />
         <SynchronizationPeriodControl control={control} isReadonly={isReadOnly} />
         <ManagingUsersControl control={control} isReadonly={isReadOnly} />

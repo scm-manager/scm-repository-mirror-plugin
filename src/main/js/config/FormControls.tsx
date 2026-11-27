@@ -365,7 +365,11 @@ export const SynchronizationPeriodControl: FC<MirrorAccessConfigControlProps> = 
   );
 };
 
-export const UrlControl: FC<MirrorAccessConfigControlProps> = ({ control, isReadonly }) => {
+export const UrlControl: FC<{ isCreation: boolean } & MirrorAccessConfigControlProps> = ({
+  control,
+  isReadonly,
+  isCreation,
+}) => {
   const [t] = useTranslation("plugins");
   const { field, fieldState } = useController({
     control,
@@ -386,7 +390,9 @@ export const UrlControl: FC<MirrorAccessConfigControlProps> = ({ control, isRead
     <Column className="column is-full">
       <InputField
         label={t("scm-repository-mirror-plugin.form.url.label")}
-        descriptionText={isReadonly ? undefined: t("scm-repository-mirror-plugin.form.url.descriptionText")}
+        descriptionText={
+          isReadonly || isCreation ? undefined : t("scm-repository-mirror-plugin.form.url.descriptionText")
+        }
         error={fieldState.error?.message}
         disabled={isReadonly}
         testId="url-input"

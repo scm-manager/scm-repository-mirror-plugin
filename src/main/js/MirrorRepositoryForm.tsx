@@ -101,7 +101,7 @@ const MirrorRepositoryForm: FC<Props> = ({ repositoryType, onSubmit, disabled, N
   return (
     <form onSubmit={handleSubmit(innerOnSubmit)}>
       <Columns className="columns is-multiline">
-        <UrlControl control={control} isReadonly={false} />
+        <UrlControl control={control} isReadonly={false} isCreation />
         <CredentialsControl control={control} isReadonly={false} />
         <SynchronizationPeriodControl control={control} isReadonly={false} />
       </Columns>
